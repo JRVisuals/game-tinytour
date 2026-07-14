@@ -1,4 +1,5 @@
 import { Button, Group, Progress, Stack, Text, Title } from '@mantine/core'
+import { MarketPanel } from '../components/MarketPanel'
 import {
   ROADSIDE_COPY,
   ROADSIDE_LABELS,
@@ -36,40 +37,12 @@ export function TravelScreen() {
   const event = travel.pendingEvent
   const roadside = leg?.roadside
 
-  if (travel.atRoadside && roadside) {
+  if (travel.atRoadside && roadside && state.currentMarket) {
     return (
       <Stack>
         <Title order={2}>{ROADSIDE_LABELS[roadside]}</Title>
         <Text size="sm">{ROADSIDE_COPY[roadside]}</Text>
-        <Text size="sm" c="dimmed">
-          Roadside stops are different from shakedown — quick trades, no venue energy.
-        </Text>
-        <Group>
-          <Button
-            size="xs"
-            variant="light"
-            onClick={() => travelAction('roadside_food')}
-            disabled={state.resources.cash < 6}
-          >
-            Food ($6, +2)
-          </Button>
-          <Button
-            size="xs"
-            variant="light"
-            onClick={() => travelAction('roadside_beer')}
-            disabled={state.resources.cash < 5}
-          >
-            Beer ($5, +2)
-          </Button>
-          <Button
-            size="xs"
-            variant="light"
-            onClick={() => travelAction('roadside_sell_drugs')}
-            disabled={state.resources.drugs <= 0}
-          >
-            Sell substances (+$35)
-          </Button>
-        </Group>
+        <MarketPanel prices={state.currentMarket} contextLabel={ROADSIDE_LABELS[roadside]} />
         <Button variant="default" onClick={leaveRoadside}>
           Back on the road
         </Button>

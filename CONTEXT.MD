@@ -4,9 +4,11 @@ Living snapshot of how the game works right now. Prefer short bullets. Update wh
 
 ## Current product shape
 
-**v0.1.1** — Distance-based travel legs (1–4), roadside stops, pulled-over event, band song catalog (20 songs, hot/deep/bust tiers), setlist betting, crew 1–3.
+**v0.1.2** — Bet slots (anywhere/opener/closer/encore), scrollable song catalog, JSON travel events, per-member crew meters, location markets, miss show, shuffle on home.
 
-## Copy tone
+## Edit event copy
+
+Travel event text lives in [`src/content/travel-events.json`](src/content/travel-events.json). Add/edit entries there (`title`, `body`, `choices`, `weight`). Lot rumor supports `{song}` placeholder.
 
 Dark comedy. User may author event/location copy over time — stub text in code for now.
 

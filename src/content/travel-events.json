@@ -1,0 +1,72 @@
+{
+  "events": [
+    {
+      "id": "miracle_ticket",
+      "eventType": "solo",
+      "title": "Miracle ticket",
+      "body": "A kind stranger presses a miracle into your hand. “Someone didn’t show. Don’t ask questions.”",
+      "weight": 12
+    },
+    {
+      "id": "flat_tire",
+      "eventType": "solo",
+      "title": "Flat tire",
+      "body": "The beater lists hard. You’re on the shoulder swapping rubber in light you wouldn’t describe as legal.",
+      "weight": 10
+    },
+    {
+      "id": "robbed",
+      "eventType": "solo",
+      "title": "Robbed",
+      "body": "Someone rummaged while you slept at a rest stop. Your stash took a hit. The universe offers no receipt.",
+      "weight": 10
+    },
+    {
+      "id": "hitchhiker_intel",
+      "eventType": "solo",
+      "title": "Hitchhiker with intel",
+      "body": "A hitchhiker knows too much about tonight’s venue. They want a beer for directions that might be real.",
+      "weight": 8
+    },
+    {
+      "id": "wook_flu",
+      "eventType": "solo",
+      "title": "Wook flu",
+      "body": "The crew is wrecked. Fever dreams of rail-riding unicorns. Rest now or HR gets your application.",
+      "weight": 8
+    },
+    {
+      "id": "pulled_over",
+      "eventType": "pulled_over",
+      "title": "Pulled over",
+      "body": "Blue lights. The officer asks how many are in the vehicle and whether you know why you were weaving. Your crew goes quiet in that specific way.",
+      "weight": 9,
+      "choices": [
+        { "id": "truth", "label": "Tell the truth" },
+        { "id": "lie", "label": "Lie through your teeth" }
+      ]
+    },
+    {
+      "id": "bathroom_find",
+      "eventType": "bathroom_find",
+      "title": "Rest stop bathroom find",
+      "body": "A baggie sits on the tile behind the toilet paper. Could be anything. Could be a federal case. Could be nothing.",
+      "weight": 7,
+      "choices": [
+        { "id": "try_it", "label": "Try it" },
+        { "id": "toss_it", "label": "Toss it — not today" }
+      ]
+    },
+    {
+      "id": "lot_rumor",
+      "eventType": "lot_rumor",
+      "title": "Lot rumor",
+      "body": "Someone swears {song} opens tonight — a deep cut, they say. Bet $20 it hits the set?",
+      "weight": 6,
+      "choices": [
+        { "id": "bet_yes", "label": "Bet $20 on it" },
+        { "id": "bet_no", "label": "Keep your cash" }
+      ]
+    }
+  ]
+}

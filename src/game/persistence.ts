@@ -16,8 +16,10 @@ export function emptyLifetimeStats(): LifetimeStats {
     substancesConsumed: 0,
     foodConsumed: 0,
     beerConsumed: 0,
+    showsMissed: 0,
     runsCompleted: 0,
     dayJobsTaken: 0,
+    shufflesHome: 0,
   }
 }
 

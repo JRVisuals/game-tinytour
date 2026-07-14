@@ -9,13 +9,14 @@ export function emptyRunStats(): RunStats {
     substancesConsumed: 0,
     foodConsumed: 0,
     beerConsumed: 0,
+    showsMissed: 0,
   }
 }
 
 export function mergeRunIntoLifetime(
   lifetime: LifetimeStats,
   run: RunStats,
-  outcome: 'completed' | 'day_job',
+  outcome: 'completed' | 'day_job' | 'shuffle',
 ): LifetimeStats {
   return {
     venuesVisited: lifetime.venuesVisited + run.venuesVisited,
@@ -25,8 +26,10 @@ export function mergeRunIntoLifetime(
     substancesConsumed: lifetime.substancesConsumed + run.substancesConsumed,
     foodConsumed: lifetime.foodConsumed + run.foodConsumed,
     beerConsumed: lifetime.beerConsumed + run.beerConsumed,
+    showsMissed: lifetime.showsMissed + run.showsMissed,
     runsCompleted: lifetime.runsCompleted + (outcome === 'completed' ? 1 : 0),
     dayJobsTaken: lifetime.dayJobsTaken + (outcome === 'day_job' ? 1 : 0),
+    shufflesHome: lifetime.shufflesHome + (outcome === 'shuffle' ? 1 : 0),
   }
 }
 

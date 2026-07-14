@@ -1,14 +1,15 @@
 import { Button, Group, Stack, Text, Title } from '@mantine/core'
+import { activeCrew } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
 
 export function ShowScreen() {
-  const { state, finishShow } = useGame()
+  const { state, finishShow, missShow } = useGame()
   const stop = state.tour?.stops[state.tour.currentStopIndex]
-  const ticketsNeeded = state.crew.length
+  const active = activeCrew(state.crew)
+  const ticketsNeeded = active.length
   const hasTickets = state.resources.tickets >= ticketsNeeded
 
   const sneak = () => {
-    // Stub: risk resolution fills in later (jail, ankle, etc.)
     finishShow()
   }
 
@@ -19,17 +20,17 @@ export function ShowScreen() {
         {stop?.dayLabel} — <strong>{stop?.venue}</strong>, {stop?.city}
       </Text>
       <Text>
-        Tickets in hand: {state.resources.tickets} / {ticketsNeeded} needed.
+        Tickets: {state.resources.tickets} / {ticketsNeeded} active crew
       </Text>
       {hasTickets ? (
         <Text c="teal">Crew is ticketed. Go get weird.</Text>
       ) : (
         <Text c="orange">
-          Short on tickets. You can still try the fence (stub risk).
+          Short on tickets. Sneak, scramble, or miss the show and hustle the next leg.
         </Text>
       )}
       <Group>
-        <Button onClick={finishShow} disabled={!hasTickets}>
+        <Button onClick={finishShow} disabled={!hasTickets || ticketsNeeded === 0}>
           Walk in with tickets
         </Button>
         {!hasTickets && (
@@ -37,11 +38,15 @@ export function ShowScreen() {
             Sneak / scramble
           </Button>
         )}
+        <Button variant="default" onClick={missShow}>
+          Miss the show (hustle)
+        </Button>
       </Group>
-      <Text size="sm" c="dimmed">
-        Later: sit-out hustle, limited show activities, scoring from stock +
-        entry.
-      </Text>
+      {ticketsNeeded === 0 && (
+        <Text size="sm" c="red">
+          No active crew left at the gate.
+        </Text>
+      )}
     </Stack>
   )
 }

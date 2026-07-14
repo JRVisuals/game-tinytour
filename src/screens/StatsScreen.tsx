@@ -28,8 +28,9 @@ export function StatsScreen() {
       <StatBlock title="Lifetime" stats={state.lifetimeStats} />
       {inRun && <StatBlock title="This run" stats={state.runStats} />}
       <Text size="sm" c="dimmed">
-        Runs completed: {state.lifetimeStats.runsCompleted} · Day jobs taken:{' '}
-        {state.lifetimeStats.dayJobsTaken}
+        Runs completed: {state.lifetimeStats.runsCompleted} · Day jobs:{' '}
+        {state.lifetimeStats.dayJobsTaken} · Shuffled home:{' '}
+        {state.lifetimeStats.shufflesHome}
       </Text>
       <Button variant="default" onClick={goToTitle}>
         Back to title

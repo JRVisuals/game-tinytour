@@ -1,36 +1,26 @@
-import type { BandCatalog, TravelEvent } from '../types'
+import travelEventsJson from '../../content/travel-events.json'
 import { songsByTier } from '../generators/songs'
+import type { BandCatalog, TravelEvent, TravelEventType } from '../types'
 
-const SOLO_EVENTS: Omit<TravelEvent, 'id'>[] = [
-  {
-    title: 'Miracle ticket',
-    body: 'A kind stranger presses a miracle into your hand. “Someone didn’t show. Don’t ask questions.”',
-    eventType: 'solo',
-  },
-  {
-    title: 'Flat tire',
-    body: 'The beater lists hard. You’re on the shoulder swapping rubber in light you wouldn’t describe as legal.',
-    eventType: 'solo',
-  },
-  {
-    title: 'Robbed',
-    body: 'Someone rummaged while you slept at a rest stop. Your stash took a hit. The universe offers no receipt.',
-    eventType: 'solo',
-  },
-  {
-    title: 'Hitchhiker with intel',
-    body: 'A hitchhiker knows too much about tonight’s venue. They want a beer for directions that might be real.',
-    eventType: 'solo',
-  },
-  {
-    title: 'Wook flu',
-    body: 'The crew is wrecked. Fever dreams of rail-riding unicorns. Rest now or HR gets your application.',
-    eventType: 'solo',
-  },
-]
+interface EventTemplate {
+  id: string
+  eventType: TravelEventType
+  title: string
+  body: string
+  weight: number
+  choices?: { id: string; label: string }[]
+}
 
-function pick<T>(list: T[], n: number): T {
-  return list[Math.abs(Math.floor(n)) % list.length]!
+const templates = travelEventsJson.events as EventTemplate[]
+
+function pickWeighted(pool: EventTemplate[], seed: number): EventTemplate {
+  const total = pool.reduce((a, e) => a + e.weight, 0)
+  let roll = Math.abs(seed) % total
+  for (const e of pool) {
+    roll -= e.weight
+    if (roll < 0) return e
+  }
+  return pool[0]!
 }
 
 /** ~35% chance of an event when advancing a leg */
@@ -40,49 +30,40 @@ export function maybeRollTravelEvent(
 ): TravelEvent | null {
   if (Math.abs(seed) % 100 > 35) return null
 
-  const roll = seed % 10
-  if (roll === 0) {
-    return {
-      id: `evt-${seed}`,
-      title: 'Pulled over',
-      body: 'Blue lights. The officer asks how many are in the vehicle and whether you know why you were weaving. Your crew goes quiet in that specific way.',
-      eventType: 'pulled_over',
-      choices: [
-        { id: 'truth', label: 'Tell the truth' },
-        { id: 'lie', label: 'Lie through your teeth' },
-      ],
-    }
+  const roll = seed % 100
+  if (roll < 12) {
+    const t = templates.find((e) => e.id === 'pulled_over')!
+    return { ...t, id: `evt-${seed}`, eventKey: t.id }
   }
-
-  if (roll <= 2 && catalog) {
+  if (roll < 22 && catalog) {
+    const t = templates.find((e) => e.id === 'lot_rumor')!
     const deepCuts = songsByTier(catalog, 'deep_cut')
-    const rumor = pick(deepCuts, seed)
+    const rumor = deepCuts[Math.abs(seed) % deepCuts.length]!
     return {
       id: `evt-${seed}`,
-      title: 'Lot rumor',
-      body: `Someone swears ${rumor.title} opens tonight — a deep cut, they say. Bet $20 it hits the set?`,
-      eventType: 'lot_rumor',
+      eventKey: t.id,
+      title: t.title,
+      body: t.body.replace('{song}', rumor.title),
+      eventType: t.eventType,
+      choices: t.choices,
       rumorSongId: rumor.id,
-      choices: [
-        { id: 'bet_yes', label: 'Bet $20 on it' },
-        { id: 'bet_no', label: 'Keep your cash' },
-      ],
     }
   }
 
-  if (roll === 3) {
-    return {
-      id: `evt-${seed}`,
-      title: 'Rest stop bathroom find',
-      body: 'A baggie sits on the tile behind the toilet paper. Could be anything. Could be a federal case. Could be nothing.',
-      eventType: 'bathroom_find',
-      choices: [
-        { id: 'try_it', label: 'Try it' },
-        { id: 'toss_it', label: 'Toss it — not today' },
-      ],
-    }
+  const soloPool = templates.filter(
+    (e) => e.eventType === 'solo' || e.eventType === 'bathroom_find',
+  )
+  const template = pickWeighted(soloPool, seed)
+  return {
+    id: `evt-${seed}`,
+    eventKey: template.id,
+    title: template.title,
+    body: template.body,
+    eventType: template.eventType,
+    choices: template.choices,
   }
+}
 
-  const template = pick(SOLO_EVENTS, seed)
-  return { ...template, id: `evt-${seed}` }
+export function getEventTemplate(id: string): EventTemplate | undefined {
+  return templates.find((e) => e.id === id)
 }

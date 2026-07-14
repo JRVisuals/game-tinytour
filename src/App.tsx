@@ -1,4 +1,6 @@
 import { AppShell, Badge, Container, Group, Paper, Title } from '@mantine/core'
+import { CrewMeterPanel } from './components/CrewMeterPanel'
+import { ShuffleOnHomeButton } from './components/ShuffleOnHomeButton'
 import { StatusBar } from './components/StatusBar'
 import { VersionBadge } from './components/VersionBadge'
 import { useGame } from './game/GameContext'
@@ -65,14 +67,22 @@ export default function App() {
         <AppShell.Header>
           <Group h="100%" px="md" justify="space-between">
             <Title order={3}>Little Jam Band Tour</Title>
-            <Badge size="lg" variant="light">
-              {PHASE_LABELS[state.phase]}
-            </Badge>
+            <Group gap="sm">
+              <ShuffleOnHomeButton />
+              <Badge size="lg" variant="light">
+                {PHASE_LABELS[state.phase]}
+              </Badge>
+            </Group>
           </Group>
         </AppShell.Header>
         <AppShell.Main>
           <Container size="sm">
-            {showShell && <StatusBar />}
+            {showShell && (
+              <>
+                <CrewMeterPanel />
+                <StatusBar />
+              </>
+            )}
             <Paper withBorder p="lg" radius="md">
               <PhaseRouter />
             </Paper>

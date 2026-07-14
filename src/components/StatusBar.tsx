@@ -1,4 +1,5 @@
 import { Badge, Group, Paper, Text } from '@mantine/core'
+import { activeCrew } from '../game/crew/meters'
 import { RESOURCE_LABELS } from '../game/resources'
 import { useGame } from '../game/GameContext'
 import type { Resources } from '../game/types'
@@ -20,7 +21,7 @@ export function StatusBar() {
     <Paper withBorder p="sm" mb="md">
       <Group justify="space-between" mb="xs">
         <Text fw={600}>
-          {state.crew.map((c) => c.name).join(', ')} ({state.crew.length})
+          {activeCrew(state.crew).length}/{state.crew.length} on the lot
         </Text>
         <Group gap="xs">
           {state.tour && (

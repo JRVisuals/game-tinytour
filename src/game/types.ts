@@ -1,3 +1,10 @@
+import type {
+  HealthLevel,
+  HungerLevel,
+  ThirstLevel,
+  VibeLevel,
+} from './crew/meters'
+
 /** Game phase ids — keep in sync with CONTEXT.MD */
 export type PhaseId =
   | 'title'
@@ -21,9 +28,12 @@ export type LocationId =
 export interface CrewMember {
   id: string
   name: string
-  health: number
-  hunger: number
-  thirst: number
+  hunger: HungerLevel
+  thirst: ThirstLevel
+  health: HealthLevel
+  vibe: VibeLevel
+  roughTurns: number
+  bailed: boolean
 }
 
 export interface SavedCrewMember {
@@ -37,10 +47,13 @@ export interface SavedCrew {
   members: SavedCrewMember[]
 }
 
+export type BetSlot = 'anywhere' | 'opener' | 'closer' | 'encore'
+
 export interface SetlistBet {
   songId: string
   songTitle: string
   amount: number
+  slot: BetSlot
 }
 
 export interface Resources {
@@ -113,6 +126,7 @@ export type TravelEventType =
 
 export interface TravelEvent {
   id: string
+  eventKey: string
   title: string
   body: string
   eventType: TravelEventType
@@ -129,6 +143,16 @@ export interface TravelState {
   atRoadside: boolean
 }
 
+export interface MarketPrices {
+  foodBuy: number
+  foodSell: number
+  beerBuy: number
+  beerSell: number
+  drugsBuy: number
+  drugsSell: number
+  ticketBuy?: number
+}
+
 export interface RunStats {
   venuesVisited: number
   songsHeard: number
@@ -137,11 +161,13 @@ export interface RunStats {
   substancesConsumed: number
   foodConsumed: number
   beerConsumed: number
+  showsMissed: number
 }
 
 export interface LifetimeStats extends RunStats {
   runsCompleted: number
   dayJobsTaken: number
+  shufflesHome: number
 }
 
 export interface GameState {
@@ -160,11 +186,11 @@ export interface GameState {
   runStats: RunStats
   lifetimeStats: LifetimeStats
   savedCrew: SavedCrew | null
-  /** After crew save, jump straight into a new run */
   startRunAfterCrewSave: boolean
   runRecapMessage: string
-  activeSetlistBet: SetlistBet | null
-  missedShow: boolean
+  activeSetlistBets: SetlistBet[]
+  currentMarket: MarketPrices | null
+  marketContext: string | null
 }
 
 export const PHASE_LABELS: Record<PhaseId, string> = {
@@ -188,4 +214,5 @@ export const STAT_LABELS: Record<keyof RunStats, string> = {
   substancesConsumed: 'Substances consumed',
   foodConsumed: 'Food consumed',
   beerConsumed: 'Beer consumed',
+  showsMissed: 'Shows missed',
 }
