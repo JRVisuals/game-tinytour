@@ -48,3 +48,28 @@ Bootstrap shell: Vite + React + TypeScript + Mantine. Phase screens stubbed; gen
 pnpm install
 pnpm dev
 ```
+
+## Next iteration (v0.2 — planned)
+
+### Title / main menu
+- Title screen with **version number** visible (from `package.json`)
+- Buttons:
+  - **CREW** — create or edit crew (persisted between runs)
+  - **STATS** — lifetime / run stats
+  - **GET THIS SHOW ON THE ROAD** — start a run
+
+### Stats to track
+- Venues visited, songs heard, bands seen, miles traveled
+- Substances, food, beer consumed (and similar consumables)
+
+### Travel (Oregon Trail energy)
+- Run **starts in home town** — not at first show
+- Travel is a **sequence**, not a single “arrive” button:
+  - multi-step legs with events, resource burn, choices
+  - first show is a destination you reach through travel
+
+### Open design questions (see chat / DECISIONS when locked)
+- Menu persistence: localStorage vs always fresh run?
+- Travel granularity: days vs hours vs abstract “legs”?
+- CREW required before start, or defaults OK?
+- Stats: per-run + lifetime, or lifetime only?
