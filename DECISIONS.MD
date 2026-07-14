@@ -2,19 +2,28 @@
 
 Dated, short ADRs. Newest first. One decision per bullet block.
 
+## 2026-07-14 — v0.1.0 persistence & end state
+
+- **localStorage** (`ljbt_v1`) for saved crew + lifetime stats — cookies too small for payload; same browser, no server.
+- **Per-run + lifetime stats** tracked; run recap on tour complete, **day job** screen instead of “death.”
+- Title menu: CREW / STATS / GET THIS SHOW ON THE ROAD; version in corner from `src/version.ts` + `package.json`.
+
+## 2026-07-14 — Travel (Oregon Trail legs)
+
+- Travel is **multi-leg** from home (or prior stop) to next venue — not instant arrive.
+- Random road events + player actions (rest, eat, hitch, push through, burn gas).
+- First show reached only after completing travel legs from **home city**.
+
+## 2026-07-14 — Setlist generator
+
+- Mash **Goose / Phish / Grateful Dead** fragments into unique song names (not straight catalog copies).
+
 ## 2026-07-14 — Bootstrap stack
 
 - **Vite + React + TypeScript + pnpm** to match sibling games (`game_dicebound`, etc.).
 - **Mantine** as UI kit: forms, selects, stacks, papers — fits screen/text/dropdown gameplay; art panels stay simple.
 - Project path: `/Users/jr/repo/game_little_jamband_tour` with own git repo.
 - Context living in root: `ANCHOR.MD`, `CONTEXT.MD`, `DECISIONS.MD` (lightweight, readable).
-
-## 2026-07-14 — MVP shell scope
-
-- Stub phase state machine: crew → tour start → travel → shakedown → location → show → post-show.
-- Placeholder generators for band name, tour stops, setlist + basic resource type defs.
-- No polished economy, save system, or full event corpus in bootstrap.
-- Crew of 1–5 is the long-term design; shell may start easy with solo flow first.
 
 ## 2026-07-14 — Content architecture
 

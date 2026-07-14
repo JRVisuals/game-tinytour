@@ -10,7 +10,7 @@ export function PostShowScreen() {
       <Text>{state.postShowRecap}</Text>
       {state.lastSetlist && (
         <>
-          <Text fw={500}>Setlist (generated)</Text>
+          <Text fw={500}>Setlist</Text>
           <List size="sm">
             {state.lastSetlist.songs.map((song) => (
               <List.Item key={song}>{song}</List.Item>
@@ -19,7 +19,7 @@ export function PostShowScreen() {
         </>
       )}
       <Text size="sm" c="dimmed">
-        Back toward shakedown energy — then hustle the next travel leg.
+        Shakedown again — hustle before the next travel leg.
       </Text>
       <Button onClick={prepNextLeg}>Prep next leg</Button>
     </Stack>

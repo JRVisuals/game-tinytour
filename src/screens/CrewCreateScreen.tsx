@@ -24,14 +24,17 @@ export function CrewCreateScreen() {
     setHomeCity,
     setFavoriteBandHint,
     setBudget,
-    setPhase,
+    saveCrew,
+    goToTitle,
   } = useGame()
 
   return (
     <Stack>
-      <Title order={2}>Create your crew</Title>
+      <Title order={2}>Crew</Title>
       <Text c="dimmed">
-        MVP: solo tour kid. Later: 1–5 crew mates sharing the road.
+        {state.startRunAfterCrewSave
+          ? 'Build your tour kid, then we roll from home.'
+          : 'Create or edit your saved crew. MVP: solo tour kid.'}
       </Text>
       <TextInput
         label="Your name"
@@ -56,7 +59,14 @@ export function CrewCreateScreen() {
         value={String(state.resources.cash)}
         onChange={(v) => v && setBudget(Number(v))}
       />
-      <Button onClick={() => setPhase('tour_start')}>Hit the road setup</Button>
+      <Button onClick={saveCrew}>
+        {state.startRunAfterCrewSave ? 'Save & hit the road' : 'Save crew'}
+      </Button>
+      {!state.startRunAfterCrewSave && (
+        <Button variant="default" onClick={goToTitle}>
+          Back to title
+        </Button>
+      )}
     </Stack>
   )
 }
