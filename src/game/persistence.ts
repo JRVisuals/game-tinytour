@@ -21,6 +21,24 @@ export function emptyLifetimeStats(): LifetimeStats {
   }
 }
 
+/** Migrate legacy single-name crew saves */
+function normalizeSavedCrew(raw: unknown): SavedCrew | null {
+  if (!raw || typeof raw !== 'object') return null
+  const o = raw as Record<string, unknown>
+  if (Array.isArray(o.members)) {
+    return raw as SavedCrew
+  }
+  if (typeof o.name === 'string') {
+    return {
+      homeCity: (o.homeCity as string) ?? 'Burlington, VT',
+      favoriteBandHint: (o.favoriteBandHint as string) ?? '',
+      budget: (o.budget as number) ?? 200,
+      members: [{ name: o.name }],
+    }
+  }
+  return null
+}
+
 export function loadPersisted(): PersistedData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -29,7 +47,7 @@ export function loadPersisted(): PersistedData {
     }
     const parsed = JSON.parse(raw) as PersistedData
     return {
-      savedCrew: parsed.savedCrew ?? null,
+      savedCrew: normalizeSavedCrew(parsed.savedCrew),
       lifetimeStats: { ...emptyLifetimeStats(), ...parsed.lifetimeStats },
     }
   } catch {

@@ -1,15 +1,6 @@
 import { Button, Select, Stack, Text, TextInput, Title } from '@mantine/core'
+import { CITIES } from '../game/cities'
 import { useGame } from '../game/GameContext'
-
-const CITIES = [
-  'Burlington, VT',
-  'Portland, ME',
-  'Asbury Park, NJ',
-  'Asheville, NC',
-  'Boulder, CO',
-  'Portland, OR',
-  'Austin, TX',
-]
 
 const BUDGETS = [
   { value: '100', label: '$100 — couch start' },
@@ -17,10 +8,17 @@ const BUDGETS = [
   { value: '400', label: '$400 — trust-fund weekend' },
 ]
 
+const CREW_SIZES = [
+  { value: '1', label: '1 — solo mission' },
+  { value: '2', label: '2 — duo' },
+  { value: '3', label: '3 — small crew' },
+]
+
 export function CrewCreateScreen() {
   const {
     state,
-    setCrewName,
+    setCrewSize,
+    setCrewMemberName,
     setHomeCity,
     setFavoriteBandHint,
     setBudget,
@@ -33,17 +31,26 @@ export function CrewCreateScreen() {
       <Title order={2}>Crew</Title>
       <Text c="dimmed">
         {state.startRunAfterCrewSave
-          ? 'Build your tour kid, then we roll from home.'
-          : 'Create or edit your saved crew. MVP: solo tour kid.'}
+          ? 'Build your crew — then we roll from home.'
+          : 'Create or edit your saved crew (1–3 tour kids).'}
       </Text>
-      <TextInput
-        label="Your name"
-        value={state.crew[0]?.name ?? ''}
-        onChange={(e) => setCrewName(e.currentTarget.value)}
+      <Select
+        label="Crew size"
+        data={CREW_SIZES}
+        value={String(state.crew.length)}
+        onChange={(v) => v && setCrewSize(Number(v))}
       />
+      {state.crew.map((member, i) => (
+        <TextInput
+          key={member.id}
+          label={i === 0 ? 'Your name' : `Crew member ${i + 1}`}
+          value={member.name}
+          onChange={(e) => setCrewMemberName(i, e.currentTarget.value)}
+        />
+      ))}
       <Select
         label="Home city"
-        data={CITIES}
+        data={[...CITIES]}
         value={state.homeCity}
         onChange={(v) => v && setHomeCity(v)}
       />

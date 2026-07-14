@@ -1,3 +1,3 @@
 export { generateBand } from './band'
 export { generateTour } from './tour'
-export { generateSetlist } from './setlist'
+export { generateBandCatalog, generateShowSetlist, songsByTier } from './songs'

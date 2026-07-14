@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { generateBand, generateSetlist, generateTour } from './generators'
+import { generateBand, generateTour } from './generators'
 import {
   loadPersisted,
   savePersisted,
@@ -23,6 +23,7 @@ import type {
   PhaseId,
   Resources,
   SavedCrew,
+  SetlistBet,
 } from './types'
 
 interface GameContextValue {
@@ -32,14 +33,17 @@ interface GameContextValue {
   goToStats: () => void
   requestStartRun: () => void
   saveCrew: () => void
-  setCrewName: (name: string) => void
+  setCrewSize: (size: number) => void
+  setCrewMemberName: (index: number, name: string) => void
   setHomeCity: (city: string) => void
   setFavoriteBandHint: (hint: string) => void
   setBudget: (budget: number) => void
   travelAction: (action: TravelAction) => void
   resolveTravelEvent: (choiceId?: string) => void
   advanceTravelLeg: () => void
-  arriveAtShakedown: () => void
+  visitRoadside: () => void
+  leaveRoadside: () => void
+  placeSetlistBet: (songId: string, songTitle: string, amount: number) => void
   goToLocation: (location: LocationId) => void
   returnToShakedown: () => void
   enterShow: () => void
@@ -55,19 +59,30 @@ export type TravelAction =
   | 'hitch'
   | 'push_through'
   | 'burn_gas'
+  | 'roadside_food'
+  | 'roadside_beer'
+  | 'roadside_sell_drugs'
 
 const GameContext = createContext<GameContextValue | null>(null)
 
 function crewFromSaved(saved: SavedCrew) {
-  return [
-    {
-      id: 'p1',
-      name: saved.name,
-      health: 100,
-      hunger: 20,
-      thirst: 20,
-    },
-  ]
+  return saved.members.map((m, i) => ({
+    id: `p${i + 1}`,
+    name: m.name,
+    health: 100,
+    hunger: 20,
+    thirst: 20,
+  }))
+}
+
+function defaultCrew(size = 1) {
+  return Array.from({ length: size }, (_, i) => ({
+    id: `p${i + 1}`,
+    name: i === 0 ? 'Tour Kid' : `Crew ${i + 1}`,
+    health: 100,
+    hunger: 20,
+    thirst: 20,
+  }))
 }
 
 function createInitialState(): GameState {
@@ -76,7 +91,7 @@ function createInitialState(): GameState {
     phase: 'title',
     crew: persisted.savedCrew
       ? crewFromSaved(persisted.savedCrew)
-      : [{ id: 'p1', name: 'Tour Kid', health: 100, hunger: 20, thirst: 20 }],
+      : defaultCrew(1),
     homeCity: persisted.savedCrew?.homeCity ?? 'Burlington, VT',
     favoriteBandHint: persisted.savedCrew?.favoriteBandHint ?? '',
     resources: createStartingResources(persisted.savedCrew?.budget ?? 200),
@@ -92,11 +107,24 @@ function createInitialState(): GameState {
     savedCrew: persisted.savedCrew,
     startRunAfterCrewSave: false,
     runRecapMessage: '',
+    activeSetlistBet: null,
+    missedShow: false,
   }
 }
 
 function persistCrewAndStats(savedCrew: SavedCrew | null, lifetimeStats: LifetimeStats) {
   savePersisted({ savedCrew, lifetimeStats })
+}
+
+function buildTravel(origin: string, destination: string, seed: number) {
+  return {
+    origin,
+    destination,
+    legs: generateTravelLegs(seed, origin, destination),
+    currentLegIndex: 0,
+    pendingEvent: null,
+    atRoadside: false,
+  }
 }
 
 export function GameProvider({ children }: { children: ReactNode }) {
@@ -138,18 +166,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const tour = generateTour(band, seed + 3, 5)
     const stop = tour.stops[0]!
     const origin = base.homeCity
-    const legs = generateTravelLegs(seed + 5, origin, stop.city, 4)
     return {
       ...base,
       rngSeed: seed,
       tour,
-      travel: {
-        origin,
-        destination: stop.city,
-        legs,
-        currentLegIndex: 0,
-        pendingEvent: null,
-      },
+      travel: buildTravel(origin, stop.city, seed + 5),
       resources: createStartingResources(base.savedCrew?.budget ?? base.resources.cash),
       runStats: emptyRunStats(),
       phase: 'travel',
@@ -157,6 +178,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       lastSetlist: null,
       postShowRecap: '',
       runRecapMessage: '',
+      activeSetlistBet: null,
+      missedShow: false,
     }
   }, [])
 
@@ -177,27 +200,39 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const saveCrew = useCallback(() => {
     setState((s) => {
       const saved: SavedCrew = {
-        name: s.crew[0]?.name ?? 'Tour Kid',
         homeCity: s.homeCity,
         favoriteBandHint: s.favoriteBandHint,
         budget: s.resources.cash,
+        members: s.crew.map((c) => ({ name: c.name })),
       }
-      const next = {
-        ...s,
-        savedCrew: saved,
-        startRunAfterCrewSave: false,
-      }
-      if (s.startRunAfterCrewSave) {
-        return beginRun(next)
-      }
+      const next = { ...s, savedCrew: saved, startRunAfterCrewSave: false }
+      if (s.startRunAfterCrewSave) return beginRun(next)
       return { ...next, phase: 'title' as PhaseId }
     })
   }, [beginRun])
 
-  const setCrewName = useCallback((name: string) => {
+  const setCrewSize = useCallback((size: number) => {
+    const n = Math.min(3, Math.max(1, size))
+    setState((s) => {
+      const crew = [...s.crew]
+      while (crew.length < n) {
+        crew.push({
+          id: `p${crew.length + 1}`,
+          name: `Crew ${crew.length + 1}`,
+          health: 100,
+          hunger: 20,
+          thirst: 20,
+        })
+      }
+      while (crew.length > n) crew.pop()
+      return { ...s, crew }
+    })
+  }, [])
+
+  const setCrewMemberName = useCallback((index: number, name: string) => {
     setState((s) => ({
       ...s,
-      crew: s.crew.map((c, i) => (i === 0 ? { ...c, name } : c)),
+      crew: s.crew.map((c, i) => (i === index ? { ...c, name } : c)),
     }))
   }, [])
 
@@ -289,6 +324,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
             milesTraveled: runStats.milesTraveled + 90,
           })
           break
+        case 'roadside_food':
+          if (resources.cash < 6) return s
+          resources = { ...resources, cash: resources.cash - 6, food: resources.food + 2 }
+          runStats = patchRunStats(runStats, { foodConsumed: runStats.foodConsumed + 1 })
+          break
+        case 'roadside_beer':
+          if (resources.cash < 5) return s
+          resources = { ...resources, cash: resources.cash - 5, beer: resources.beer + 2 }
+          runStats = patchRunStats(runStats, { beerConsumed: runStats.beerConsumed + 1 })
+          break
+        case 'roadside_sell_drugs':
+          if (resources.drugs <= 0) return s
+          resources = { ...resources, drugs: resources.drugs - 1, cash: resources.cash + 35 }
+          break
       }
 
       const broke = crew.some((c) => c.health <= 0 || c.hunger >= 100 || c.thirst >= 100)
@@ -311,55 +360,92 @@ export function GameProvider({ children }: { children: ReactNode }) {
       let runStats = { ...s.runStats }
       let crew = s.crew.map((c) => ({ ...c }))
       let rngSeed = s.rngSeed + 3
-      let forceDayJob = false
+      let activeSetlistBet: SetlistBet | null = s.activeSetlistBet
+      let missedShow = s.missedShow
 
-      if (event.title === 'Miracle ticket') {
-        resources = { ...resources, tickets: resources.tickets + 1 }
-      } else if (event.title === 'Flat tire') {
-        resources = {
-          ...resources,
-          cash: Math.max(0, resources.cash - 35),
-          gas: resources.hasVehicle ? Math.max(0, resources.gas - 1) : resources.gas,
-        }
-      } else if (event.title === 'Robbed') {
-        resources = {
-          ...resources,
-          cash: Math.max(0, resources.cash - 50),
-          drugs: Math.max(0, resources.drugs - 1),
-        }
-      } else if (event.title === 'Hitchhiker with intel') {
-        if (resources.cash >= 6 && resources.beer >= 1) {
-          resources = { ...resources, cash: resources.cash - 6, beer: resources.beer - 1 }
-        }
-      } else if (event.title === 'Wook flu') {
-        crew = crew.map((c) => ({ ...c, health: c.health - 40 }))
-        forceDayJob = crew.some((c) => c.health <= 0)
-      } else if (event.title === 'Rest stop bathroom find') {
-        if (choiceId === 'try_it') {
-          resources = { ...resources, drugs: resources.drugs + 1 }
-          runStats = patchRunStats(runStats, {
-            substancesConsumed: runStats.substancesConsumed + 1,
-          })
-          if (rngSeed % 4 === 0) {
-            crew = crew.map((c) => ({ ...c, health: c.health - 30 }))
-            forceDayJob = crew.some((c) => c.health <= 0)
+      switch (event.eventType) {
+        case 'pulled_over': {
+          const lying = choiceId === 'lie'
+          const hasDrugs = resources.drugs > 0
+          const roll = Math.abs(rngSeed) % 10
+          if (lying) {
+            if (roll < 4) {
+              resources = { ...resources, cash: Math.max(0, resources.cash - 75) }
+              if (hasDrugs) resources = { ...resources, drugs: 0 }
+              if (roll < 2) {
+                return endRun(
+                  { ...s, resources, runStats, crew, rngSeed },
+                  'day_job',
+                  'Busted on the highway. Court overlaps showtime. Welcome to the day job.',
+                )
+              }
+            }
+          } else if (hasDrugs && roll < 5) {
+            resources = { ...resources, drugs: 0, cash: Math.max(0, resources.cash - 50) }
+          } else if (roll < 3) {
+            resources = { ...resources, cash: Math.max(0, resources.cash - 25) }
           }
+          break
         }
-      } else if (event.title === 'Lot rumor') {
-        if (choiceId === 'bet_yes' && resources.cash >= 20) {
-          resources = {
-            ...resources,
-            cash: resources.cash + (rngSeed % 2 === 0 ? 40 : -20),
+        case 'lot_rumor': {
+          if (choiceId === 'bet_yes' && event.rumorSongId && resources.cash >= 20) {
+            const song = s.tour?.catalog.songs.find((x) => x.id === event.rumorSongId)
+            if (song) {
+              resources = { ...resources, cash: resources.cash - 20 }
+              activeSetlistBet = {
+                songId: song.id,
+                songTitle: song.title,
+                amount: 20,
+              }
+            }
           }
+          break
         }
-      }
-
-      if (forceDayJob) {
-        return endRun(
-          { ...s, resources, runStats, crew, rngSeed },
-          'day_job',
-          'Wook flu got you. HR at the day job says “we need you Tuesday.”',
-        )
+        case 'bathroom_find':
+          if (choiceId === 'try_it') {
+            resources = { ...resources, drugs: resources.drugs + 1 }
+            runStats = patchRunStats(runStats, {
+              substancesConsumed: runStats.substancesConsumed + 1,
+            })
+            if (rngSeed % 4 === 0) {
+              return endRun(
+                { ...s, resources, runStats, crew, rngSeed },
+                'day_job',
+                'That wasn\'t what you thought it was. HR at the day job is surprisingly sympathetic.',
+              )
+            }
+          }
+          break
+        case 'solo':
+          if (event.title === 'Miracle ticket') {
+            resources = { ...resources, tickets: resources.tickets + 1 }
+          } else if (event.title === 'Flat tire') {
+            resources = {
+              ...resources,
+              cash: Math.max(0, resources.cash - 35),
+              gas: resources.hasVehicle ? Math.max(0, resources.gas - 1) : resources.gas,
+            }
+          } else if (event.title === 'Robbed') {
+            resources = {
+              ...resources,
+              cash: Math.max(0, resources.cash - 50),
+              drugs: Math.max(0, resources.drugs - 1),
+            }
+          } else if (event.title === 'Hitchhiker with intel') {
+            if (resources.cash >= 6 && resources.beer >= 1) {
+              resources = { ...resources, cash: resources.cash - 6, beer: resources.beer - 1 }
+            }
+          } else if (event.title === 'Wook flu') {
+            crew = crew.map((c) => ({ ...c, health: c.health - 40 }))
+            if (crew.some((c) => c.health <= 0)) {
+              return endRun(
+                { ...s, resources, runStats, crew, rngSeed },
+                'day_job',
+                'Wook flu got you. HR at the day job says “we need you Tuesday.”',
+              )
+            }
+          }
+          break
       }
 
       return {
@@ -368,6 +454,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         runStats,
         crew,
         rngSeed,
+        activeSetlistBet,
+        missedShow,
         travel: s.travel ? { ...s.travel, pendingEvent: null } : null,
       }
     },
@@ -388,14 +476,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const advanceTravelLeg = useCallback(() => {
     setState((s) => {
-      if (!s.travel) return s
-      if (s.travel.pendingEvent) return s
+      if (!s.travel || s.travel.pendingEvent || s.travel.atRoadside) return s
 
       const leg = s.travel.legs[s.travel.currentLegIndex]
       if (!leg) return s
 
       const rngSeed = s.rngSeed + 9
-      const event = maybeRollTravelEvent(rngSeed)
+      const event = maybeRollTravelEvent(rngSeed, s.tour?.catalog)
       if (event) {
         return {
           ...s,
@@ -425,7 +512,45 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ...s,
         rngSeed,
         runStats,
-        travel: { ...s.travel, currentLegIndex: nextIndex, pendingEvent: null },
+        travel: {
+          ...s.travel,
+          currentLegIndex: nextIndex,
+          pendingEvent: null,
+          atRoadside: false,
+        },
+      }
+    })
+  }, [])
+
+  const visitRoadside = useCallback(() => {
+    setState((s) => {
+      if (!s.travel) return s
+      const leg = s.travel.legs[s.travel.currentLegIndex]
+      if (!leg?.roadside) return s
+      return {
+        ...s,
+        travel: { ...s.travel, atRoadside: true },
+      }
+    })
+  }, [])
+
+  const leaveRoadside = useCallback(() => {
+    setState((s) => {
+      if (!s.travel) return s
+      return {
+        ...s,
+        travel: { ...s.travel, atRoadside: false },
+      }
+    })
+  }, [])
+
+  const placeSetlistBet = useCallback((songId: string, songTitle: string, amount: number) => {
+    setState((s) => {
+      if (s.resources.cash < amount || s.activeSetlistBet) return s
+      return {
+        ...s,
+        resources: { ...s.resources, cash: s.resources.cash - amount },
+        activeSetlistBet: { songId, songTitle, amount },
       }
     })
   }, [])
@@ -434,32 +559,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (!s.tour) return s
     const stop = s.tour.stops[stopIndex]
     if (!stop) return s
-    const prevCity =
-      stopIndex === 0 ? s.homeCity : s.tour.stops[stopIndex - 1]!.city
+    const prevCity = stopIndex === 0 ? s.homeCity : s.tour.stops[stopIndex - 1]!.city
     const seed = s.rngSeed + stopIndex * 31
-    const legs = generateTravelLegs(seed, prevCity, stop.city, 4)
     return {
       ...s,
       rngSeed: seed,
       phase: 'travel',
-      travel: {
-        origin: prevCity,
-        destination: stop.city,
-        legs,
-        currentLegIndex: 0,
-        pendingEvent: null,
-      },
+      activeSetlistBet: null,
+      travel: buildTravel(prevCity, stop.city, seed),
     }
-  }, [])
-
-  const arriveAtShakedown = useCallback(() => {
-    setState((s) => ({
-      ...s,
-      phase: 'shakedown',
-      currentLocation: 'shakedown',
-      turnsUntilShow: 4,
-      travel: null,
-    }))
   }, [])
 
   const goToLocation = useCallback((location: LocationId) => {
@@ -485,24 +593,44 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const finishShow = useCallback(() => {
     setState((s) => {
-      const seed = s.rngSeed + 41
-      const setlist = generateSetlist(seed)
-      const stop = s.tour?.stops[s.tour.currentStopIndex]
+      if (!s.tour) return s
+      const stop = s.tour.stops[s.tour.currentStopIndex]
+      if (!stop) return s
+      const setlist = stop.plannedSetlist
       const ticketsOk = s.resources.tickets >= s.crew.length
-      const recap = ticketsOk
-        ? `Made it into ${stop?.venue ?? 'the venue'}. Crew intact. The floor was soup.`
+      let recap = ticketsOk
+        ? `Made it into ${stop.venue}. Crew intact. The floor was soup.`
         : `Chaos at the gate. Not everyone got in clean — the night still happened around you.`
+
+      let resources = { ...s.resources }
+      let activeSetlistBet = s.activeSetlistBet
+      if (activeSetlistBet) {
+        const hit = setlist.songIds?.includes(activeSetlistBet.songId)
+        if (hit) {
+          resources = {
+            ...resources,
+            cash: resources.cash + activeSetlistBet.amount * 2,
+          }
+          recap += ` Setlist bet on “${activeSetlistBet.songTitle}” HIT.`
+        } else {
+          recap += ` Setlist bet on “${activeSetlistBet.songTitle}” whiffed.`
+        }
+        activeSetlistBet = null
+      }
+
       const runStats = patchRunStats(s.runStats, {
         venuesVisited: s.runStats.venuesVisited + 1,
         songsHeard: s.runStats.songsHeard + setlist.songs.length,
         bandsSeen: s.runStats.bandsSeen + 1,
       })
+
       return {
         ...s,
-        rngSeed: seed,
+        resources,
         lastSetlist: setlist,
         postShowRecap: recap,
         runStats,
+        activeSetlistBet,
         phase: 'post_show',
       }
     })
@@ -542,6 +670,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       lastSetlist: null,
       postShowRecap: '',
       runRecapMessage: '',
+      activeSetlistBet: null,
+      missedShow: false,
     }))
   }, [])
 
@@ -560,14 +690,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
       goToStats,
       requestStartRun,
       saveCrew,
-      setCrewName,
+      setCrewSize,
+      setCrewMemberName,
       setHomeCity,
       setFavoriteBandHint,
       setBudget,
       travelAction,
       resolveTravelEvent,
       advanceTravelLeg,
-      arriveAtShakedown,
+      visitRoadside,
+      leaveRoadside,
+      placeSetlistBet,
       goToLocation,
       returnToShakedown,
       enterShow,
@@ -583,14 +716,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
       goToStats,
       requestStartRun,
       saveCrew,
-      setCrewName,
+      setCrewSize,
+      setCrewMemberName,
       setHomeCity,
       setFavoriteBandHint,
       setBudget,
       travelAction,
       resolveTravelEvent,
       advanceTravelLeg,
-      arriveAtShakedown,
+      visitRoadside,
+      leaveRoadside,
+      placeSetlistBet,
       goToLocation,
       returnToShakedown,
       enterShow,

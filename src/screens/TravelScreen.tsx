@@ -1,4 +1,8 @@
 import { Button, Group, Progress, Stack, Text, Title } from '@mantine/core'
+import {
+  ROADSIDE_COPY,
+  ROADSIDE_LABELS,
+} from '../game/travel/legs'
 import { useGame } from '../game/GameContext'
 
 export function TravelScreen() {
@@ -7,6 +11,8 @@ export function TravelScreen() {
     travelAction,
     resolveTravelEvent,
     advanceTravelLeg,
+    visitRoadside,
+    leaveRoadside,
   } = useGame()
 
   const tour = state.tour
@@ -28,6 +34,48 @@ export function TravelScreen() {
       ? ((travel.currentLegIndex + 1) / travel.legs.length) * 100
       : 0
   const event = travel.pendingEvent
+  const roadside = leg?.roadside
+
+  if (travel.atRoadside && roadside) {
+    return (
+      <Stack>
+        <Title order={2}>{ROADSIDE_LABELS[roadside]}</Title>
+        <Text size="sm">{ROADSIDE_COPY[roadside]}</Text>
+        <Text size="sm" c="dimmed">
+          Roadside stops are different from shakedown — quick trades, no venue energy.
+        </Text>
+        <Group>
+          <Button
+            size="xs"
+            variant="light"
+            onClick={() => travelAction('roadside_food')}
+            disabled={state.resources.cash < 6}
+          >
+            Food ($6, +2)
+          </Button>
+          <Button
+            size="xs"
+            variant="light"
+            onClick={() => travelAction('roadside_beer')}
+            disabled={state.resources.cash < 5}
+          >
+            Beer ($5, +2)
+          </Button>
+          <Button
+            size="xs"
+            variant="light"
+            onClick={() => travelAction('roadside_sell_drugs')}
+            disabled={state.resources.drugs <= 0}
+          >
+            Sell substances (+$35)
+          </Button>
+        </Group>
+        <Button variant="default" onClick={leaveRoadside}>
+          Back on the road
+        </Button>
+      </Stack>
+    )
+  }
 
   return (
     <Stack>
@@ -37,7 +85,8 @@ export function TravelScreen() {
         <strong>{stop.city}</strong> ({stop.venue})
       </Text>
       <Text size="sm">
-        {travel.origin} → {travel.destination}
+        {travel.origin} → {travel.destination} · {travel.legs.length} leg
+        {travel.legs.length === 1 ? '' : 's'}
       </Text>
       <Progress value={progress} size="sm" color="teal" />
       {leg && !event && (
@@ -48,6 +97,11 @@ export function TravelScreen() {
           <Text size="sm" c="dimmed">
             {leg.flavor} (~{leg.miles} mi)
           </Text>
+          {roadside && (
+            <Button size="xs" variant="light" onClick={visitRoadside}>
+              Pull over — {ROADSIDE_LABELS[roadside]}
+            </Button>
+          )}
         </>
       )}
       {event && (

@@ -2,6 +2,14 @@
 
 Dated, short ADRs. Newest first. One decision per bullet block.
 
+## 2026-07-14 — v0.1.1 travel, catalog, crew
+
+- **1–4 legs** from pseudo-distance between cities + jitter.
+- **Roadside stops** per leg (truck stop / rest area / farmers market) — trade different from shakedown.
+- **Pulled over** event: truth vs lie → fine / lose drugs / busted (day job).
+- **Song catalog**: ~20 songs per band (hot / deep cut / bust out); 6-song planned setlist per stop; betting at shakedown + lot rumor on road.
+- **Crew 1–3** saved in localStorage.
+
 ## 2026-07-14 — v0.1.0 persistence & end state
 
 - **localStorage** (`ljbt_v1`) for saved crew + lifetime stats — cookies too small for payload; same browser, no server.

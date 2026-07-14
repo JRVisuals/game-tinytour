@@ -19,7 +19,9 @@ export function StatusBar() {
   return (
     <Paper withBorder p="sm" mb="md">
       <Group justify="space-between" mb="xs">
-        <Text fw={600}>{state.crew[0]?.name ?? 'Crew'}</Text>
+        <Text fw={600}>
+          {state.crew.map((c) => c.name).join(', ')} ({state.crew.length})
+        </Text>
         <Group gap="xs">
           {state.tour && (
             <Badge variant="light">

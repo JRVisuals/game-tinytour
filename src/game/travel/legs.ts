@@ -1,4 +1,5 @@
-import type { TravelLeg } from '../types'
+import { estimateMiles, legCountForDistance } from '../cities'
+import type { RoadsideType, TravelLeg } from '../types'
 
 const LEG_LABELS = [
   'County highway',
@@ -21,25 +22,47 @@ const LEG_FLAVORS = [
   'Rain on the windshield. Wipers on the one setting that never quite works.',
 ]
 
+const ROADSIDE_TYPES: RoadsideType[] = ['truck_stop', 'rest_area', 'farmers_market']
+
 function pick<T>(list: T[], n: number): T {
   return list[Math.abs(Math.floor(n)) % list.length]!
 }
 
-/** Generate abstract Oregon Trail-style legs between two cities */
+/** Generate 1–4 legs based on pseudo-distance between cities */
 export function generateTravelLegs(
   seed: number,
   origin: string,
   destination: string,
-  count = 4,
 ): TravelLeg[] {
+  const miles = estimateMiles(origin, destination)
+  const count = legCountForDistance(miles, seed)
+  const milesPerLeg = Math.floor(miles / count)
   const legs: TravelLeg[] = []
+
   for (let i = 0; i < count; i++) {
+    const hasRoadside = i > 0 && Math.abs(seed + i * 5) % 3 !== 0
     legs.push({
       id: `leg-${seed}-${i}`,
       label: pick(LEG_LABELS, seed + i * 7),
-      miles: 80 + (Math.abs(seed + i * 13) % 120),
+      miles: milesPerLeg + (Math.abs(seed + i * 13) % 40),
       flavor: `${pick(LEG_FLAVORS, seed + i * 11)} (${origin} → ${destination})`,
+      roadside: hasRoadside ? pick(ROADSIDE_TYPES, seed + i * 17) : null,
     })
   }
   return legs
+}
+
+export const ROADSIDE_LABELS: Record<RoadsideType, string> = {
+  truck_stop: 'Truck stop',
+  rest_area: 'Rest area',
+  farmers_market: 'Roadside farmers market',
+}
+
+export const ROADSIDE_COPY: Record<RoadsideType, string> = {
+  truck_stop:
+    'Neon beer signs and questionable breakfast burritos. Lot kids trade stickers by the diesel pumps.',
+  rest_area:
+    'Picnic tables, vending machines, and the eternal smell of sunscreen on asphalt.',
+  farmers_market:
+    'Local honey, kettle corn, and a guy selling tie-dye out of a Subaru.',
 }

@@ -4,7 +4,11 @@ Living snapshot of how the game works right now. Prefer short bullets. Update wh
 
 ## Current product shape
 
-**v0.1.0** — Title menu, saved crew (localStorage), lifetime + per-run stats, leg-based travel with road events/actions, shakedown loop, mashup setlists. Economy still stubby.
+**v0.1.1** — Distance-based travel legs (1–4), roadside stops, pulled-over event, band song catalog (20 songs, hot/deep/bust tiers), setlist betting, crew 1–3.
+
+## Copy tone
+
+Dark comedy. User may author event/location copy over time — stub text in code for now.
 
 ## Phases / screens
 

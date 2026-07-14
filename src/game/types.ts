@@ -26,11 +26,21 @@ export interface CrewMember {
   thirst: number
 }
 
-export interface SavedCrew {
+export interface SavedCrewMember {
   name: string
+}
+
+export interface SavedCrew {
   homeCity: string
   favoriteBandHint: string
   budget: number
+  members: SavedCrewMember[]
+}
+
+export interface SetlistBet {
+  songId: string
+  songTitle: string
+  amount: number
 }
 
 export interface Resources {
@@ -48,27 +58,46 @@ export interface Band {
   homeScene: string
 }
 
+export type SongTier = 'hot' | 'deep_cut' | 'bust_out'
+
+export interface BandSong {
+  id: string
+  title: string
+  tier: SongTier
+}
+
+export interface BandCatalog {
+  songs: BandSong[]
+}
+
 export interface TourStop {
   city: string
   venue: string
   dayLabel: string
+  plannedSetlist: Setlist
 }
 
 export interface Tour {
   band: Band
+  catalog: BandCatalog
   stops: TourStop[]
   currentStopIndex: number
+  usedBustOuts: string[]
 }
 
 export interface Setlist {
   songs: string[]
+  songIds?: string[]
 }
+
+export type RoadsideType = 'truck_stop' | 'rest_area' | 'farmers_market'
 
 export interface TravelLeg {
   id: string
   label: string
   miles: number
   flavor: string
+  roadside: RoadsideType | null
 }
 
 export interface TravelEventChoice {
@@ -76,11 +105,19 @@ export interface TravelEventChoice {
   label: string
 }
 
+export type TravelEventType =
+  | 'pulled_over'
+  | 'lot_rumor'
+  | 'bathroom_find'
+  | 'solo'
+
 export interface TravelEvent {
   id: string
   title: string
   body: string
+  eventType: TravelEventType
   choices?: TravelEventChoice[]
+  rumorSongId?: string
 }
 
 export interface TravelState {
@@ -89,6 +126,7 @@ export interface TravelState {
   legs: TravelLeg[]
   currentLegIndex: number
   pendingEvent: TravelEvent | null
+  atRoadside: boolean
 }
 
 export interface RunStats {
@@ -125,6 +163,8 @@ export interface GameState {
   /** After crew save, jump straight into a new run */
   startRunAfterCrewSave: boolean
   runRecapMessage: string
+  activeSetlistBet: SetlistBet | null
+  missedShow: boolean
 }
 
 export const PHASE_LABELS: Record<PhaseId, string> = {

@@ -1,4 +1,5 @@
 import { Button, Group, Stack, Text, Title } from '@mantine/core'
+import { SongCatalogPanel } from '../components/SongCatalogPanel'
 import { useGame } from '../game/GameContext'
 import type { LocationId } from '../game/types'
 
@@ -58,6 +59,7 @@ export function ShakedownScreen() {
       <Button color="grape" onClick={enterShow}>
         {state.turnsUntilShow > 0 ? 'Head to show early' : 'Showtime'}
       </Button>
+      <SongCatalogPanel />
     </Stack>
   )
 }
