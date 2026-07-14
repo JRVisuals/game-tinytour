@@ -1,10 +1,3 @@
-import type {
-  HealthLevel,
-  HungerLevel,
-  ThirstLevel,
-  VibeLevel,
-} from './crew/meters'
-
 /** Game phase ids — keep in sync with CONTEXT.MD */
 export type PhaseId =
   | 'title'
@@ -15,6 +8,7 @@ export type PhaseId =
   | 'location'
   | 'show'
   | 'post_show'
+  | 'post_show_shakedown'
   | 'run_recap'
   | 'day_job'
 
@@ -28,22 +22,52 @@ export type LocationId =
 export interface CrewMember {
   id: string
   name: string
-  hunger: HungerLevel
-  thirst: ThirstLevel
-  health: HealthLevel
-  vibe: VibeLevel
+  hunger: number
+  thirst: number
+  health: number
+  vibe: number
+  stoned: number
   roughTurns: number
   bailed: boolean
 }
 
+export type StarterTier = 100 | 200 | 400
+
+export type MemberKitId = 'flat' | 'ticket_fairy' | 'driver' | 'stash' | 'cooler' | 'hustler'
+
 export interface SavedCrewMember {
   name: string
+  /** Extra members only — leader always gets flat leader kit */
+  kit?: MemberKitId
+}
+
+export interface CrewCareerStats {
+  venuesVisited: number
+  songsHeard: number
+  bandsSeen: number
+  milesTraveled: number
+  substancesConsumed: number
+  foodConsumed: number
+  beerConsumed: number
+  showsMissed: number
+  runsCompleted: number
+  toursCompleted: number
+  dayJobsTaken: number
+  shufflesHome: number
+  betsWon: number
+  bestVenuesRun: number
+  bestSongsRun: number
 }
 
 export interface SavedCrew {
   homeCity: string
   favoriteBandHint: string
-  budget: number
+  bank: number
+  starterTier: StarterTier
+  rep: number
+  bestRep: number
+  career: CrewCareerStats
+  hasVehicle: boolean
   members: SavedCrewMember[]
 }
 
@@ -103,7 +127,7 @@ export interface Setlist {
   songIds?: string[]
 }
 
-export type RoadsideType = 'truck_stop' | 'rest_area' | 'farmers_market'
+export type RoadsideType = 'truck_stop' | 'rest_area' | 'farmers_market' | 'supermarket'
 
 export interface TravelLeg {
   id: string
@@ -122,6 +146,8 @@ export type TravelEventType =
   | 'pulled_over'
   | 'lot_rumor'
   | 'bathroom_find'
+  | 'hitchhiker_intel'
+  | 'encore_intel'
   | 'solo'
 
 export interface TravelEvent {
@@ -131,7 +157,9 @@ export interface TravelEvent {
   body: string
   eventType: TravelEventType
   choices?: TravelEventChoice[]
-  rumorSongId?: string
+  /** Intel tip — accuracy set per event in balance JSON */
+  intelTipSongId?: string
+  intelSlot?: BetSlot
 }
 
 export interface TravelState {
@@ -141,6 +169,21 @@ export interface TravelState {
   currentLegIndex: number
   pendingEvent: TravelEvent | null
   atRoadside: boolean
+  /** Shown on road panel after resolving an event */
+  lastEventResult: string | null
+}
+
+export interface MarketStock {
+  food: number
+  beer: number
+  drugs: number
+  tickets: number
+}
+
+export interface MarketSnapshot {
+  prices: MarketPrices
+  stock: MarketStock
+  flavor: string
 }
 
 export interface MarketPrices {
@@ -166,8 +209,10 @@ export interface RunStats {
 
 export interface LifetimeStats extends RunStats {
   runsCompleted: number
+  toursCompleted: number
   dayJobsTaken: number
   shufflesHome: number
+  betsWon: number
 }
 
 export interface GameState {
@@ -182,15 +227,33 @@ export interface GameState {
   turnsUntilShow: number
   lastSetlist: Setlist | null
   postShowRecap: string
+  /** Random lot moment after the show — title + body from shakedown-events.json */
+  postShowShakedownEvent: { id: string; title: string; body: string } | null
+  /** Lot hustle when you skip the show */
+  missShowHustleEvent: { id: string; title: string; body: string } | null
   rngSeed: number
   runStats: RunStats
-  lifetimeStats: LifetimeStats
+  runBetsWon: number
+  /** Live tour diary — prose lines appended as the run unfolds */
+  tourStory: string[]
   savedCrew: SavedCrew | null
+  /** Draft kits for unsaved crew slots (index 1+) */
+  memberKits: (MemberKitId | undefined)[]
+  starterTier: StarterTier | null
   startRunAfterCrewSave: boolean
   runRecapMessage: string
+  /** Offered after day job — $50 × crew size */
+  dayJobStipend: number | null
   activeSetlistBets: SetlistBet[]
   currentMarket: MarketPrices | null
+  currentMarketStock: MarketStock | null
+  marketFlavor: string | null
   marketContext: string | null
+  /** Cached prices/stock per stop or road pull-over for this show */
+  stopMarkets: Record<string, MarketSnapshot>
+  activeMarketKey: string | null
+  /** Last crew bail / warning — shown in UI */
+  crewAlert: string | null
 }
 
 export const PHASE_LABELS: Record<PhaseId, string> = {
@@ -202,6 +265,7 @@ export const PHASE_LABELS: Record<PhaseId, string> = {
   location: 'Location',
   show: 'The show',
   post_show: 'Post-show',
+  post_show_shakedown: 'After-show shakedown',
   run_recap: 'Run recap',
   day_job: 'Day job',
 }

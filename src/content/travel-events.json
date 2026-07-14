@@ -23,10 +23,14 @@
     },
     {
       "id": "hitchhiker_intel",
-      "eventType": "solo",
+      "eventType": "hitchhiker_intel",
       "title": "Hitchhiker with intel",
-      "body": "A hitchhiker knows too much about tonight’s venue. They want a beer for directions that might be real.",
-      "weight": 8
+      "body": "A hitchhiker knows too much about tonight's venue. Trade some food and they'll whisper which song opens — you place your own bet later.",
+      "weight": 8,
+      "choices": [
+        { "id": "trade_food", "label": "Trade 1 food for the opener tip" },
+        { "id": "decline", "label": "Keep driving" }
+      ]
     },
     {
       "id": "wook_flu",
@@ -61,11 +65,22 @@
       "id": "lot_rumor",
       "eventType": "lot_rumor",
       "title": "Lot rumor",
-      "body": "Someone swears {song} opens tonight — a deep cut, they say. Bet $20 it hits the set?",
+      "body": "A lot elder swears they know a song landing in tonight's set. Trade a beer for the rumor — bet on it yourself if you believe them.",
       "weight": 6,
       "choices": [
-        { "id": "bet_yes", "label": "Bet $20 on it" },
-        { "id": "bet_no", "label": "Keep your cash" }
+        { "id": "trade_beer", "label": "Trade 1 beer for the setlist rumor" },
+        { "id": "decline", "label": "Keep your beer" }
+      ]
+    },
+    {
+      "id": "encore_whisper",
+      "eventType": "encore_intel",
+      "title": "Wook whisper",
+      "body": "A zonked regular offers encore intel for a taste of your stash. Tip only — you pick the bet.",
+      "weight": 6,
+      "choices": [
+        { "id": "trade_drugs", "label": "Trade 1 substance for the encore tip" },
+        { "id": "decline", "label": "Pass" }
       ]
     }
   ]

@@ -1,4 +1,14 @@
+import { BALANCE } from './config'
 import type { BetSlot, Setlist, SetlistBet } from './types'
+
+const B = BALANCE.betting
+
+export const BET_SLOT_SHORT: Record<BetSlot, string> = {
+  anywhere: 'Anywhere',
+  opener: 'Opener',
+  closer: 'Closer',
+  encore: 'Encore',
+}
 
 export const BET_SLOT_LABEL: Record<BetSlot, string> = {
   anywhere: 'Anywhere in set (1.5×)',
@@ -8,11 +18,14 @@ export const BET_SLOT_LABEL: Record<BetSlot, string> = {
 }
 
 export const BET_MULTIPLIER: Record<BetSlot, number> = {
-  anywhere: 1.5,
-  opener: 2,
-  closer: 2,
-  encore: 3,
+  anywhere: B.multipliers.anywhere!,
+  opener: B.multipliers.opener!,
+  closer: B.multipliers.closer!,
+  encore: B.multipliers.encore!,
 }
+
+export const MAX_ACTIVE_BETS = B.maxActiveBets
+export const BET_UI_AMOUNTS = B.uiAmounts
 
 export function resolveSetlistBet(bet: SetlistBet, setlist: Setlist): boolean {
   const ids = setlist.songIds ?? []

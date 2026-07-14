@@ -1,5 +1,7 @@
-import { Button, Select, Stack, Text, TextInput, Title } from '@mantine/core'
+import { Button, Group, Select, Stack, Text, TextInput, Title } from '@mantine/core'
 import { CITIES } from '../game/cities'
+import { MEMBER_KIT_LABELS } from '../game/crew/starterKit'
+import { crewRepLabel } from '../game/crew/repTitles'
 import { useGame } from '../game/GameContext'
 
 const BUDGETS = [
@@ -24,7 +26,16 @@ export function CrewCreateScreen() {
     setBudget,
     saveCrew,
     goToTitle,
+    shuffleCrewNames,
+    resetCrew,
   } = useGame()
+
+  const hasSavedCrew = state.savedCrew !== null
+  const bank = state.savedCrew?.bank ?? state.resources.cash
+  const budgetData = hasSavedCrew
+    ? [{ value: String(bank), label: `Your bank — $${bank}` }]
+    : BUDGETS
+  const budgetValue = hasSavedCrew ? String(bank) : String(state.starterTier ?? state.resources.cash)
 
   return (
     <Stack>
@@ -34,6 +45,11 @@ export function CrewCreateScreen() {
           ? 'Build your crew — then we roll from home.'
           : 'Create or edit your saved crew (1–3 tour kids).'}
       </Text>
+      {hasSavedCrew && (
+        <Text size="sm">
+          Crew rep: <strong>{crewRepLabel(state.savedCrew!.rep)}</strong> · Bank: <strong>${bank}</strong>
+        </Text>
+      )}
       <Select
         label="Crew size"
         data={CREW_SIZES}
@@ -41,13 +57,32 @@ export function CrewCreateScreen() {
         onChange={(v) => v && setCrewSize(Number(v))}
       />
       {state.crew.map((member, i) => (
-        <TextInput
-          key={member.id}
-          label={i === 0 ? 'Your name' : `Crew member ${i + 1}`}
-          value={member.name}
-          onChange={(e) => setCrewMemberName(i, e.currentTarget.value)}
-        />
+        <Stack key={member.id} gap={4}>
+          <TextInput
+            label={i === 0 ? 'Your name' : `Crew member ${i + 1}`}
+            value={member.name}
+            onChange={(e) => setCrewMemberName(i, e.currentTarget.value)}
+          />
+          {i > 0 && !hasSavedCrew && state.memberKits[i] && (
+            <Text size="xs" c="dimmed">
+              Brings: {MEMBER_KIT_LABELS[state.memberKits[i]!]}
+            </Text>
+          )}
+          {i > 0 && hasSavedCrew && state.savedCrew!.members[i]?.kit && (
+            <Text size="xs" c="dimmed">
+              Brings: {MEMBER_KIT_LABELS[state.savedCrew!.members[i]!.kit!]}
+            </Text>
+          )}
+        </Stack>
       ))}
+      <Group grow>
+        <Button variant="light" onClick={shuffleCrewNames}>
+          Shuffle names
+        </Button>
+        <Button variant="default" color="orange" onClick={resetCrew}>
+          Reset crew
+        </Button>
+      </Group>
       <Select
         label="Home city"
         data={[...CITIES]}
@@ -61,10 +96,11 @@ export function CrewCreateScreen() {
         onChange={(e) => setFavoriteBandHint(e.currentTarget.value)}
       />
       <Select
-        label="Starting budget"
-        data={BUDGETS}
-        value={String(state.resources.cash)}
-        onChange={(v) => v && setBudget(Number(v))}
+        label={hasSavedCrew ? 'Tour bank' : 'Starting budget'}
+        data={budgetData}
+        value={budgetValue}
+        disabled={hasSavedCrew}
+        onChange={(v) => v && !hasSavedCrew && setBudget(Number(v))}
       />
       <Button onClick={saveCrew}>
         {state.startRunAfterCrewSave ? 'Save & hit the road' : 'Save crew'}

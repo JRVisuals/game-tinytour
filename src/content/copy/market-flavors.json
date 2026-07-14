@@ -1,0 +1,22 @@
+{
+  "jackpot": [
+    "Buy cheap, sell dear — if you brought it from somewhere else.",
+    "Arbitrage weather. Buy low, flip somewhere else."
+  ],
+  "cheapBuy": [
+    "Good spot to stock up.",
+    "Prices are kind here. Load up."
+  ],
+  "goodSell": [
+    "Buyers paying top dollar here.",
+    "Strong sell market. Empty the cooler."
+  ],
+  "trap": [
+    "Tourist trap prices. Maybe just pass through.",
+    "Everything costs too much. Keep walking."
+  ],
+  "fair": [
+    "Fair middle-of-the-road lot economics.",
+    "Normal lot math. Nothing special."
+  ]
+}

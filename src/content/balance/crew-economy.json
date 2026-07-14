@@ -1,0 +1,42 @@
+{
+  "liquidate": {
+    "food": 5,
+    "beer": 3,
+    "drugs": 20,
+    "tickets": 30,
+    "gas": 2
+  },
+  "dayJobStipendPerMember": 50,
+  "starterTierRep": {
+    "100": 10,
+    "200": 0,
+    "400": -15
+  },
+  "rep": {
+    "venue": 20,
+    "tourComplete": 100,
+    "betWon": 15,
+    "bankDivisor": 10,
+    "milesDivisor": 5,
+    "dayJobPenalty": 30,
+    "shufflePenalty": 10
+  },
+  "leaderKit": {
+    "food": 3,
+    "beer": 2,
+    "cash": 0
+  },
+  "flatMemberKit": {
+    "food": 1,
+    "beer": 1,
+    "cash": 20
+  },
+  "archetypeChance": 50,
+  "archetypes": {
+    "ticket_fairy": { "tickets": 2 },
+    "driver": { "vehicle": true, "gas": 8 },
+    "stash": { "drugs": 2 },
+    "cooler": { "food": 2, "beer": 2 },
+    "hustler": { "cash": 40 }
+  }
+}

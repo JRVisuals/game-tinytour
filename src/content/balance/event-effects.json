@@ -1,0 +1,26 @@
+{
+  "miracle_ticket": { "tickets": 1 },
+  "flat_tire": { "cash": -35, "gas": -1 },
+  "robbed": { "cash": -50, "drugs": -1 },
+  "hitchhiker_intel": {
+    "food": -1,
+    "correctChancePercent": 70,
+    "slot": "opener"
+  },
+  "lot_rumor": {
+    "beer": -1,
+    "correctChancePercent": 50,
+    "slot": "anywhere",
+    "preferDeepCutWrong": true
+  },
+  "encore_whisper": {
+    "drugs": -1,
+    "correctChancePercent": 90,
+    "slot": "encore"
+  },
+  "wook_flu": { "setHealthCap": 12 },
+  "bathroom_find": {
+    "try_it": { "drugs": 2, "lacedChancePercent": 5 },
+    "toss_it": {}
+  }
+}

@@ -1,8 +1,11 @@
-import { Button, Group, Progress, Stack, Text, Title } from '@mantine/core'
+import { Alert, Button, Group, Progress, Stack, Text, Title } from '@mantine/core'
 import { MarketPanel } from '../components/MarketPanel'
+import { BALANCE } from '../game/config'
+import { activeCrew } from '../game/crew/meters'
 import {
   ROADSIDE_COPY,
   ROADSIDE_LABELS,
+  pushThroughCost,
 } from '../game/travel/legs'
 import { useGame } from '../game/GameContext'
 
@@ -36,13 +39,37 @@ export function TravelScreen() {
       : 0
   const event = travel.pendingEvent
   const roadside = leg?.roadside
+  const activeCount = activeCrew(state.crew).length
+  const canAct = activeCount > 0
+  const pushCost =
+    travel && !travel.pendingEvent && !travel.atRoadside
+      ? pushThroughCost(travel, state.resources.hasVehicle)
+      : null
+  const canPush =
+    canAct &&
+    pushCost != null &&
+    pushCost.legs > 0 &&
+    state.resources.food >= pushCost.food &&
+    (!state.resources.hasVehicle || state.resources.gas >= pushCost.gas)
+  const canBurnGas =
+    canAct &&
+    state.resources.hasVehicle &&
+    state.resources.gas > 0 &&
+    !event &&
+    !travel.atRoadside &&
+    travel.currentLegIndex < travel.legs.length
 
-  if (travel.atRoadside && roadside && state.currentMarket) {
+  if (travel.atRoadside && roadside && state.currentMarket && state.currentMarketStock) {
     return (
       <Stack>
         <Title order={2}>{ROADSIDE_LABELS[roadside]}</Title>
         <Text size="sm">{ROADSIDE_COPY[roadside]}</Text>
-        <MarketPanel prices={state.currentMarket} contextLabel={ROADSIDE_LABELS[roadside]} />
+        <MarketPanel
+          prices={state.currentMarket}
+          stock={state.currentMarketStock}
+          flavor={state.marketFlavor}
+          contextLabel={ROADSIDE_LABELS[roadside]}
+        />
         <Button variant="default" onClick={leaveRoadside}>
           Back on the road
         </Button>
@@ -62,6 +89,11 @@ export function TravelScreen() {
         {travel.legs.length === 1 ? '' : 's'}
       </Text>
       <Progress value={progress} size="sm" color="teal" />
+      {travel.lastEventResult && !event && (
+        <Alert color="teal" title="What happened">
+          {travel.lastEventResult}
+        </Alert>
+      )}
       {leg && !event && (
         <>
           <Text fw={500}>
@@ -71,7 +103,7 @@ export function TravelScreen() {
             {leg.flavor} (~{leg.miles} mi)
           </Text>
           {roadside && (
-            <Button size="xs" variant="light" onClick={visitRoadside}>
+            <Button size="sm" variant="light" onClick={visitRoadside}>
               Pull over — {ROADSIDE_LABELS[roadside]}
             </Button>
           )}
@@ -84,13 +116,13 @@ export function TravelScreen() {
           {event.choices ? (
             <Group>
               {event.choices.map((c) => (
-                <Button key={c.id} size="xs" onClick={() => resolveTravelEvent(c.id)}>
+                <Button key={c.id} size="sm" onClick={() => resolveTravelEvent(c.id)}>
                   {c.label}
                 </Button>
               ))}
             </Group>
           ) : (
-            <Button size="xs" onClick={() => resolveTravelEvent()}>
+            <Button size="sm" onClick={() => resolveTravelEvent()}>
               Deal with it
             </Button>
           )}
@@ -98,39 +130,61 @@ export function TravelScreen() {
       )}
       {!event && (
         <>
+          {!canAct && (
+            <Alert color="red" title="Tour over">
+              Everyone bailed. Shuffle on home from the header.
+            </Alert>
+          )}
           <Text fw={500} size="sm">
             Road actions
           </Text>
-          <Group>
-            <Button size="xs" variant="light" onClick={() => travelAction('rest')}>
-              Rest
-            </Button>
-            <Button
-              size="xs"
-              variant="light"
-              onClick={() => travelAction('eat')}
-              disabled={state.resources.food <= 0}
-            >
-              Eat
-            </Button>
-            <Button size="xs" variant="light" onClick={() => travelAction('hitch')}>
-              Hitch
-            </Button>
-            <Button size="xs" variant="light" onClick={() => travelAction('push_through')}>
-              Push through
-            </Button>
-            {state.resources.hasVehicle && (
-              <Button
-                size="xs"
-                variant="light"
-                onClick={() => travelAction('burn_gas')}
-                disabled={state.resources.gas <= 0}
-              >
-                Burn gas
+          <Stack gap="xs">
+            <Group>
+              <Button size="sm" variant="light" onClick={() => travelAction('rest')} disabled={!canAct}>
+                Rest
               </Button>
+              <Button size="sm" variant="light" onClick={() => travelAction('hitch')} disabled={!canAct}>
+                Hitch
+              </Button>
+              <Button
+                size="sm"
+                variant="light"
+                color="orange"
+                onClick={() => travelAction('push_through')}
+                disabled={!canPush}
+              >
+                Push through
+              </Button>
+              {state.resources.hasVehicle && (
+                <Button
+                  size="sm"
+                  variant="light"
+                  color="teal"
+                  onClick={() => travelAction('burn_gas')}
+                  disabled={!canBurnGas}
+                >
+                  Burn gas
+                </Button>
+              )}
+            </Group>
+            {state.resources.hasVehicle && (
+              <Text size="xs" c="dimmed">
+                Burn gas: cruise up to 2 legs (~{BALANCE.travel.burnGas.gas} gas) — skips road
+                events, boosts vibe, sometimes scores a beer.
+              </Text>
             )}
-          </Group>
-          <Button onClick={advanceTravelLeg}>Continue down the road</Button>
+            {pushCost && pushCost.legs > 0 && (
+              <Text size="xs" c="dimmed">
+                Push through: finish the drive ({pushCost.legs} leg{pushCost.legs === 1 ? '' : 's'}, ~
+                {pushCost.miles} mi) — costs {pushCost.food} food
+                {pushCost.gas > 0 ? `, ${pushCost.gas} gas` : ''}. Skips roadside events. Hard on
+                crew.
+              </Text>
+            )}
+          </Stack>
+          <Button onClick={advanceTravelLeg} disabled={!canAct}>
+            Continue down the road
+          </Button>
         </>
       )}
     </Stack>

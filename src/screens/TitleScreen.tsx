@@ -1,6 +1,5 @@
 import { Button, Stack, Text, Title } from '@mantine/core'
-import { ArtPanel } from '../components/ArtPanel'
-import { AsciiTitle, TITLE_ASCII } from '../components/AsciiTitle'
+import { ArtSlot } from '../components/ArtSlot'
 import { useGame } from '../game/GameContext'
 
 export function TitleScreen() {
@@ -8,14 +7,14 @@ export function TitleScreen() {
 
   return (
     <Stack gap="md">
-      <AsciiTitle text={TITLE_ASCII} />
-      <ArtPanel />
-      <Title order={2} ta="center">
+      <ArtSlot label="Logo" assetHint="public/logo.png" minHeight={80} />
+      <Title order={1} ta="center">
         Little Jam Band Tour
       </Title>
       <Text ta="center" c="dimmed">
         Follow the band. Hustle the lot. Make the show.
       </Text>
+      <ArtSlot label="Scene art" assetHint="public/title-scene.png" minHeight={140} />
       <Button size="md" onClick={() => goToCrew(false)}>
         Crew
       </Button>

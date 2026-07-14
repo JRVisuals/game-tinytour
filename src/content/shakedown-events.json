@@ -1,0 +1,53 @@
+{
+  "events": [
+    {
+      "id": "vendor_dump",
+      "title": "Vendor dump",
+      "body": "A vendor's folding tables collapse into fire-sale energy. Quick flips, quicker cash.",
+      "weight": 12,
+      "effects": { "cash": 22 }
+    },
+    {
+      "id": "beer_share",
+      "title": "Beer share",
+      "body": "Someone's cooler runneth over. Your crew accepts communion from the lot.",
+      "weight": 10,
+      "effects": { "beer": 2 }
+    },
+    {
+      "id": "burrito_angel",
+      "title": "Burrito angel",
+      "body": "A burrito angel appears with foil-wrapped mercy. Hunger delayed, vibe improved.",
+      "weight": 10,
+      "effects": { "food": 2 }
+    },
+    {
+      "id": "lot_fam",
+      "title": "Lot fam hookup",
+      "body": "Lot fam slides you a little something for the next leg. No questions, all love.",
+      "weight": 8,
+      "effects": { "drugs": 1, "cash": 8 }
+    },
+    {
+      "id": "parking_ticket",
+      "title": "Parking ticket",
+      "body": "Orange slip on the windshield. The city always collects its encore.",
+      "weight": 7,
+      "effects": { "cash": -25 }
+    },
+    {
+      "id": "miracle_sticker",
+      "title": "Miracle sticker trade",
+      "body": "You trade stickers like currency and walk away with a miracle ticket someone didn't need.",
+      "weight": 6,
+      "effects": { "tickets": 1, "cash": -5 }
+    },
+    {
+      "id": "quiet_lot",
+      "title": "Quiet lot",
+      "body": "The lot exhales. Vendors packing, stragglers humming. Nothing wild — just space to hustle.",
+      "weight": 14,
+      "effects": {}
+    }
+  ]
+}

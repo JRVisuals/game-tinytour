@@ -1,0 +1,8 @@
+{
+  "defaultBudget": 200,
+  "startingFood": 3,
+  "startingBeer": 2,
+  "vehicleCost": 80,
+  "vehicleGas": 8,
+  "hotelCrashCost": 40
+}

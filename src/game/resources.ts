@@ -1,11 +1,13 @@
+import { BALANCE } from './config'
 import type { Resources } from './types'
 
-/** Starting outfit stub — economy TBD */
-export function createStartingResources(budget = 200): Resources {
+const R = BALANCE.resources
+
+export function createStartingResources(budget = R.defaultBudget): Resources {
   return {
     cash: budget,
-    food: 3,
-    beer: 2,
+    food: R.startingFood,
+    beer: R.startingBeer,
     drugs: 0,
     tickets: 0,
     gas: 0,
@@ -22,3 +24,5 @@ export const RESOURCE_LABELS: Record<keyof Resources, string> = {
   gas: 'Gas',
   hasVehicle: 'Vehicle',
 }
+
+export { R as RESOURCE_BALANCE }

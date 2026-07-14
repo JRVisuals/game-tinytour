@@ -3,6 +3,7 @@ export const CITIES = [
   'Burlington, VT',
   'Portland, ME',
   'Albany, NY',
+  'Buffalo, NY',
   'Asbury Park, NJ',
   'Philadelphia, PA',
   'Charlottesville, VA',

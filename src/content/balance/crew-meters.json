@@ -1,0 +1,41 @@
+{
+  "meterMax": 100,
+  "roughThreshold": 25,
+  "bailRoughThreshold": 5,
+  "roughWarningMinTurns": 2,
+  "tickHunger": 8,
+  "tickThirst": 8,
+  "eatHunger": 40,
+  "eatStoned": -25,
+  "eatHealth": 10,
+  "beerStoned": 22,
+  "beerThirst": 30,
+  "consumeDrugsVibe": 35,
+  "consumeDrugsStoned": 40,
+  "showVibe": 30,
+  "restHealth": 25,
+  "restThirst": 15,
+  "restVibe": 15,
+  "restStoned": -30,
+  "hitchVibe": 18,
+  "pushPenalty": 12,
+  "wookFluHealth": 12,
+  "stonedWastedThreshold": 60,
+  "bathroomBagStoned": 75,
+  "defaultMeters": {
+    "hunger": 85,
+    "thirst": 85,
+    "health": 80,
+    "vibe": 70,
+    "stoned": 0
+  },
+  "labelTiers": {
+    "high": 75,
+    "mid": 50,
+    "low": 25
+  },
+  "barColors": {
+    "good": 60,
+    "warn": 25
+  }
+}

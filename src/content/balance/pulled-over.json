@@ -1,0 +1,31 @@
+{
+  "rollMod": 10,
+  "wasted": {
+    "lie": {
+      "bustBelow": 7,
+      "fine": 120,
+      "drugsGoneBelow": 8,
+      "drugsFine": 80
+    },
+    "truth": {
+      "bustBelow": 5,
+      "drugsGoneBelow": 8,
+      "drugsFine": 80,
+      "fine": 60
+    }
+  },
+  "sober": {
+    "lie": {
+      "triggerBelow": 4,
+      "bustBelow": 2,
+      "fine": 75,
+      "drugsFine": 75
+    },
+    "truth": {
+      "drugsGoneBelow": 5,
+      "drugsFine": 50,
+      "fineBelow": 3,
+      "fine": 25
+    }
+  }
+}

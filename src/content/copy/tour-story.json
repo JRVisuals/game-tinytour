@@ -1,0 +1,70 @@
+{
+  "intro": [
+    "Left {home} with {crew} and a half-baked plan to catch {band} in {destination}.",
+    "{crew} rolled out of {home} chasing {band}. Destination: {destination}. Vibes: questionable.",
+    "The tour diary opens in {home}. {band} is playing {destination}. {crew} swears we're ready.",
+    "Someone said \"it's just a few shows.\" We left {home} anyway — {band}, {destination}, {crew} in tow."
+  ],
+  "travel_stop": [
+    "Miles logged. {city} ahead — {venue} on the calendar and nerves in the cooler.",
+    "Next stop: {city}. The lot outside {venue} already smells like hope and grilled cheese.",
+    "Rolling toward {city}. {venue} is the target. Nobody's admitting we're low on gas.",
+    "Highway hypnosis breaks at {city}. Show night at {venue}. Here we go again."
+  ],
+  "location": {
+    "shakedown": [
+      "Shakedown row: tie-dye economics and whispered setlist rumors.",
+      "The lot is alive — stickers, pins, and someone definitely overpaid for a veggie burrito.",
+      "Shakedown hustle hour. Buy low, sell high, don't make eye contact with the cops."
+    ],
+    "park": [
+      "Tailgate science in the park — beers warm, theories hotter.",
+      "Pre-show park scene. Someone's lecturing strangers about song placement. Classic.",
+      "Grass, coolers, and unsolicited jam history from a guy in a bucket hat."
+    ],
+    "venue": [
+      "Venue doors in sight. Security looks bored. We look suspicious.",
+      "Front gates of {venue}. Ticket check, pocket check, vibe check.",
+      "The venue looms. Either we're getting in or we're writing poetry in the parking lot."
+    ],
+    "hotel": [
+      "Hotel crash — overpriced sleep before the next leg of beautiful chaos.",
+      "Checked into a hotel that smells like 1998 and broken promises.",
+      "Beds, showers, and a brief illusion that we're responsible adults."
+    ],
+    "friends_house": [
+      "Couch tour stop at a friend's place. Floor space is premium real estate.",
+      "Friend's house — free crash, questionable plumbing, excellent company.",
+      "Homestretch hospitality: someone's cousin knows a guy with a pull-out sofa."
+    ]
+  },
+  "event": [
+    "Road moment: {title}. {detail}",
+    "Out on the highway — {title}. {detail}",
+    "Tour gods intervened: {title}. {detail}",
+    "You can't make this up: {title}. {detail}"
+  ],
+  "post_show": [
+    "Walked out of {venue} with {songs} songs in our heads and glitter in our shoes.",
+    "Post-show at {venue} — ears ringing, pockets lighter, hearts annoyingly full.",
+    "{venue} delivered. {songs} songs deep and we're already scheming the next lot.",
+    "Show done at {venue}. Someone's crying, someone's eating, everyone's pretending we're fine."
+  ],
+  "post_show_missed": [
+    "Missed {venue} but the parking lot still taught us something. Mostly humility.",
+    "Never made it inside {venue}. The story still counts — barely.",
+    "{venue} happened without us. We heard it through a fence and a broken heart."
+  ],
+  "tour_end": [
+    "Tour wrapped. Last stop {venue} in {city}. {band} played, we survived, the lot wins again.",
+    "Final show at {venue}. {crew} limped home legends of mediocrity and miracle.",
+    "The run is over — {city}, {venue}, {band} in the rearview. Worth it. Probably.",
+    "Curtain call on the whole swing. {venue} sent us off right. Diary closed. For now."
+  ],
+  "go_home": [
+    "Called it early. Shuffled on home from the road with receipts and regrets.",
+    "Tour cut short — headed home before the universe assigned us another day job.",
+    "We bailed on the run. The couch at home never sounded so good.",
+    "Go-home moment. The adventure pauses. The crew rep remembers."
+  ]
+}

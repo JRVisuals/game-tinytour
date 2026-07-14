@@ -1,0 +1,14 @@
+{
+  "tiers": [
+    { "min": 0, "name": "New Boogie Bees" },
+    { "min": 100, "name": "Tour Kids on the Block" },
+    { "min": 200, "name": "Green Scene Sardines" },
+    { "min": 300, "name": "Lot Report All-Stars" },
+    { "min": 400, "name": "Rail Rider Rangers" },
+    { "min": 500, "name": "Deep Cut Disciples" },
+    { "min": 600, "name": "Miracle Mafia" },
+    { "min": 700, "name": "Encore Extortionists" },
+    { "min": 800, "name": "Legendary Lot Liquidity" },
+    { "min": 900, "name": "Hall of Hoopla Heads" }
+  ]
+}

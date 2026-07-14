@@ -1,0 +1,54 @@
+{
+  "bail": {
+    "hunger": [
+      "{name} bailed — started eating their shoelaces, they were so hungry.",
+      "{name} bailed — hunger won. Shoelaces looked like a meal."
+    ],
+    "thirst": [
+      "{name} bailed — tongue stuck to the roof of their mouth. Absolutely parched.",
+      "{name} bailed — dehydrated past the point of jam."
+    ],
+    "health": [
+      "{name} bailed — wook flu won. They need a bed, not a rail.",
+      "{name} bailed — immune system filed for divorce."
+    ],
+    "vibe": [
+      "{name} bailed — vibe hit absolute zero. They're out.",
+      "{name} bailed — couldn't fake the hype anymore."
+    ],
+    "default": [
+      "{name} bailed — couldn't hang anymore.",
+      "{name} tapped out. Respectfully."
+    ]
+  },
+  "warnings": {
+    "hunger": [
+      "{name} is starving — {left} turn{s} from bailing.",
+      "{name} needs food — {left} turn{s} left."
+    ],
+    "thirst": [
+      "{name} is parched — get water or beer. {left} turn{s} left.",
+      "{name} is dry — {left} turn{s} until bail."
+    ],
+    "health": [
+      "{name} has wook flu — rest or bail incoming.",
+      "{name} is sick — rest now."
+    ],
+    "vibe": [
+      "{name}'s vibe is in the basement.",
+      "{name} is not feeling the tour."
+    ]
+  },
+  "venueBlocked": [
+    "Security won't let {names} in — too wasted. Eat food and sober up first.",
+    "{names} can't pass the gate — too high. Food helps.",
+    "Bouncer clocked {names}. Sober up before showtime."
+  ],
+  "meterLabels": {
+    "hunger": { "high": "Full", "mid": "Hungry", "low": "Peckish", "worst": "Starving" },
+    "thirst": { "high": "Hydrated", "mid": "Thirsty", "low": "Dry", "worst": "Parched" },
+    "health": { "high": "Healthy", "mid": "Tired", "low": "Run down", "worst": "Wook flu" },
+    "vibe": { "high": "High", "mid": "Chill", "low": "Flat", "worst": "Low" },
+    "stoned": { "high": "Wasted", "midHigh": "Too high to drive", "mid": "High", "low": "Buzzed", "worst": "Sober" }
+  }
+}

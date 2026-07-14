@@ -1,0 +1,39 @@
+{
+  "legLabels": [
+    "County highway",
+    "Interstate merge",
+    "Toll plaza crawl",
+    "Rest stop belt",
+    "Two-lane mountain cut",
+    "Gas station forecourt",
+    "Lot-adjacent back road",
+    "Sunrise service road"
+  ],
+  "legFlavors": [
+    "Dawn breaks over a Waffle House sign. Coffee smells like salvation.",
+    "A van with too many stickers passes you doing exactly the speed limit.",
+    "The radio finds a staticy live archive tape for thirty seconds.",
+    "Road construction narrows everything to one nervous lane.",
+    "You count seventeen tour stickers on a guardrail.",
+    "Heat shimmer on asphalt. The next exit promises a grocery store.",
+    "Rain on the windshield. Wipers on the one setting that never quite works."
+  ],
+  "roadside": {
+    "truck_stop": {
+      "label": "Truck stop",
+      "copy": "Neon beer signs and questionable breakfast burritos. Lot kids trade stickers by the diesel pumps."
+    },
+    "rest_area": {
+      "label": "Rest area",
+      "copy": "Picnic tables, vending machines, and the eternal smell of sunscreen on asphalt."
+    },
+    "farmers_market": {
+      "label": "Roadside farmers market",
+      "copy": "Local honey, kettle corn, and a guy selling tie-dye out of a Subaru."
+    },
+    "supermarket": {
+      "label": "Supermarket",
+      "copy": "Fluorescent aisles and sale stickers. Stock up on food and beer before the lot markup hits."
+    }
+  }
+}

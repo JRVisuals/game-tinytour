@@ -1,19 +1,15 @@
 import { Button, Group, Stack, Text, Title } from '@mantine/core'
+import { LocationNav } from '../components/LocationNav'
 import { MarketPanel } from '../components/MarketPanel'
-import { SongCatalogPanel } from '../components/SongCatalogPanel'
+import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
+import { RESOURCE_BALANCE } from '../game/resources'
 import { useGame } from '../game/GameContext'
-import type { LocationId } from '../game/types'
-
-const DESTINATIONS: { id: LocationId; label: string }[] = [
-  { id: 'park', label: 'Park' },
-  { id: 'venue', label: 'Venue gates' },
-  { id: 'hotel', label: 'Hotel' },
-  { id: 'friends_house', label: "Friend's house" },
-]
 
 export function ShakedownScreen() {
-  const { state, goToLocation, enterShow, adjustResources } = useGame()
+  const { state, goToLocation, goToVenueGates, enterShow, adjustResources } = useGame()
   const stop = state.tour?.stops[state.tour.currentStopIndex]
+  const venueOk = canEnterVenue(state.crew)
+  const gateMessage = venueEntryBlockedMessage(state.crew)
 
   return (
     <Stack>
@@ -30,44 +26,46 @@ export function ShakedownScreen() {
             No ride yet.
           </Text>
           <Button
-            size="xs"
+            size="sm"
             variant="light"
             onClick={() =>
               adjustResources({
                 hasVehicle: true,
-                gas: 8,
-                cash: Math.max(0, state.resources.cash - 80),
+                gas: RESOURCE_BALANCE.vehicleGas,
+                cash: Math.max(0, state.resources.cash - RESOURCE_BALANCE.vehicleCost),
               })
             }
           >
-            Score a beater (-$80)
+            Score a beater (-${RESOURCE_BALANCE.vehicleCost})
           </Button>
         </Group>
       )}
-      <Text fw={500}>Where to?</Text>
-      <Group>
-        {DESTINATIONS.map((d) => (
-          <Button
-            key={d.id}
-            variant="default"
-            onClick={() => goToLocation(d.id)}
-            disabled={state.turnsUntilShow <= 0}
-          >
-            {d.label}
-          </Button>
-        ))}
-      </Group>
-      <Button color="grape" onClick={enterShow}>
-        {state.turnsUntilShow > 0 ? 'Head to show early' : 'Showtime'}
+      <LocationNav
+        current="shakedown"
+        turnsUntilShow={state.turnsUntilShow}
+        onGo={goToLocation}
+      />
+      <Button
+        color="grape"
+        onClick={() => (state.turnsUntilShow > 0 ? enterShow() : goToVenueGates())}
+        disabled={!venueOk}
+      >
+        {state.turnsUntilShow > 0 ? 'Head to show early' : 'Showtime — venue gates'}
       </Button>
-      {state.currentMarket && (
+      {!venueOk && gateMessage && (
+        <Text size="sm" c="red">
+          {gateMessage}
+        </Text>
+      )}
+      {state.currentMarket && state.currentMarketStock && (
         <MarketPanel
           prices={state.currentMarket}
+          stock={state.currentMarketStock}
+          flavor={state.marketFlavor}
           contextLabel="shakedown"
           showTickets
         />
       )}
-      <SongCatalogPanel />
     </Stack>
   )
 }

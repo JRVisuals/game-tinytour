@@ -1,0 +1,46 @@
+{
+  "minSpread": 2,
+  "jackpotMod": 4,
+  "trapMod": 11,
+  "jitterRange": 5,
+  "sellSpreadByTier": {
+    "low": { "min": 4, "max": 6 },
+    "mid": { "min": 2, "max": 4 },
+    "high": { "min": 1, "max": 3 }
+  },
+  "tiers": {
+    "foodBuy": { "low": 5, "mid": 10, "high": 15 },
+    "beerBuy": { "low": 3, "mid": 6, "high": 11 },
+    "drugsBuy": { "low": 18, "mid": 23, "high": 28 },
+    "ticketBuy": { "low": 27, "mid": 30, "high": 35 }
+  },
+  "stock": {
+    "foodBase": 2,
+    "foodMod": 5,
+    "beerBase": 2,
+    "beerShift": 2,
+    "beerMod": 4,
+    "drugsBase": 1,
+    "drugsShift": 4,
+    "drugsMod": 3,
+    "ticketsBase": 1,
+    "ticketsShift": 6,
+    "ticketsMod": 3
+  },
+  "venueGate": {
+    "foodBuy": 16,
+    "foodSell": 12,
+    "beerBuy": 14,
+    "beerSell": 11,
+    "drugsBuy": 38,
+    "drugsSell": 30,
+    "ticketBuy": 30,
+    "stock": {
+      "food": 3,
+      "beer": 6,
+      "drugs": 2,
+      "tickets": 5
+    },
+    "flavor": "Gate prices — tourist trap buys, desperate-fan sell prices. Flip your stash before doors."
+  }
+}

@@ -1,60 +1,92 @@
 import { Button, Group, Stack, Text, Title } from '@mantine/core'
+import { LocationNav } from '../components/LocationNav'
 import { MarketPanel } from '../components/MarketPanel'
+import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
+import { COPY } from '../game/config'
 import { useGame } from '../game/GameContext'
-import type { LocationId } from '../game/types'
-
-const LOCATION_COPY: Record<Exclude<LocationId, 'shakedown'>, string> = {
-  park: 'Blankets, hacky, soft trades. Food and beer move easy here.',
-  venue: 'Box office tension. Tickets if you have cash. Security eye contact.',
-  hotel: 'Showers and a safe fridge — if you booked a room (stub: pay cash).',
-  friends_house: 'Couch courtesy. Maybe a crash pad and a little stash help.',
-}
+import { RESOURCE_BALANCE } from '../game/resources'
 
 export function LocationScreen() {
-  const { state, returnToShakedown, enterShow, adjustResources } = useGame()
+  const { state, goToLocation, enterShow, hotelCrash } = useGame()
   const loc = state.currentLocation
   const prices = state.currentMarket
+  const venueOk = canEnterVenue(state.crew)
+  const gateMessage = venueEntryBlockedMessage(state.crew)
+  const stop = state.tour?.stops[state.tour.currentStopIndex]
 
   if (loc === 'shakedown') {
     return null
   }
 
+  if (loc === 'venue') {
+    return (
+      <Stack>
+        <Title order={2}>Venue gates</Title>
+        <Text>{COPY.locations.venue}</Text>
+        {stop && (
+          <Text size="sm" c="dimmed">
+            {state.tour?.band.name} · {stop.venue}, {stop.city}
+          </Text>
+        )}
+        <Text size="sm" c="orange" fw={500}>
+          Showtime — last chance to flip stash or grab tickets.
+        </Text>
+        {prices && state.currentMarketStock && (
+          <MarketPanel
+            prices={prices}
+            stock={state.currentMarketStock}
+            flavor={state.marketFlavor}
+            contextLabel="venue gates"
+            showTickets
+          />
+        )}
+        <Button color="grape" onClick={enterShow} disabled={!venueOk}>
+          Into the show
+        </Button>
+        {!venueOk && gateMessage && (
+          <Text size="sm" c="red">
+            {gateMessage}
+          </Text>
+        )}
+      </Stack>
+    )
+  }
+
   return (
     <Stack>
       <Title order={2}>{loc.split('_').join(' ')}</Title>
-      <Text>{LOCATION_COPY[loc]}</Text>
+      <Text>{COPY.locations[loc]}</Text>
       <Text size="sm" c="dimmed">
         Turns left before show: {state.turnsUntilShow}
       </Text>
-      {prices && (
+      <LocationNav
+        current={loc}
+        turnsUntilShow={state.turnsUntilShow}
+        onGo={goToLocation}
+      />
+      {prices && state.currentMarketStock && (
         <MarketPanel
           prices={prices}
+          stock={state.currentMarketStock}
+          flavor={state.marketFlavor}
           contextLabel={state.marketContext ?? loc}
-          showTickets={loc === 'venue'}
         />
       )}
       {loc === 'hotel' && (
         <Button
-          onClick={() =>
-            adjustResources({
-              cash: Math.max(0, state.resources.cash - 60),
-            })
-          }
-          disabled={state.resources.cash < 60}
+          onClick={hotelCrash}
+          disabled={state.resources.cash < RESOURCE_BALANCE.hotelCrashCost}
         >
-          Crash ($60) — stub
+          Crash (${RESOURCE_BALANCE.hotelCrashCost}) — reset crew
         </Button>
       )}
-      <Group>
-        <Button variant="default" onClick={returnToShakedown}>
-          Back to shakedown
-        </Button>
-        {state.turnsUntilShow <= 0 && (
-          <Button color="grape" onClick={enterShow}>
-            Showtime
-          </Button>
-        )}
-      </Group>
+      {state.turnsUntilShow <= 0 && (
+        <Group>
+          <Text size="sm" c="dimmed">
+            Showtime — heading to the venue gates…
+          </Text>
+        </Group>
+      )}
     </Stack>
   )
 }

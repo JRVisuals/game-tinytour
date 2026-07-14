@@ -1,0 +1,34 @@
+{
+  "eventChancePercent": 35,
+  "forcedPulledOverBelow": 12,
+  "forcedLotRumorBelow": 22,
+  "turnsUntilShow": 4,
+  "tourStops": 5,
+  "hitch": {
+    "miles": 40,
+    "cash": -5,
+    "beerChancePercent": 50
+  },
+  "burnGas": {
+    "gas": 1,
+    "legsMax": 2,
+    "vibe": 15,
+    "beerChancePercent": 40
+  },
+  "roadsideFood": {
+    "cash": -6,
+    "food": 2
+  },
+  "roadsideBeer": {
+    "cash": -5,
+    "beer": 2
+  },
+  "roadsideSellDrugs": {
+    "drugs": -1,
+    "cash": 35
+  },
+  "pushThrough": {
+    "foodPerLeg": 1,
+    "gasPerLeg": 1
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "maxActiveBets": 3,
+  "multipliers": {
+    "anywhere": 1.5,
+    "opener": 2,
+    "closer": 2,
+    "encore": 3
+  },
+  "uiAmounts": [10, 20, 50]
+}

@@ -1,0 +1,61 @@
+{
+  "events": [
+    {
+      "id": "case_of_beer",
+      "title": "Case of beer",
+      "body": "A case materializes behind a Subaru with Vermont plates. No one claims it. You claim it.",
+      "weight": 10,
+      "effects": { "beer": 6 }
+    },
+    {
+      "id": "burrito_cooler",
+      "title": "Burrito cooler",
+      "body": "A cooler full of ice-cold veggie burritos appears like a mirage. Lot magic is real.",
+      "weight": 10,
+      "effects": { "food": 5 }
+    },
+    {
+      "id": "shakedown_sally",
+      "title": "Shakedown Sally",
+      "body": "You're way too high. Shakedown Sally talks fast and your wallet talks back. Half your cash is gone before you blink.",
+      "weight": 9,
+      "requiresWasted": true,
+      "effects": { "cashHalfLoss": true }
+    },
+    {
+      "id": "miracle_flip",
+      "title": "Miracle flip",
+      "body": "You flip a miracle wristband for straight cash. Capitalism, but make it tie-dye.",
+      "weight": 8,
+      "effects": { "cash": 35 }
+    },
+    {
+      "id": "lot_dogs",
+      "title": "Lot dogs",
+      "body": "Someone's grilling lot dogs and you trade stickers for a bag of food. Peak nutrition.",
+      "weight": 9,
+      "effects": { "food": 3, "beer": 1 }
+    },
+    {
+      "id": "bathroom_deal",
+      "title": "Bathroom deal",
+      "body": "A bathroom line deal goes weirdly right. You walk away with substances and no regrets. Yet.",
+      "weight": 6,
+      "effects": { "drugs": 2 }
+    },
+    {
+      "id": "overpay_tabs",
+      "title": "Overpay tabs",
+      "body": "You bought tabs from a guy who was also a cop's nephew. Allegedly. Your cash evaporates.",
+      "weight": 7,
+      "effects": { "cash": -40, "drugs": 1 }
+    },
+    {
+      "id": "quiet_hustle",
+      "title": "Quiet hustle",
+      "body": "You hustled the lot in silence. Nothing dramatic. Vibes were mid. Onward.",
+      "weight": 12,
+      "effects": {}
+    }
+  ]
+}

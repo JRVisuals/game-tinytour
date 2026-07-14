@@ -1,0 +1,247 @@
+{
+  "solo": {
+    "miracle_ticket": [
+      "You pocket the miracle. Nobody makes eye contact. This is the way.",
+      "A miracle lands in your palm. You nod like this happens every Tuesday.",
+      "Free ticket energy. The universe owes you one."
+    ],
+    "flat_tire": [
+      "Rubber swapped. Knuckles scraped. Back on the asphalt.",
+      "Flat fixed on the shoulder. Your back will file a complaint later.",
+      "Jack, spare, sweat. Rolling again."
+    ],
+    "robbed": [
+      "Stash lighter. Trust thinner. You roll on anyway.",
+      "Someone got to your stuff while you blinked. Par for the course.",
+      "Robbed at a rest stop. The tour giveth and taketh."
+    ],
+    "wook_flu": [
+      "The crew is sweating through blankets. Rest hard or regret it.",
+      "Wook flu hits the van. Everyone sounds like a sad harmonica.",
+      "Fever and regret. The lot can wait — your immune system cannot."
+    ],
+    "default": [
+      "You dealt with it and kept rolling.",
+      "Handled. No poetry required.",
+      "Survived another mile of nonsense."
+    ]
+  },
+  "pulled_over": {
+    "wasted": {
+      "busted": [
+        "You were weaving. Eyes like a disco ball. DUI. Court date. Tour over.",
+        "Wasted behind the wheel. They ran the whole playbook. Tour's done.",
+        "That was not a vibe they appreciated. Cuffs. Day job awaits."
+      ],
+      "lie_drugs_gone": [
+        "You lied while visibly wasted. They found everything. Fines, confiscation, shame.",
+        "Story fell apart mid-sentence. Stash gone. Wallet weeping."
+      ],
+      "lie_fine": [
+        "Lie + bloodshot eyes = no mercy. Wallet emptied. License unhappy.",
+        "They didn't buy it. You pay anyway."
+      ],
+      "lie_clean": [
+        "They clocked the wasted energy before you finished the story.",
+        "Somehow slid through lying. Don't test it again."
+      ],
+      "truth_drugs_gone": [
+        "Honest about the stash while wasted behind the wheel. Bad combo. Everything confiscated.",
+        "Truth didn't help. Neither did your pupils."
+      ],
+      "truth_fine": [
+        "Miracle you're not in cuffs. Massive fine. Walk the lot sober next time.",
+        "Ticket written. You're lucky it's not worse."
+      ],
+      "truth_clean": [
+        "Somehow waved on. Do not push your luck again.",
+        "They let you go. Unbelievable. Sober up."
+      ]
+    },
+    "sober": {
+      "busted": [
+        "They saw through the story. Cuffs. Court date. Tour over.",
+        "Lie failed. Badge won. HR is hiring."
+      ],
+      "lie_drugs_gone": [
+        "The lie almost worked. They found the stash anyway. Fine + empty pockets.",
+        "Almost talked your way out. Almost."
+      ],
+      "lie_fine": [
+        "Sketchy energy but they let you go. Wallet lighter. Ego bruised.",
+        "Fine paid. Dignity optional."
+      ],
+      "lie_clean": [
+        "You lied. They squinted. You lived. Barely.",
+        "Nervous sweat worked as cologne. You're free."
+      ],
+      "truth_drugs_gone": [
+        "Honesty didn't save the baggie. Confiscated. Ticket written. Moving on.",
+        "Truth told. Stash didn't survive."
+      ],
+      "truth_fine": [
+        "Warning and a fine. Officer says \"drive safe.\" You will not.",
+        "Small fine. Big attitude from the badge."
+      ],
+      "truth_clean": [
+        "Truth told. They wave you on. Heart rate still at encore tempo.",
+        "Clean stop. Clean conscience. Rare."
+      ]
+    }
+  },
+  "bathroom_find": {
+    "toss_it": [
+      "Tossed it. Washed your hands twice. No regrets.",
+      "Left it for the next poor soul. Walked away clean.",
+      "Not today. Good call, probably."
+    ],
+    "try_it": [
+      "You tasted the bag in the bathroom. Stash +2. You're wasted now.",
+      "Bathroom science experiment. +2 substances. Brain on airplane mode.",
+      "One taste became two in the stash and zero dignity."
+    ],
+    "laced": [
+      "That shit was laced. You go home and rethink your life.",
+      "Wrong bag. Wrong bathroom. Wrong life choices. Day job time.",
+      "Laced. Lights out. Tour over."
+    ]
+  },
+  "hitchhiker_intel": {
+    "trade_food": [
+      "Food handed over. Hitchhiker leans in: \"{song}\" opens tonight. Bet it yourself if you believe them.",
+      "Trail mix for intel — they swear \"{song}\" is the opener. Your call in the bet panel.",
+      "You trade food. They whisper \"{song}\" like it's classified. Opener tip acquired."
+    ],
+    "decline": [
+      "You keep rolling. The hitchhiker melts into the tree line.",
+      "No food, no tip. They salute and disappear into the shoulder.",
+      "Windows up. Hitchhiker intel stays a mystery."
+    ],
+    "no_food": [
+      "No food to trade. Hitchhiker wanted lunch, not vibes.",
+      "Hitchhiker wanted food. You had none — opener tip stays unknown."
+    ],
+    "default": [
+      "The hitchhiker fades in the rearview.",
+      "Road keeps rolling. Intel unclaimed."
+    ]
+  },
+  "lot_rumor": {
+    "trade_beer": [
+      "Beer for gossip — they swear \"{song}\" hits the set somewhere. Bet it yourself if you buy it.",
+      "Lot elder takes your beer and mutters: \"{song}\" lands tonight. Rumor mill says you're on your own for the wager.",
+      "Rumor acquired: \"{song}\" in the set. Place your own bet when you're ready."
+    ],
+    "decline": [
+      "You keep your beer. The rumor mill spins without you.",
+      "No trade, no tip. The elder shrugs and melts back into the crowd.",
+      "Rumor passes you by. Your cooler approves."
+    ],
+    "no_beer": [
+      "No beer to trade. Rumor stays locked in the elder's beard.",
+      "Lot elder wanted a beer. You had none."
+    ],
+    "default": [
+      "Rumor mill keeps spinning.",
+      "Intel unclaimed."
+    ]
+  },
+  "encore_whisper": {
+    "trade_drugs": [
+      "Stash tasted, intel delivered: \"{song}\" closes the encore. Bet it yourself if you're feeling psychic.",
+      "They whisper \"{song}\" for the encore after a taste. Wook gospel — maybe.",
+      "Encore tip locked in: \"{song}\". Your bet slip, your risk."
+    ],
+    "decline": [
+      "You keep your stash. The whisper fades into bass frequencies.",
+      "No taste, no tip. They wander toward the rail.",
+      "Passed on the encore intel. FOMO loading."
+    ],
+    "no_drugs": [
+      "No substances to trade. The wook wanted a taste.",
+      "Nothing in the stash to offer. Encore tip stays unknown."
+    ],
+    "default": [
+      "Whisper unclaimed.",
+      "Encore intel drifts off with the crowd."
+    ]
+  },
+  "consume": {
+    "eat": [
+      "{name} ate.",
+      "{name} scarfed something. Hunger recedes.",
+      "{name} fueled up."
+    ],
+    "drink": [
+      "{name} drank a beer.",
+      "{name} cracked a cold one. Thirst down, stoned up.",
+      "{name} hydrated the tour way."
+    ],
+    "substances": [
+      "{name} consumed substances. Vibe and stoned up.",
+      "{name} went for it. Vibe up. Stoned up. Questions later.",
+      "{name} is flying now."
+    ],
+    "rest": [
+      "Crew rested. Stoned meters came down.",
+      "Everyone caught a breather and sobered up a bit.",
+      "Quick reset by the roadside. Less wasted, back to the grind."
+    ],
+    "hotel_crash": [
+      "Hotel crash (${cost}) — fed, quenched, sober. Everyone's human again.",
+      "Room booked (${cost}). Hot shower, cold fridge, zero stoned. Crew restored.",
+      "Paid ${cost} for real sleep. Hunger, thirst, health, vibe maxed. Sober."
+    ]
+  },
+  "travel": {
+    "push_through_success": [
+      "Pushed through {legs} leg{s} (~{miles} mi). Crew's shook but you made the lot.",
+      "White-knuckled {legs} leg{s}. Lot smells like kettle corn and possibility.",
+      "Skipped the scenic suffering. {legs} leg{s} gone. Shakedown awaits."
+    ],
+    "push_through_need_food": [
+      "Need {food} food to push through the last {legs} leg(s).",
+      "Can't sprint to the lot — need {food} food for {legs} leg{s}."
+    ],
+    "push_through_need_gas": [
+      "Need {gas} gas to push through the last {legs} leg(s).",
+      "Tank's too low to push through {legs} leg{s}. Need {gas} gas."
+    ],
+    "burn_gas_success": [
+      "Windows down. Highway hypnosis. Cruised {legs} leg{s} (~{miles} mi) — no drama, just miles.",
+      "Burned a tank stretch and ate {legs} leg{s}. Cupholder yielded a warm beer. Vibes up.",
+      "Cruise control engaged. {legs} leg{s} vanished in the rearview. Shakedown's closer."
+    ]
+  },
+  "show": {
+    "made_it": [
+      "Made it into {venue}. Crew intact. The floor was soup.",
+      "{venue} swallowed you whole. Good show energy.",
+      "You're in. {venue} is humming."
+    ],
+    "chaos_gate": [
+      "Chaos at the gate. Not everyone got in clean — the night still happened around you.",
+      "Gate was a scene. You made it work anyway.",
+      "Tickets messy. Show still happened around you."
+    ],
+    "missed": [
+      "Missed {venue} — sat out to hustle gas money and sanity.",
+      "Skipped {venue} to regroup. The lot will forgive. Maybe."
+    ]
+  },
+  "run": {
+    "shuffle": [
+      "You shuffled on home. The lot will still be there next time.",
+      "Tour ended. Couch and questionable leftovers await."
+    ],
+    "shuffle_blocked": [
+      "Can't bail yet — play at least one show before going home.",
+      "The lot isn't letting you liquidate until you've seen one show.",
+      "No early shuffle. Make a show night happen first."
+    ],
+    "all_bailed": [
+      "Everyone shuffled on home.",
+      "The crew tapped out. Tour over."
+    ]
+  }
+}

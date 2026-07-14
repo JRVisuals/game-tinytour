@@ -1,6 +1,11 @@
 import { Badge, Button, Group, Paper, ScrollArea, Select, Stack, Text } from '@mantine/core'
 import { useState } from 'react'
-import { BET_SLOT_LABEL } from '../game/betting'
+import {
+  BET_SLOT_LABEL,
+  BET_SLOT_SHORT,
+  BET_UI_AMOUNTS,
+  MAX_ACTIVE_BETS,
+} from '../game/betting'
 import { useGame } from '../game/GameContext'
 import type { BetSlot, SongTier } from '../game/types'
 
@@ -26,23 +31,30 @@ const BET_SLOTS: { value: BetSlot; label: string }[] = [
 export function SongCatalogPanel() {
   const { state, placeSetlistBet } = useGame()
   const catalog = state.tour?.catalog
+  const stop = state.tour?.stops[state.tour.currentStopIndex]
   const [slot, setSlot] = useState<BetSlot>('anywhere')
-  const [amount, setAmount] = useState('10')
+  const [amount, setAmount] = useState(String(BET_UI_AMOUNTS[0] ?? 10))
 
-  if (!catalog) return null
+  if (!catalog || !state.tour) return null
 
-  const betAmount = Number(amount) || 10
-  const canBet =
-    state.activeSetlistBets.length < 3 &&
-    state.resources.cash >= betAmount
+  const betAmount = Number(amount) || BET_UI_AMOUNTS[0] || 10
+  const slotsLeft = MAX_ACTIVE_BETS - state.activeSetlistBets.length
+  const canBet = slotsLeft > 0 && state.resources.cash >= betAmount
+  const slotShort = BET_SLOT_SHORT[slot]
+  const betButtonLabel = `$${betAmount} · ${slotShort}`
 
   return (
-    <Paper withBorder p="sm" mt="md">
-      <Text fw={600} mb="xs">
-        Band catalog ({catalog.songs.length} songs)
+    <Paper withBorder p="sm">
+      <Text fw={600} mb={4}>
+        Setlist bets
       </Text>
+      {stop && (
+        <Text size="xs" c="dimmed" mb="xs">
+          {state.tour.band.name} · {stop.venue}, {stop.city}
+        </Text>
+      )}
       <Text size="xs" c="dimmed" mb="sm">
-        Hot · Deep cut · Bust out. Up to 3 bets per show.
+        Pick placement & amount, then tap a song. {slotsLeft}/{MAX_ACTIVE_BETS} bets left.
       </Text>
 
       {state.activeSetlistBets.length > 0 && (
@@ -52,7 +64,7 @@ export function SongCatalogPanel() {
           </Text>
           {state.activeSetlistBets.map((b) => (
             <Text key={`${b.songId}-${b.slot}`} size="sm">
-              {b.songTitle} — {BET_SLOT_LABEL[b.slot]} (${b.amount})
+              {b.songTitle} — ${b.amount} · {BET_SLOT_SHORT[b.slot]}
             </Text>
           ))}
         </Stack>
@@ -60,20 +72,24 @@ export function SongCatalogPanel() {
 
       <Group mb="sm" grow>
         <Select
-          label="Bet type"
+          label="Song placement"
           size="xs"
           data={BET_SLOTS}
           value={slot}
           onChange={(v) => v && setSlot(v as BetSlot)}
         />
         <Select
-          label="Amount"
+          label="Bet amount"
           size="xs"
-          data={['10', '20', '50']}
+          data={BET_UI_AMOUNTS.map((n) => String(n))}
           value={amount}
           onChange={(v) => v && setAmount(v)}
         />
       </Group>
+
+      <Text size="xs" c="teal" mb="xs" fw={500}>
+        Next bet: {betButtonLabel}
+      </Text>
 
       <ScrollArea h={220} type="auto" offsetScrollbars>
         <Stack gap={6} pr="xs">
@@ -90,12 +106,13 @@ export function SongCatalogPanel() {
                   </Text>
                 </Group>
                 <Button
-                  size="compact-xs"
-                  variant="subtle"
+                  size="xs"
+                  variant="light"
+                  color="teal"
                   disabled={!canBet || already}
                   onClick={() => placeSetlistBet(song.id, song.title, betAmount, slot)}
                 >
-                  Bet
+                  {already ? 'Placed' : betButtonLabel}
                 </Button>
               </Group>
             )
