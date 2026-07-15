@@ -180,6 +180,74 @@ function primaryRoughMeter(member: MeterSnapshot): keyof MeterSnapshot | null {
   return null
 }
 
+export type CrewStatusSeverity = 'critical' | 'warning' | 'ok' | 'muted'
+
+export type CrewStatusId =
+  | 'bailed'
+  | 'wook_flu'
+  | 'bailing'
+  | 'wasted'
+  | 'hungry'
+  | 'thirsty'
+  | 'sick'
+  | 'low_vibe'
+  | 'ok'
+
+export interface CrewStatusChip {
+  id: CrewStatusId
+  label: string
+  severity: CrewStatusSeverity
+}
+
+/** Single at-a-glance status for compact crew rows */
+export function crewStatusChip(member: {
+  bailed: boolean
+  wookFlu?: boolean
+  roughTurns: number
+  hunger: number
+  thirst: number
+  health: number
+  vibe: number
+  stoned: number
+}): CrewStatusChip {
+  if (member.bailed) {
+    return { id: 'bailed', label: 'BAILED', severity: 'muted' }
+  }
+  if (member.wookFlu) {
+    return { id: 'wook_flu', label: 'WOOK FLU', severity: 'critical' }
+  }
+  if (
+    isRough(member) &&
+    member.roughTurns >= C.roughWarningMinTurns &&
+    member.roughTurns < BAIL_ROUGH_THRESHOLD
+  ) {
+    const left = BAIL_ROUGH_THRESHOLD - member.roughTurns
+    return { id: 'bailing', label: `BAILING · ${left}t`, severity: 'critical' }
+  }
+  if (member.stoned >= STONED_WASTED_THRESHOLD) {
+    return { id: 'wasted', label: 'WASTED', severity: 'warning' }
+  }
+  const rough = primaryRoughMeter(member)
+  if (rough === 'hunger') return { id: 'hungry', label: 'HUNGRY', severity: 'warning' }
+  if (rough === 'thirst') return { id: 'thirsty', label: 'THIRSTY', severity: 'warning' }
+  if (rough === 'health') return { id: 'sick', label: 'SICK', severity: 'warning' }
+  if (rough === 'vibe') return { id: 'low_vibe', label: 'LOW VIBE', severity: 'warning' }
+  return { id: 'ok', label: 'OK', severity: 'ok' }
+}
+
+export function crewStatusBadgeColor(severity: CrewStatusSeverity): string {
+  switch (severity) {
+    case 'critical':
+      return 'red'
+    case 'warning':
+      return 'orange'
+    case 'ok':
+      return 'teal'
+    default:
+      return 'gray'
+  }
+}
+
 export function bailReasonMessage(member: { name: string } & MeterSnapshot): string {
   const key = primaryRoughMeter(member) ?? 'default'
   const pool = COPY.crew.bail[key] ?? COPY.crew.bail.default
