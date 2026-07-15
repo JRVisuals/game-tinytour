@@ -6,6 +6,7 @@
     "retailPrice": 30,
     "dealPrice": 10,
     "dealDoses": 3,
+    "beerDealChancePercent": 42,
     "punchChancePercent": 38,
     "punchHealth": -10
   },

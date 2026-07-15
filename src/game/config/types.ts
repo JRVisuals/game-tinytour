@@ -84,6 +84,7 @@ export interface ShakedownBalance {
     retailPrice: number
     dealPrice: number
     dealDoses: number
+    beerDealChancePercent: number
     punchChancePercent: number
     punchHealth: number
   }
@@ -147,7 +148,11 @@ export interface MarketsBalance {
     ticketsBase: number
     ticketsShift: number
     ticketsMod: number
+    gasBase: number
+    gasShift: number
+    gasMod: number
   }
+  gasUnitsPerBuy: number
   venueGate: {
     foodBuy: number
     foodSell: number

@@ -138,6 +138,16 @@ export function MarketPanel({
             Buy ticket ${prices.ticketBuy} ({stock.tickets} left)
           </Button>
         )}
+        {state.resources.hasVehicle && prices.gasBuy != null && stock.gas > 0 && (
+          <Button
+            size="xs"
+            color="yellow"
+            onClick={() => marketBuy('gas')}
+            disabled={!!chase || state.resources.cash < prices.gasBuy}
+          >
+            Buy gas ${prices.gasBuy} (+{BALANCE.markets.gasUnitsPerBuy} ⛽, {stock.gas} left)
+          </Button>
+        )}
       </Stack>
     </Paper>
   )

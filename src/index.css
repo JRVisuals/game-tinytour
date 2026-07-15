@@ -328,6 +328,26 @@ body {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
 }
 
+.outcome-toast-alert.mantine-Alert-root {
+  background-color: #3a2f0a !important;
+  border: 1px solid #6b5520;
+  color: #e8c84a !important;
+}
+
+.outcome-toast-alert.mantine-Alert-root .mantine-Text-root {
+  color: #f0d56a !important;
+}
+
+.outcome-toast-alert--error.mantine-Alert-root {
+  background-color: #3a120c !important;
+  border-color: #7a3020;
+  color: #f5c4b8 !important;
+}
+
+.outcome-toast-alert--error.mantine-Alert-root .mantine-Text-root {
+  color: #f5c4b8 !important;
+}
+
 .outcome-toast--in {
   animation: outcome-toast-fade-in 450ms ease forwards;
 }

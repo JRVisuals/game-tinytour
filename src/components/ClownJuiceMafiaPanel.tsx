@@ -1,5 +1,6 @@
 import { Alert, Button, Group, Paper, Stack, Text } from '@mantine/core'
 import { BALANCE, COPY, pickText } from '../game/config'
+import { canAttemptClownJuiceDeal } from '../game/shakedown/clownJuice'
 import { useGame } from '../game/GameContext'
 
 export function ClownJuiceMafiaPanel() {
@@ -58,9 +59,9 @@ export function ClownJuiceMafiaPanel() {
           variant="light"
           color="grape"
           onClick={() => clownJuiceBalloonChoice('deal')}
-          disabled={!!chase || state.resources.cash < cfg.dealPrice}
+          disabled={!!chase || !canAttemptClownJuiceDeal(state.resources)}
         >
-          Make a deal — {cfg.dealDoses} for ${cfg.dealPrice} (punch risk)
+          Make a deal — {cfg.dealDoses} for ${cfg.dealPrice}
         </Button>
       </Stack>
     </Paper>

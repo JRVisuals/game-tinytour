@@ -12,8 +12,10 @@
     "foodBuy": { "low": 5, "mid": 10, "high": 15 },
     "beerBuy": { "low": 3, "mid": 6, "high": 11 },
     "drugsBuy": { "low": 18, "mid": 23, "high": 28 },
-    "ticketBuy": { "low": 27, "mid": 30, "high": 35 }
+    "ticketBuy": { "low": 27, "mid": 30, "high": 35 },
+    "gasBuy": { "low": 9, "mid": 14, "high": 20 }
   },
+  "gasUnitsPerBuy": 2,
   "stock": {
     "foodBase": 2,
     "foodMod": 5,
@@ -25,7 +27,10 @@
     "drugsMod": 3,
     "ticketsBase": 1,
     "ticketsShift": 6,
-    "ticketsMod": 3
+    "ticketsMod": 3,
+    "gasBase": 2,
+    "gasShift": 5,
+    "gasMod": 4
   },
   "venueGate": {
     "foodBuy": 16,

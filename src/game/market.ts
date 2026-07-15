@@ -1,5 +1,5 @@
 import { BALANCE, COPY, pickText } from './config'
-import type { LocationId, MarketSnapshot, MarketStock, RoadsideType } from './types'
+import type { LocationId, MarketPrices, MarketSnapshot, MarketStock, RoadsideType } from './types'
 
 export type { MarketPrices, MarketStock, MarketSnapshot } from './types'
 
@@ -8,6 +8,33 @@ export type MarketContext = LocationId | RoadsideType | 'shakedown' | 'post_show
 type PriceTier = 'low' | 'mid' | 'high'
 
 const M = BALANCE.markets
+
+const GAS_CONTEXTS = new Set<MarketContext>([
+  'truck_stop',
+  'supermarket',
+  'rest_area',
+  'farmers_market',
+])
+
+function applyGas(
+  context: MarketContext,
+  h: number,
+  prices: MarketPrices,
+  stock: Omit<MarketStock, 'gas'>,
+): { prices: MarketPrices; stock: MarketStock } {
+  if (!GAS_CONTEXTS.has(context)) {
+    return { prices, stock: { ...stock, gas: 0 } }
+  }
+  const gasBuy = jitter(M.tiers.gasBuy![pickTier(h + 11)], h + 12)
+  const S = M.stock
+  return {
+    prices: { ...prices, gasBuy },
+    stock: {
+      ...stock,
+      gas: S.gasBase + ((h >> S.gasShift) % S.gasMod) + 1,
+    },
+  }
+}
 
 function hashContext(seed: number, context: MarketContext): number {
   let h = seed
@@ -67,7 +94,7 @@ export function rollMarket(seed: number, context: MarketContext): MarketSnapshot
         drugsSell: V.drugsSell,
         ticketBuy: V.ticketBuy,
       },
-      stock: { ...V.stock },
+      stock: { ...V.stock, gas: 0 },
       flavor: V.flavor,
     }
   }
@@ -78,8 +105,10 @@ export function rollMarket(seed: number, context: MarketContext): MarketSnapshot
     const beerBuy = jitter(TIER.beerBuy!.low, h + 3)
     const drugsBuy = jitter(TIER.drugsBuy!.mid, h + 5)
     const S = M.stock
-    return {
-      prices: {
+    const snapped = applyGas(
+      context,
+      h,
+      {
         foodBuy,
         foodSell: sellFromBuy(foodBuy, 'high', h + 2),
         beerBuy,
@@ -88,12 +117,15 @@ export function rollMarket(seed: number, context: MarketContext): MarketSnapshot
         drugsSell: sellFromBuy(drugsBuy, 'mid', h + 6),
         ticketBuy: jitter(TIER.ticketBuy!.mid, h + 7),
       },
-      stock: {
+      {
         food: S.foodBase + (h % S.foodMod) + 4,
         beer: S.beerBase + ((h >> S.beerShift) % S.beerMod) + 3,
         drugs: S.drugsBase + ((h >> S.drugsShift) % S.drugsMod),
         tickets: S.ticketsBase + ((h >> S.ticketsShift) % S.ticketsMod),
       },
+    )
+    return {
+      ...snapped,
       flavor: 'Supermarket run — cheap food and beer, corporate fluorescent vibes.',
     }
   }
@@ -123,15 +155,17 @@ export function rollMarket(seed: number, context: MarketContext): MarketSnapshot
   const ticketBuy = jitter(TIER.ticketBuy![pickTier(h + 8)], h + 7)
 
   const S = M.stock
-  const stock: MarketStock = {
+  const baseStock = {
     food: S.foodBase + (h % S.foodMod),
     beer: S.beerBase + ((h >> S.beerShift) % S.beerMod),
     drugs: S.drugsBase + ((h >> S.drugsShift) % S.drugsMod),
     tickets: S.ticketsBase + ((h >> S.ticketsShift) % S.ticketsMod),
   }
 
-  return {
-    prices: {
+  const withGas = applyGas(
+    context,
+    h,
+    {
       foodBuy,
       foodSell,
       beerBuy,
@@ -140,7 +174,12 @@ export function rollMarket(seed: number, context: MarketContext): MarketSnapshot
       drugsSell,
       ticketBuy,
     },
-    stock,
+    baseStock,
+  )
+
+  return {
+    prices: withGas.prices,
+    stock: withGas.stock,
     flavor: flavorFor(buyTier, sellTier, h),
   }
 }

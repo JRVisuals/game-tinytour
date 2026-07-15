@@ -185,6 +185,7 @@ export interface MarketStock {
   beer: number
   drugs: number
   tickets: number
+  gas: number
 }
 
 export interface MarketSnapshot {
@@ -201,6 +202,7 @@ export interface MarketPrices {
   drugsBuy: number
   drugsSell: number
   ticketBuy?: number
+  gasBuy?: number
 }
 
 export interface RunStats {
@@ -270,6 +272,8 @@ export interface GameState {
   /** Brief action feedback — consumed by OutcomeToast */
   lastOutcome: string | null
   lastOutcomeTone: OutcomeTone
+  /** Bumps on every outcome so toasts restart when text repeats */
+  lastOutcomeSeq: number
 }
 
 export type OutcomeTone = 'default' | 'error'
