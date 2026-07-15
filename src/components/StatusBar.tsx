@@ -18,7 +18,7 @@ export function StatusBar() {
   const stop = state.tour?.stops[state.tour.currentStopIndex]
 
   return (
-    <Paper withBorder p="sm" mb="md">
+    <Paper withBorder p="sm" className="solid-panel" mb="md">
       <Group justify="space-between" mb="xs">
         <Text fw={600}>
           {activeCrew(state.crew).length}/{state.crew.length} on the lot

@@ -85,7 +85,7 @@ function CurrentCrewPanel({
   return (
     <Paper withBorder p="md" radius="md" h="100%">
       <Stack gap="sm">
-        <Title order={4}>This crew</Title>
+        <Title order={4}>Your Crew</Title>
         <Stack gap="xs">
           {saved.members.map((m) => (
             <Group key={m.name} gap="sm" wrap="nowrap">

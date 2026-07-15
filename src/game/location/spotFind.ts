@@ -2,7 +2,6 @@ import locationEventsJson from '../../content/location-events.json'
 import { BALANCE } from '../config'
 import type { GameState, LocationId, Resources } from '../types'
 import { appendStory, storyEvent } from '../crew/tourStory'
-import { outcomeReport } from '../outcome/report'
 
 interface SpotFindTemplate {
   id: string
@@ -55,27 +54,15 @@ export function applySpotFindOnVisit(
   s: GameState,
   location: LocationId,
   seed: number,
-  opts?: { skipLastOutcome?: boolean },
 ): GameState {
   const rolled = rollSpotFindEvent(location, seed)
   if (!rolled) return { ...s, spotFindEvent: null }
 
-  const resourcesBefore = { ...s.resources }
   const resources = applySpotFindEffects(s.resources, rolled.id)
-  let next: GameState = {
+  return {
     ...s,
     spotFindEvent: rolled,
     resources,
     tourStory: appendStory(s.tourStory, storyEvent(seed, rolled.title, rolled.body)),
-  }
-
-  if (opts?.skipLastOutcome) return next
-
-  return {
-    ...next,
-    lastOutcome: outcomeReport(rolled.title, {
-      resourcesBefore,
-      resourcesAfter: resources,
-    }),
   }
 }

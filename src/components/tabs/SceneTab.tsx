@@ -1,48 +1,23 @@
-import { useState } from 'react'
-import { Paper, SegmentedControl, Stack, Text } from '@mantine/core'
-import { OutcomeBanner } from '../OutcomeBanner'
+import { Paper, Stack } from '@mantine/core'
+import { SceneCrewNudge } from '../SceneCrewNudge'
+import { TabPanelHeader } from '../TabPanelHeader'
 import { PhaseRouter } from '../PhaseRouter'
 import { ScreenFrame } from '../ScreenFrame'
-import { SongCatalogPanel } from '../SongCatalogPanel'
-import { StatusLine } from '../StatusLine'
+import { sceneContextBlurb } from '../../game/scene/tab'
+import { useGame } from '../../game/GameContext'
 
-interface SceneTabProps {
-  showBets: boolean
-}
-
-export function SceneTab({ showBets }: SceneTabProps) {
-  const [section, setSection] = useState<'play' | 'bets'>('play')
+export function SceneTab() {
+  const { state } = useGame()
 
   return (
     <Stack gap="sm">
-      <StatusLine />
-      <OutcomeBanner />
-      {showBets && (
-        <SegmentedControl
-          fullWidth
-          size="xs"
-          value={section}
-          onChange={(v) => setSection(v as 'play' | 'bets')}
-          data={[
-            { label: 'Play', value: 'play' },
-            { label: 'Setlist bets', value: 'bets' },
-          ]}
-        />
-      )}
-      {section === 'bets' && showBets ? (
-        <SongCatalogPanel />
-      ) : (
-        <Paper withBorder p="lg" radius="md">
-          <ScreenFrame compactArt>
-            <PhaseRouter />
-          </ScreenFrame>
-        </Paper>
-      )}
-      {showBets && section === 'play' && (
-        <Text size="xs" c="dimmed" ta="center">
-          Setlist bets available — switch section above.
-        </Text>
-      )}
+      <TabPanelHeader title="Scene" blurb={sceneContextBlurb(state)} />
+      <SceneCrewNudge />
+      <Paper withBorder p="lg" radius="md">
+        <ScreenFrame compactArt>
+          <PhaseRouter />
+        </ScreenFrame>
+      </Paper>
     </Stack>
   )
 }

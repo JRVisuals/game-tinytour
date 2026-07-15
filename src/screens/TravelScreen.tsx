@@ -1,4 +1,5 @@
 import { Alert, Button, Group, Progress, Stack, Text, Title } from '@mantine/core'
+import { BackToSceneButton } from '../components/BackToSceneButton'
 import { BALANCE } from '../game/config'
 import { activeCrew } from '../game/crew/meters'
 import {
@@ -15,7 +16,6 @@ export function TravelScreen() {
     resolveTravelEvent,
     advanceTravelLeg,
     visitRoadside,
-    leaveRoadside,
   } = useGame()
 
   const tour = state.tour
@@ -63,12 +63,7 @@ export function TravelScreen() {
       <Stack>
         <Title order={2}>{ROADSIDE_LABELS[roadside]}</Title>
         <Text size="sm">{ROADSIDE_COPY[roadside]}</Text>
-        <Text size="xs" c="dimmed" ta="center">
-          Roadside vendors — open Crew → Hustle to buy or sell.
-        </Text>
-        <Button variant="default" onClick={leaveRoadside}>
-          Back on the road
-        </Button>
+        <BackToSceneButton />
       </Stack>
     )
   }

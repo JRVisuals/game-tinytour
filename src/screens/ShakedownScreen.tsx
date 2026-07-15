@@ -1,7 +1,7 @@
-import { Alert, Button, Group, Paper, Stack, Text, Title } from '@mantine/core'
-import { ClownJuiceMafiaPanel } from '../components/ClownJuiceMafiaPanel'
+import { Alert, Button, Group, Stack, Text, Title } from '@mantine/core'
 import { LocationNav } from '../components/LocationNav'
-import { SpotFindAlert } from '../components/SpotFindAlert'
+import { SceneBeatAlert } from '../components/SceneBeatAlert'
+import { TabHintButton } from '../components/TabHintButton'
 import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
 import { RESOURCE_BALANCE } from '../game/resources'
@@ -13,7 +13,7 @@ export function ShakedownScreen() {
   const venueOk = canEnterVenue(state.crew)
   const gateMessage = venueEntryBlockedMessage(state.crew)
   const event = state.shakedownLotEvent
-  const showBalloons = isClownJuiceMafia(event)
+  const clownJuice = isClownJuiceMafia(event)
 
   return (
     <Stack>
@@ -24,16 +24,15 @@ export function ShakedownScreen() {
       </Text>
 
       {event && (
-        <Paper withBorder p="sm" bg="rgba(120,40,140,0.12)">
-          <Text fw={600} mb={4}>
-            {event.title}
-          </Text>
-          <Text size="sm">{event.body}</Text>
-        </Paper>
+        <SceneBeatAlert
+          title={event.title}
+          body={event.body}
+          color={clownJuice ? 'grape' : 'teal'}
+        />
       )}
 
       {state.spotFindEvent && (
-        <SpotFindAlert
+        <SceneBeatAlert
           title={state.spotFindEvent.title}
           body={state.spotFindEvent.body}
         />
@@ -45,7 +44,9 @@ export function ShakedownScreen() {
         </Alert>
       )}
 
-      {showBalloons && <ClownJuiceMafiaPanel />}
+      {clownJuice && (
+        <TabHintButton tab="hustle">Balloon deals — Hustle</TabHintButton>
+      )}
 
       {state.resources.hasVehicle ? (
         <Text size="sm">Vehicle stash available (stub).</Text>
@@ -87,9 +88,7 @@ export function ShakedownScreen() {
         </Text>
       )}
       {state.currentMarket && (
-        <Text size="xs" c="dimmed" ta="center">
-          Vendors in the lot — open Crew → Hustle to trade.
-        </Text>
+        <TabHintButton tab="hustle">Vendors in the lot — Hustle</TabHintButton>
       )}
     </Stack>
   )

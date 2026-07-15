@@ -8,15 +8,19 @@
 
 html {
   min-height: 100%;
+  min-height: 100dvh;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
   background-color: transparent !important;
   position: relative;
   overflow-x: hidden;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 /* Fixed animated lot glow — sits behind the app (Mantine body bg was hiding this) */
@@ -137,9 +141,105 @@ body {
 
 #root {
   min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
   z-index: 1;
   background: transparent;
+}
+
+/* Title + shell — keep content below mobile browser chrome */
+.title-page-shell {
+  box-sizing: border-box;
+  min-height: 100dvh;
+  padding-top: max(env(safe-area-inset-top, 0px), 1.25rem);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 1rem);
+}
+
+.mantine-AppShell-header {
+  padding-top: env(safe-area-inset-top, 0px);
+  height: calc(var(--app-shell-header-height, 3.5rem) + env(safe-area-inset-top, 0px)) !important;
+}
+
+.mantine-AppShell-footer {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: calc(var(--app-shell-footer-height, 3.5rem) + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* Monospace logo — center the block, preserve character alignment */
+.ascii-logo-scroll {
+  overflow-x: auto;
+  text-align: center;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ascii-logo-pre {
+  display: inline-block;
+  text-align: left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    monospace;
+  font-size: clamp(3px, 2.1vw, 8px);
+  line-height: 1.12;
+  letter-spacing: 0;
+  color: var(--mantine-color-teal-3);
+  white-space: pre;
+}
+
+.ascii-header-pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    monospace;
+  font-size: 5.5px;
+  line-height: 1.05;
+  letter-spacing: 0;
+  color: var(--mantine-color-teal-3);
+  white-space: pre;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+@media (min-width: 400px) {
+  .ascii-header-pre {
+    font-size: 6.5px;
+  }
+}
+
+.tab-panel-header .mantine-Text-root:first-of-type {
+  line-height: 1.2;
+}
+
+.tab-panel-header {
+  flex-shrink: 0;
+}
+
+.solid-panel.mantine-Paper-root {
+  background-color: #0f1613 !important;
+  backdrop-filter: none;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.clown-juice-panel.mantine-Paper-root {
+  background-color: #1a1028 !important;
+  backdrop-filter: none;
+  border-color: rgba(140, 70, 180, 0.45);
+}
+
+.mantine-AppShell-header {
+  background-color: #0f1613 !important;
+  backdrop-filter: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mantine-AppShell-footer {
+  background-color: #0f1613 !important;
+  backdrop-filter: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.play-chrome-status {
+  flex-shrink: 0;
+}
+
+.mantine-AppShell-footer .mantine-Group-root {
+  flex-shrink: 0;
 }
 
 /* Clearer click targets on the dark lot UI */
@@ -210,5 +310,58 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .art-slot__placeholder {
     animation: none;
+  }
+}
+
+.outcome-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 300;
+  width: min(calc(100% - 2rem), 32rem);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+.outcome-toast .mantine-Alert-root {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+
+.outcome-toast--in {
+  animation: outcome-toast-fade-in 450ms ease forwards;
+}
+
+.outcome-toast--out {
+  animation: outcome-toast-fade-out 450ms ease forwards;
+}
+
+@keyframes outcome-toast-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes outcome-toast-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outcome-toast--in,
+  .outcome-toast--out {
+    animation: none;
+    opacity: 1;
+  }
+
+  .outcome-toast--out {
+    opacity: 0;
   }
 }

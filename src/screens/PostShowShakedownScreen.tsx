@@ -1,4 +1,6 @@
-import { Alert, Button, Paper, Stack, Text, Title } from '@mantine/core'
+import { Alert, Button, Stack, Text, Title } from '@mantine/core'
+import { SceneBeatAlert } from '../components/SceneBeatAlert'
+import { TabHintButton } from '../components/TabHintButton'
 import { useGame } from '../game/GameContext'
 
 export function PostShowShakedownScreen() {
@@ -14,14 +16,7 @@ export function PostShowShakedownScreen() {
         {stop?.city ?? '…'}. One more hustle before the next leg.
       </Text>
 
-      {event && (
-        <Paper withBorder p="sm" bg="rgba(0,80,70,0.12)">
-          <Text fw={600} mb={4}>
-            {event.title}
-          </Text>
-          <Text size="sm">{event.body}</Text>
-        </Paper>
-      )}
+      {event && <SceneBeatAlert title={event.title} body={event.body} />}
 
       {!event && (
         <Alert color="teal" title="Quiet lot">
@@ -30,9 +25,7 @@ export function PostShowShakedownScreen() {
       )}
 
       {state.currentMarket && (
-        <Text size="xs" c="dimmed" ta="center">
-          After-show vendors — open Crew → Hustle (balloons too).
-        </Text>
+        <TabHintButton tab="hustle">After-show vendors — Hustle</TabHintButton>
       )}
 
       <Button color="teal" onClick={prepNextLeg}>

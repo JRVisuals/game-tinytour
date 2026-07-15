@@ -267,9 +267,12 @@ export interface GameState {
   marketCopChase: { fine: number; proceeds: number; reason?: 'drug_sell' | 'balloons' } | null
   /** Last crew bail / warning — shown in UI */
   crewAlert: string | null
-  /** Clear mechanical recap: resource + crew deltas after an action */
+  /** Brief action feedback — consumed by OutcomeToast */
   lastOutcome: string | null
+  lastOutcomeTone: OutcomeTone
 }
+
+export type OutcomeTone = 'default' | 'error'
 
 export const PHASE_LABELS: Record<PhaseId, string> = {
   title: 'Title',

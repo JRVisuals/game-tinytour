@@ -1,9 +1,9 @@
-import { Button, Stack, Text, Title } from '@mantine/core'
+import { Button, Stack, Text } from '@mantine/core'
+import { AsciiTitleLogo } from '../components/AsciiTitleLogo'
 import { ArtSlot } from '../components/ArtSlot'
 import { resolveArtSceneById } from '../game/art/scenes'
 import { useGame } from '../game/GameContext'
 
-const titleLogo = resolveArtSceneById('title-logo')
 const titleScene = resolveArtSceneById('title')
 
 export function TitleScreen() {
@@ -11,17 +11,7 @@ export function TitleScreen() {
 
   return (
     <Stack gap="md">
-      <ArtSlot
-        label={titleLogo.label}
-        assetHint={titleLogo.hint}
-        src={titleLogo.src}
-        alt="Little Jam Band Tour"
-        minHeight={titleLogo.height}
-        compact
-      />
-      <Title order={1} ta="center">
-        Little Jam Band Tour
-      </Title>
+      <AsciiTitleLogo />
       <Text ta="center" c="dimmed">
         Follow the band. Hustle the lot. Make the show.
       </Text>

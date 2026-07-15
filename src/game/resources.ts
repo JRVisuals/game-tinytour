@@ -25,4 +25,14 @@ export const RESOURCE_LABELS: Record<keyof Resources, string> = {
   hasVehicle: 'Vehicle',
 }
 
+export const RESOURCE_EMOJI: Record<keyof Resources, string> = {
+  cash: '💵',
+  food: '🍗',
+  beer: '🍺',
+  drugs: '🍄',
+  tickets: '🎟️',
+  gas: '⛽',
+  hasVehicle: '🚐',
+}
+
 export { R as RESOURCE_BALANCE }

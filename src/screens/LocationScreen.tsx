@@ -1,6 +1,8 @@
 import { Button, Group, Stack, Text, Title } from '@mantine/core'
+import { BackToSceneButton } from '../components/BackToSceneButton'
 import { LocationNav } from '../components/LocationNav'
-import { SpotFindAlert } from '../components/SpotFindAlert'
+import { SceneBeatAlert } from '../components/SceneBeatAlert'
+import { TabHintButton } from '../components/TabHintButton'
 import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { COPY } from '../game/config'
 import { useGame } from '../game/GameContext'
@@ -23,6 +25,7 @@ export function LocationScreen() {
       <Stack>
         <Title order={2}>Venue gates</Title>
         <Text>{COPY.locations.venue}</Text>
+        <BackToSceneButton />
         {stop && (
           <Text size="sm" c="dimmed">
             {state.tour?.band.name} · {stop.venue}, {stop.city}
@@ -32,9 +35,7 @@ export function LocationScreen() {
           Showtime — last chance to flip stash or grab tickets.
         </Text>
         {prices && (
-          <Text size="xs" c="dimmed" ta="center">
-            Gate vendors — open Crew → Hustle to trade.
-          </Text>
+          <TabHintButton tab="hustle">Gate vendors — Hustle</TabHintButton>
         )}
         {state.turnsUntilShow > 0 && (
           <>
@@ -45,7 +46,7 @@ export function LocationScreen() {
               current="venue"
               turnsUntilShow={state.turnsUntilShow}
               onGo={goToLocation}
-              exclude={['venue']}
+              exclude={['venue', 'shakedown']}
             />
           </>
         )}
@@ -65,8 +66,9 @@ export function LocationScreen() {
     <Stack>
       <Title order={2}>{loc.split('_').join(' ')}</Title>
       <Text>{COPY.locations[loc]}</Text>
+      <BackToSceneButton />
       {state.spotFindEvent && (
-        <SpotFindAlert
+        <SceneBeatAlert
           title={state.spotFindEvent.title}
           body={state.spotFindEvent.body}
         />
@@ -78,11 +80,10 @@ export function LocationScreen() {
         current={loc}
         turnsUntilShow={state.turnsUntilShow}
         onGo={goToLocation}
+        exclude={['shakedown']}
       />
       {prices && (
-        <Text size="xs" c="dimmed" ta="center">
-          Vendors nearby — open Crew → Hustle to trade.
-        </Text>
+        <TabHintButton tab="hustle">Vendors nearby — Hustle</TabHintButton>
       )}
       {loc === 'hotel' && (
         <Button

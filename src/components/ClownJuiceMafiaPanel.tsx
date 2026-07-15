@@ -6,7 +6,11 @@ export function ClownJuiceMafiaPanel() {
   const { state, clownJuiceBalloonChoice, resolveMarketCopChase } = useGame()
   const chase = state.marketCopChase
   const cfg = BALANCE.shakedown.clownJuiceMafia
-  const fx = BALANCE.markets.balloons
+  const blurb = pickText(
+    COPY.travelOutcomes.clown_juice.panel,
+    state.rngSeed + 77,
+    "Who doesn't love bloons?!",
+  )
   const chasePrompt = chase
     ? pickText(
         COPY.travelOutcomes.market_cop_chase.balloons_prompt,
@@ -16,13 +20,12 @@ export function ClownJuiceMafiaPanel() {
     : null
 
   return (
-    <Paper withBorder p="sm" bg="rgba(120,40,140,0.08)">
+    <Paper withBorder p="sm" className="clown-juice-panel">
       <Text fw={600} mb="xs">
         Clown Juice Mafia
       </Text>
-      <Text size="xs" c="dimmed" mb="sm">
-        Vibe +{fx.vibe} / health {fx.health} per hit. Deal is {cfg.dealDoses} hits for ${cfg.dealPrice}
-        — haggle risk: fist to the mouth.
+      <Text size="sm" c="gray.2" mb="sm" fs="italic">
+        {blurb}
       </Text>
 
       {chase && (
