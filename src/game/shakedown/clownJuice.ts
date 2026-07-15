@@ -14,7 +14,7 @@ export function clownJuiceDoses(choice: ClownJuiceChoice): number {
 }
 
 export function canAttemptClownJuiceDeal(resources: Resources): boolean {
-  return resources.cash >= C.dealPrice || resources.beer > 0
+  return resources.cash >= C.dealPrice
 }
 
 export function rollClownJuiceBeerDeal(seed: number): boolean {
@@ -32,18 +32,16 @@ export interface ClownJuiceDealResolution {
   punched: boolean
 }
 
-/** Beer trade first (no punch); otherwise cash deal with optional punch. */
+/** $10 always; beer (42%) also spends one can and skips Mr NO DEALS' punch. */
 export function resolveClownJuiceDeal(
   resources: Resources,
   seed: number,
 ): ClownJuiceDealResolution | null {
+  if (resources.cash < C.dealPrice) return null
   if (resources.beer > 0 && rollClownJuiceBeerDeal(seed)) {
     return { kind: 'beer', punched: false }
   }
-  if (resources.cash >= C.dealPrice) {
-    return { kind: 'cash', punched: rollClownJuicePunch(seed + 9) }
-  }
-  return null
+  return { kind: 'cash', punched: rollClownJuicePunch(seed + 9) }
 }
 
 export function clownJuiceBuyMessage(
@@ -56,7 +54,7 @@ export function clownJuiceBuyMessage(
     return pickText(pool.retail, seed, 'Balloons — mafia retail price.')
   }
   if (opts?.beerDeal) {
-    return pickText(pool.deal_beer, seed, 'One beer, three balloons. No knuckles.')
+    return pickText(pool.deal_beer, seed, 'Ten bucks and a beer — three balloons, no knuckles.')
   }
   if (opts?.punched) {
     return pickText(pool.deal_punched, seed, 'Deal went sideways — fist to mouth.')

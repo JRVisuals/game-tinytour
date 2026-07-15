@@ -1,4 +1,4 @@
-import { Button, List, Stack, Text, Title } from '@mantine/core'
+import { Button, List, Stack, Text } from '@mantine/core'
 import { SceneBeatAlert } from '../components/SceneBeatAlert'
 import { useGame } from '../game/GameContext'
 
@@ -11,10 +11,11 @@ export function PostShowScreen() {
 
   return (
     <Stack>
-      <Title order={2}>{missed ? 'Stayed out & hustled' : 'Post-show'}</Title>
       <Text>{state.postShowRecap}</Text>
 
-      {hustle && <SceneBeatAlert title={hustle.title} body={hustle.body} />}
+      {hustle && (
+        <SceneBeatAlert title={hustle.title} body={hustle.body} loot={hustle.loot} />
+      )}
 
       {state.lastSetlist && (
         <>

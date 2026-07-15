@@ -13,13 +13,22 @@ export function BackToSceneButton({ onBackToScene }: BackToSceneButtonProps) {
   const atLotStop =
     state.phase === 'location' &&
     state.currentLocation !== 'shakedown' &&
-    (state.currentLocation !== 'venue' || state.turnsUntilShow > 0)
+    state.currentLocation !== 'venue'
 
-  if (!atRoadside && !atLotStop) return null
+  const tabReturnOnly =
+    !!onBackToScene &&
+    (state.phase === 'shakedown' ||
+      state.phase === 'location' ||
+      isAtRoadsideHustle(state))
+
+  if (!atRoadside && !atLotStop && !tabReturnOnly) return null
 
   const handleClick = () => {
-    if (atRoadside) leaveRoadside()
-    else returnToShakedown()
+    if (atRoadside) {
+      leaveRoadside()
+    } else if (!onBackToScene && atLotStop) {
+      returnToShakedown()
+    }
     onBackToScene?.()
   }
 

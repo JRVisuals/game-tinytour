@@ -235,9 +235,9 @@
       "Bulk nitrous hustle. Everyone's buzzing; nobody's bleeding. Yet."
     ],
     "deal_beer": [
-      "You slide them a beer. Three balloons, all smiles — no knuckles.",
-      "Warm lager, cold nitrous. The skull paint approves.",
-      "Beer for bloons. Diplomacy wins. Nobody gets punched."
+      "Ten bucks and a beer — Mr NO DEALS grins. Three balloons, no knuckles.",
+      "Cash on the table, warm lager on the side. Skull paint approves.",
+      "Beer keeps the fist away. Still costs ten. Worth it."
     ],
     "deal_punched": [
       "You pushed the deal. Skull paint met your jaw. Extra health damage.",
@@ -305,8 +305,9 @@
   },
   "run": {
     "shuffle": [
-      "You shuffled on home. The lot will still be there next time.",
-      "Tour ended. Couch and questionable leftovers await."
+      "You shuffled on home. Crew rep took a hit — the lot will still be there next time.",
+      "Early exit. Couch, questionable leftovers, and a reputation ding await.",
+      "Tour ended before the encore. Rep drops; the road remembers."
     ],
     "shuffle_blocked": [
       "Can't bail yet — play at least one show before going home.",

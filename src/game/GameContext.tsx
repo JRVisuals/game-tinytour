@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { outcomeReport, type OutcomeSnapshot } from './outcome/report'
+import { outcomeReport, formatResourceDeltas, type OutcomeSnapshot } from './outcome/report'
 import { payoutForBet, resolveSetlistBet } from './betting'
 import {
   buildRunResources,
@@ -1545,11 +1545,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const deal = resolveClownJuiceDeal(resources, rngSeed)
         if (!deal) return s
 
+        resources = { ...resources, cash: resources.cash - price }
         if (deal.kind === 'beer') {
           resources = { ...resources, beer: resources.beer - 1 }
           flavor = clownJuiceBuyMessage(choice, rngSeed, { beerDeal: true })
         } else {
-          resources = { ...resources, cash: resources.cash - price }
           flavor = clownJuiceBuyMessage(choice, rngSeed, { punched: deal.punched })
           if (deal.punched) {
             const punch = applyPunchToRandomCrew(
@@ -1803,10 +1803,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
         crew: crewAfterBets,
       } = resolveBets(s, null, recap, { attendShow: false })
       let resources = afterBets
+      const resourcesBeforeHustle = { ...resources }
       if (hustle) {
         resources = applyMissShowHustleEffects(resources, hustle.id)
       }
+      const hustleLoot = hustle
+        ? formatResourceDeltas(resourcesBeforeHustle, resources)
+        : ''
       const runStats = patchRunStats(s.runStats, { showsMissed: s.runStats.showsMissed + 1 })
+      const hustleEvent = hustle
+        ? { ...hustle, loot: hustleLoot || undefined }
+        : null
+      const hustleSnap: OutcomeSnapshot | undefined =
+        hustle && hustleLoot
+          ? { resourcesBefore: resourcesBeforeHustle, resourcesAfter: resources }
+          : undefined
       return {
         ...s,
         crew: crewAfterBets,
@@ -1815,7 +1826,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         postShowRecap: recapOut,
         runStats,
         runBetsWon,
-        missShowHustleEvent: hustle,
+        missShowHustleEvent: hustleEvent,
         postShowShakedownEvent: null,
         tourStory: hustle
           ? appendStory(
@@ -1832,6 +1843,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         activeSetlistBets: [],
         lastSetlist: null,
         phase: 'post_show',
+        ...(hustleSnap ? setOutcome(s, hustle!.title, hustleSnap) : {}),
       }
     })
   }, [])
@@ -1841,10 +1853,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!s.tour) return s
       const seed = s.rngSeed + 41
       const rolled = rollPostShowShakedownEvent(seed)
+      const resourcesBefore = { ...s.resources }
       let resources = { ...s.resources }
       if (rolled) {
         resources = applyShakedownEventEffects(resources, rolled.id)
       }
+      const loot = rolled ? formatResourceDeltas(resourcesBefore, resources) : ''
+      const event = rolled ? { ...rolled, loot: loot || undefined } : null
+      const snap: OutcomeSnapshot | undefined =
+        rolled && loot
+          ? { resourcesBefore, resourcesAfter: resources }
+          : undefined
       let next = applyMarket(
         { ...s, resources, rngSeed: seed },
         'post_show_shakedown',
@@ -1853,7 +1872,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       return {
         ...next,
         phase: 'post_show_shakedown',
-        postShowShakedownEvent: rolled,
+        postShowShakedownEvent: event,
         tourStory: appendStory(
           next.tourStory,
           storyEvent(
@@ -1862,6 +1881,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             rolled?.body ?? 'The lot exhales. Time to hustle before the highway.',
           ),
         ),
+        ...(snap ? setOutcome(s, rolled!.title, snap) : {}),
       }
     })
   }, [])

@@ -13,13 +13,14 @@
     "400": -15
   },
   "rep": {
+    "cap": 9999,
     "venue": 20,
     "tourComplete": 100,
     "betWon": 15,
     "bankDivisor": 10,
     "milesDivisor": 5,
     "dayJobPenalty": 30,
-    "shufflePenalty": 10
+    "shufflePenalty": 25
   },
   "leaderKit": {
     "food": 3,

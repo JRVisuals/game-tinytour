@@ -1,10 +1,11 @@
-import { Alert, Button, Group, Stack, Text, Title } from '@mantine/core'
+import { Alert, Button, Group, Stack, Text } from '@mantine/core'
 import { LocationNav } from '../components/LocationNav'
 import { SceneBeatAlert } from '../components/SceneBeatAlert'
 import { TabHintButton } from '../components/TabHintButton'
 import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
 import { RESOURCE_BALANCE } from '../game/resources'
+import { showtimeTurnsLabel } from '../game/showtime'
 import { isClownJuiceMafia } from '../game/shakedown/events'
 
 export function ShakedownScreen() {
@@ -17,7 +18,9 @@ export function ShakedownScreen() {
 
   return (
     <Stack>
-      <Title order={2}>Shakedown</Title>
+      <Text size="sm" c="orange" fw={700}>
+        {showtimeTurnsLabel(state.turnsUntilShow)}
+      </Text>
       <Text>
         Lot hub near <strong>{stop?.venue ?? 'the venue'}</strong> in{' '}
         {stop?.city ?? '…'}. Store / grab gear from the car when you have one.

@@ -1,4 +1,4 @@
-import { Alert, Button, Stack, Text, Title } from '@mantine/core'
+import { Alert, Button, Stack, Text } from '@mantine/core'
 import { SceneBeatAlert } from '../components/SceneBeatAlert'
 import { TabHintButton } from '../components/TabHintButton'
 import { useGame } from '../game/GameContext'
@@ -10,13 +10,14 @@ export function PostShowShakedownScreen() {
 
   return (
     <Stack>
-      <Title order={2}>After-show shakedown</Title>
       <Text>
         The lot's still humming outside <strong>{stop?.venue ?? 'the venue'}</strong> in{' '}
         {stop?.city ?? '…'}. One more hustle before the next leg.
       </Text>
 
-      {event && <SceneBeatAlert title={event.title} body={event.body} />}
+      {event && (
+        <SceneBeatAlert title={event.title} body={event.body} loot={event.loot} />
+      )}
 
       {!event && (
         <Alert color="teal" title="Quiet lot">

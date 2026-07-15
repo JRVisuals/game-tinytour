@@ -194,6 +194,7 @@ export interface CrewEconomyBalance {
   dayJobStipendPerMember: number
   starterTierRep: Record<string, number>
   rep: {
+    cap: number
     venue: number
     tourComplete: number
     betWon: number

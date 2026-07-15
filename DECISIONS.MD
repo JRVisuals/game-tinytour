@@ -2,6 +2,21 @@
 
 Dated, short ADRs. Newest first. One decision per bullet block.
 
+## 2026-07-15 — TINY TOUR mobile play shell
+
+- **Display name** TINY TOUR in-app; repo/package unchanged.
+- **4-tab play shell** — Scene · Hustle · Crew · Journal; bottom nav, `Container size="sm"`.
+- **Hustle tab** split from Scene (markets, bets, clown juice); gated to lot phases + roadside pull-over; auto-opens on pull-over.
+- **Outcome split** — transient action feedback via center toast; persistent world beats inline (`SceneBeatAlert`). No duplicate banner + card for same beat.
+- **Crew UI** — accordion rows with one status chip; full meters/care in drawer.
+- **Scene headers** — `TabPanelHeader` on Scene tab; phase screens drop duplicate `Title` during play.
+- **Journal** — tour story + in-run stats; title-menu STATS keeps full career grid.
+
+## 2026-07-15 — Clown Juice beer deal
+
+- Deal **always costs $10** + 3 balloons.
+- Beer (42% when held) also spends 1 beer and **only** waives Mr NO DEALS punch — not the cash.
+
 ## 2026-07-14 — v0.1.1 travel, catalog, crew
 
 - **1–4 legs** from pseudo-distance between cities + jitter.

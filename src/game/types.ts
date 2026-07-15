@@ -133,6 +133,14 @@ export interface Setlist {
   songIds?: string[]
 }
 
+/** Inline lot / post-show beat with optional stash delta summary */
+export interface SceneLotEvent {
+  id: string
+  title: string
+  body: string
+  loot?: string
+}
+
 export type RoadsideType = 'truck_stop' | 'rest_area' | 'farmers_market' | 'supermarket'
 
 export interface TravelLeg {
@@ -237,13 +245,13 @@ export interface GameState {
   lastSetlist: Setlist | null
   postShowRecap: string
   /** Random lot moment after the show — title + body from shakedown-events.json */
-  postShowShakedownEvent: { id: string; title: string; body: string } | null
+  postShowShakedownEvent: SceneLotEvent | null
   /** Random lot moment on pre-show shakedown — e.g. Clown Juice Mafia */
-  shakedownLotEvent: { id: string; title: string; body: string } | null
+  shakedownLotEvent: SceneLotEvent | null
   /** Rare cash find when visiting park or shakedown */
-  spotFindEvent: { id: string; title: string; body: string } | null
+  spotFindEvent: SceneLotEvent | null
   /** Lot hustle when you skip the show */
-  missShowHustleEvent: { id: string; title: string; body: string } | null
+  missShowHustleEvent: SceneLotEvent | null
   rngSeed: number
   runStats: RunStats
   runBetsWon: number

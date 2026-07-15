@@ -16,8 +16,8 @@ import { stickerLabel } from '../game/crew/stickers'
 import { useGame } from '../game/GameContext'
 import { RESOURCE_LABELS } from '../game/resources'
 import type { CrewCareerStats, Resources, RunStats, SavedCrew } from '../game/types'
-import { STAT_LABELS } from '../game/types'
 import { CrewSticker } from '../components/CrewSticker'
+import { RunStatsGrid } from '../components/RunStatsGrid'
 
 const SUPPLY_KEYS: (keyof Resources)[] = ['food', 'beer', 'drugs', 'tickets', 'gas']
 
@@ -58,18 +58,6 @@ function SuppliesGrid({
         </Text>
       </SimpleGrid>
     </Stack>
-  )
-}
-
-function StatGrid({ stats }: { stats: RunStats }) {
-  return (
-    <SimpleGrid cols={2} spacing="xs">
-      {(Object.keys(STAT_LABELS) as (keyof typeof STAT_LABELS)[]).map((key) => (
-        <Text key={key} size="sm">
-          {STAT_LABELS[key]}: {stats[key] ?? 0}
-        </Text>
-      ))}
-    </SimpleGrid>
   )
 }
 
@@ -159,7 +147,7 @@ function CareerPanel({
 
         <Divider label="Lifetime totals" labelPosition="left" />
 
-        <StatGrid stats={career ?? fallbackStats} />
+        <RunStatsGrid stats={career ?? fallbackStats} />
       </Stack>
     </Paper>
   )
@@ -195,7 +183,7 @@ export function StatsScreen() {
                 <Paper withBorder p="md" radius="md">
                   <Stack gap="sm">
                     <Title order={4}>This run</Title>
-                    <StatGrid stats={state.runStats} />
+                    <RunStatsGrid stats={state.runStats} />
                   </Stack>
                 </Paper>
               )}

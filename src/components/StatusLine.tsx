@@ -1,6 +1,7 @@
-import { Group, Paper, Stack, Text } from '@mantine/core'
+import { Badge, Group, Paper, Stack, Text } from '@mantine/core'
 import { TourMapStrip } from './TourMapStrip'
 import { RESOURCE_EMOJI } from '../game/resources'
+import { isLotTurnPhase, showtimeTurnsLabel } from '../game/showtime'
 import { useGame } from '../game/GameContext'
 
 const RESOURCE_KEYS = ['cash', 'food', 'beer', 'drugs', 'tickets', 'gas'] as const
@@ -11,8 +12,7 @@ export function StatusLine() {
   const tour = state.tour
   const stop = tour?.stops[tour.currentStopIndex]
   const { resources } = state
-  const showTurns =
-    (state.phase === 'shakedown' || state.phase === 'location') && state.turnsUntilShow >= 0
+  const showTurns = isLotTurnPhase(state.phase)
 
   return (
     <Paper withBorder p="sm" className="solid-panel play-chrome-status" mb={0}>
@@ -28,19 +28,29 @@ export function StatusLine() {
             {tour && stop ? (
               <>
                 {tour.band.name} · {stop.city}
-                {showTurns && (
-                  <Text component="span" size="sm" c="orange.3" fw={600}>
-                    {' '}
-                    · {state.turnsUntilShow} turn{state.turnsUntilShow === 1 ? '' : 's'}
-                  </Text>
-                )}
               </>
             ) : (
               'On tour'
             )}
           </Text>
-          {tour && tour.stops.length > 0 && <TourMapStrip tour={tour} />}
+          <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
+            {showTurns && (
+              <Badge
+                size="lg"
+                variant="filled"
+                color={state.turnsUntilShow <= 0 ? 'red' : 'orange'}
+              >
+                {showtimeTurnsLabel(state.turnsUntilShow)}
+              </Badge>
+            )}
+            {tour && tour.stops.length > 0 && <TourMapStrip tour={tour} />}
+          </Group>
         </Group>
+        {showTurns && state.turnsUntilShow > 0 && (
+          <Text size="xs" c="dimmed">
+            Each lot move burns one turn — hustle at gates before time runs out.
+          </Text>
+        )}
         <Group gap="md" wrap="wrap">
           <Text size="md" fw={700}>
             {RESOURCE_EMOJI.cash} {resources.cash}

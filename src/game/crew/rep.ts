@@ -4,6 +4,11 @@ import type { CrewCareerStats, RunStats, SavedCrew, StarterTier } from '../types
 
 const E = BALANCE.crewEconomy
 
+export function clampRep(rep: number): number {
+  const cap = E.rep.cap
+  return Math.max(0, Math.min(cap, Math.round(rep)))
+}
+
 export function emptyCareerStats(): CrewCareerStats {
   return {
     venuesVisited: 0,
@@ -63,16 +68,18 @@ export function updateCrewRep(
   tourCompleted: boolean,
 ): SavedCrew {
   const career = mergeRunIntoCareer(saved.career, run, outcome, betsWon)
-  let rep =
-    saved.rep +
-    computeRunRepGain(run, betsWon, bankAfter, tourCompleted)
+  let rep = saved.rep
+  if (outcome !== 'shuffle') {
+    rep += computeRunRepGain(run, betsWon, bankAfter, tourCompleted)
+  }
   rep = applyRepOutcomeDelta(rep, outcome)
+  const clamped = clampRep(rep)
   return {
     ...saved,
     bank: bankAfter,
     career,
-    rep: Math.max(0, Math.min(999, rep)),
-    bestRep: Math.max(saved.bestRep, Math.max(0, Math.min(999, rep))),
+    rep: clamped,
+    bestRep: Math.max(saved.bestRep, clamped),
   }
 }
 

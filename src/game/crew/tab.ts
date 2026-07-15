@@ -10,5 +10,5 @@ export function crewContextBlurb(state: GameState): string {
   })
   if (rough) return 'Rough meters — expand a row and feed the squad.'
 
-  return 'Crew meters, stash, and care — keep everyone on the bus.'
+  return 'Crew meters and care — keep everyone on the bus.'
 }

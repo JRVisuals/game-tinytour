@@ -1,4 +1,4 @@
-import { Alert, Button, Group, Progress, Stack, Text, Title } from '@mantine/core'
+import { Alert, Button, Group, Progress, Stack, Text } from '@mantine/core'
 import { BackToSceneButton } from '../components/BackToSceneButton'
 import { BALANCE } from '../game/config'
 import { activeCrew } from '../game/crew/meters'
@@ -25,7 +25,6 @@ export function TravelScreen() {
   if (!tour || !travel || !stop) {
     return (
       <Stack>
-        <Title order={2}>Travel</Title>
         <Text>No route loaded.</Text>
       </Stack>
     )
@@ -61,7 +60,7 @@ export function TravelScreen() {
   if (travel.atRoadside && roadside && state.currentMarket && state.currentMarketStock) {
     return (
       <Stack>
-        <Title order={2}>{ROADSIDE_LABELS[roadside]}</Title>
+        <Text fw={600}>{ROADSIDE_LABELS[roadside]}</Text>
         <Text size="sm">{ROADSIDE_COPY[roadside]}</Text>
         <BackToSceneButton />
       </Stack>
@@ -70,7 +69,6 @@ export function TravelScreen() {
 
   return (
     <Stack>
-      <Title order={2}>On the road</Title>
       <Text>
         Following <strong>{tour.band.name}</strong> — next stop:{' '}
         <strong>{stop.city}</strong> ({stop.venue})

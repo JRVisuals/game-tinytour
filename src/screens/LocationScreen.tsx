@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Text, Title } from '@mantine/core'
+import { Button, Group, Stack, Text } from '@mantine/core'
 import { BackToSceneButton } from '../components/BackToSceneButton'
 import { LocationNav } from '../components/LocationNav'
 import { SceneBeatAlert } from '../components/SceneBeatAlert'
@@ -7,6 +7,7 @@ import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { COPY } from '../game/config'
 import { useGame } from '../game/GameContext'
 import { RESOURCE_BALANCE } from '../game/resources'
+import { showtimeTurnsLabel } from '../game/showtime'
 
 export function LocationScreen() {
   const { state, goToLocation, enterShow, hotelCrash } = useGame()
@@ -23,9 +24,10 @@ export function LocationScreen() {
   if (loc === 'venue') {
     return (
       <Stack>
-        <Title order={2}>Venue gates</Title>
+        <Text size="sm" c="orange" fw={700}>
+          {showtimeTurnsLabel(state.turnsUntilShow)}
+        </Text>
         <Text>{COPY.locations.venue}</Text>
-        <BackToSceneButton />
         {stop && (
           <Text size="sm" c="dimmed">
             {state.tour?.band.name} · {stop.venue}, {stop.city}
@@ -64,7 +66,9 @@ export function LocationScreen() {
 
   return (
     <Stack>
-      <Title order={2}>{loc.split('_').join(' ')}</Title>
+      <Text size="sm" c="orange" fw={700}>
+        {showtimeTurnsLabel(state.turnsUntilShow)}
+      </Text>
       <Text>{COPY.locations[loc]}</Text>
       <BackToSceneButton />
       {state.spotFindEvent && (
@@ -74,7 +78,9 @@ export function LocationScreen() {
         />
       )}
       <Text size="sm" c="dimmed">
-        Turns left before show: {state.turnsUntilShow}
+        {state.turnsUntilShow > 0
+          ? 'Each move burns a turn.'
+          : 'Out of turns — head to venue gates or into the show.'}
       </Text>
       <LocationNav
         current={loc}

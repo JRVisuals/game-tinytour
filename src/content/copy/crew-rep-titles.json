@@ -1,14 +1,29 @@
 {
   "tiers": [
     { "min": 0, "name": "New Boogie Bees" },
+    { "min": 25, "name": "Lot Lurkers" },
+    { "min": 50, "name": "Grass Stain Greenhorns" },
+    { "min": 75, "name": "Tailgate Tadpoles" },
     { "min": 100, "name": "Tour Kids on the Block" },
+    { "min": 150, "name": "Miracle Line Regulars" },
     { "min": 200, "name": "Green Scene Sardines" },
-    { "min": 300, "name": "Lot Report All-Stars" },
-    { "min": 400, "name": "Rail Rider Rangers" },
-    { "min": 500, "name": "Deep Cut Disciples" },
-    { "min": 600, "name": "Miracle Mafia" },
-    { "min": 700, "name": "Encore Extortionists" },
-    { "min": 800, "name": "Legendary Lot Liquidity" },
-    { "min": 900, "name": "Hall of Hoopla Heads" }
+    { "min": 275, "name": "Shakedown Shadows" },
+    { "min": 350, "name": "Lot Report All-Stars" },
+    { "min": 450, "name": "Rail Rider Rangers" },
+    { "min": 550, "name": "Deep Cut Disciples" },
+    { "min": 650, "name": "Setlist Speculators" },
+    { "min": 750, "name": "Miracle Mafia" },
+    { "min": 850, "name": "Encore Extortionists" },
+    { "min": 1000, "name": "Legendary Lot Liquidity" },
+    { "min": 1250, "name": "Taper Table Royalty" },
+    { "min": 1500, "name": "VIP Bathroom Alumni" },
+    { "min": 2000, "name": "Tour Circuit Dignitaries" },
+    { "min": 2500, "name": "Lot Elders Council" },
+    { "min": 3000, "name": "Rail Car Aristocracy" },
+    { "min": 4000, "name": "Hall of Hoopla Heads" },
+    { "min": 5000, "name": "Phish Food Phamily" },
+    { "min": 6500, "name": "Eternal Shakedown Saints" },
+    { "min": 8000, "name": "Mythic Miracle Council" },
+    { "min": 9500, "name": "Infinite Encore Legends" }
   ]
 }

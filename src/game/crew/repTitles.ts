@@ -1,8 +1,7 @@
 import { COPY } from '../config'
+import { clampRep } from './rep'
 
-export function clampRep(rep: number): number {
-  return Math.max(0, Math.min(999, Math.round(rep)))
-}
+export { clampRep }
 
 export function crewRepTierName(rep: number): string {
   const score = clampRep(rep)
