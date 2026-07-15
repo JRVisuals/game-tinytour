@@ -21,7 +21,6 @@ export function goToVenueGates(
     ...s,
     currentLocation: 'venue',
     phase: 'location',
-    turnsUntilShow: 0,
     rngSeed: seed,
     crewAlert: null,
     tourStory: appendStory(

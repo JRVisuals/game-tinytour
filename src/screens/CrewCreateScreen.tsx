@@ -1,5 +1,18 @@
-import { Button, Group, Select, Stack, Text, TextInput, Title } from '@mantine/core'
+import {
+  Button,
+  Grid,
+  Group,
+  Paper,
+  Select,
+  SimpleGrid,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from '@mantine/core'
+import { CrewSticker } from '../components/CrewSticker'
 import { CITIES } from '../game/cities'
+import { crewStickerSelectData } from '../game/crew/stickers'
 import { MEMBER_KIT_LABELS } from '../game/crew/starterKit'
 import { crewRepLabel } from '../game/crew/repTitles'
 import { useGame } from '../game/GameContext'
@@ -16,11 +29,14 @@ const CREW_SIZES = [
   { value: '3', label: '3 — small crew' },
 ]
 
+const STICKER_OPTIONS = crewStickerSelectData()
+
 export function CrewCreateScreen() {
   const {
     state,
     setCrewSize,
     setCrewMemberName,
+    setCrewMemberSticker,
     setHomeCity,
     setFavoriteBandHint,
     setBudget,
@@ -38,78 +54,120 @@ export function CrewCreateScreen() {
   const budgetValue = hasSavedCrew ? String(bank) : String(state.starterTier ?? state.resources.cash)
 
   return (
-    <Stack>
-      <Title order={2}>Crew</Title>
-      <Text c="dimmed">
-        {state.startRunAfterCrewSave
-          ? 'Build your crew — then we roll from home.'
-          : 'Create or edit your saved crew (1–3 tour kids).'}
-      </Text>
-      {hasSavedCrew && (
-        <Text size="sm">
-          Crew rep: <strong>{crewRepLabel(state.savedCrew!.rep)}</strong> · Bank: <strong>${bank}</strong>
-        </Text>
-      )}
-      <Select
-        label="Crew size"
-        data={CREW_SIZES}
-        value={String(state.crew.length)}
-        onChange={(v) => v && setCrewSize(Number(v))}
-      />
-      {state.crew.map((member, i) => (
-        <Stack key={member.id} gap={4}>
-          <TextInput
-            label={i === 0 ? 'Your name' : `Crew member ${i + 1}`}
-            value={member.name}
-            onChange={(e) => setCrewMemberName(i, e.currentTarget.value)}
-          />
-          {i > 0 && !hasSavedCrew && state.memberKits[i] && (
-            <Text size="xs" c="dimmed">
-              Brings: {MEMBER_KIT_LABELS[state.memberKits[i]!]}
+    <Stack gap="md">
+      <Stack gap={4}>
+        <Title order={2}>Crew</Title>
+        {state.startRunAfterCrewSave && (
+          <Text c="dimmed">Build your crew — then we roll from home.</Text>
+        )}
+        {hasSavedCrew && (
+          <Text size="sm">
+            Crew rep: <strong>{crewRepLabel(state.savedCrew!.rep)}</strong> · Bank:{' '}
+            <strong>${bank}</strong>
+          </Text>
+        )}
+      </Stack>
+
+      <Grid gap="md" align="stretch">
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <Stack gap="sm" h="100%">
+            <Text fw={600} size="sm">
+              The crew
             </Text>
-          )}
-          {i > 0 && hasSavedCrew && state.savedCrew!.members[i]?.kit && (
-            <Text size="xs" c="dimmed">
-              Brings: {MEMBER_KIT_LABELS[state.savedCrew!.members[i]!.kit!]}
-            </Text>
-          )}
-        </Stack>
-      ))}
-      <Group grow>
-        <Button variant="light" onClick={shuffleCrewNames}>
-          Shuffle names
-        </Button>
-        <Button variant="default" color="orange" onClick={resetCrew}>
-          Reset crew
-        </Button>
-      </Group>
-      <Select
-        label="Home city"
-        data={[...CITIES]}
-        value={state.homeCity}
-        onChange={(v) => v && setHomeCity(v)}
-      />
-      <TextInput
-        label="Favorite band vibe (flavor)"
-        placeholder="e.g. northeast barn circuit"
-        value={state.favoriteBandHint}
-        onChange={(e) => setFavoriteBandHint(e.currentTarget.value)}
-      />
-      <Select
-        label={hasSavedCrew ? 'Tour bank' : 'Starting budget'}
-        data={budgetData}
-        value={budgetValue}
-        disabled={hasSavedCrew}
-        onChange={(v) => v && !hasSavedCrew && setBudget(Number(v))}
-      />
-      <Button onClick={saveCrew}>
-        {state.startRunAfterCrewSave ? 'Save & hit the road' : 'Save crew'}
-      </Button>
-      {!state.startRunAfterCrewSave && (
-        <Button variant="default" onClick={goToTitle}>
-          Back to title
-        </Button>
-      )}
+            <Select
+              label="Crew size"
+              data={CREW_SIZES}
+              value={String(state.crew.length)}
+              onChange={(v) => v && setCrewSize(Number(v))}
+            />
+            <SimpleGrid cols={{ base: 1, sm: state.crew.length > 1 ? 2 : 1 }} spacing="sm">
+              {state.crew.map((member, i) => (
+                <Paper key={member.id} withBorder p="sm" radius="md" h="100%">
+                  <Stack gap="xs">
+                    <Group align="flex-start" wrap="nowrap" gap="sm">
+                      <CrewSticker stickerId={member.stickerId} size="lg" />
+                      <Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
+                        <TextInput
+                          label={i === 0 ? 'Your name' : `Member ${i + 1}`}
+                          value={member.name}
+                          onChange={(e) => setCrewMemberName(i, e.currentTarget.value)}
+                        />
+                        <Select
+                          label="Sticker"
+                          data={STICKER_OPTIONS}
+                          value={member.stickerId ?? STICKER_OPTIONS[0]?.value}
+                          onChange={(v) => v && setCrewMemberSticker(i, v)}
+                          searchable
+                          comboboxProps={{ withinPortal: true }}
+                        />
+                      </Stack>
+                    </Group>
+                    {i > 0 && !hasSavedCrew && state.memberKits[i] && (
+                      <Text size="xs" c="dimmed">
+                        Brings: {MEMBER_KIT_LABELS[state.memberKits[i]!]}
+                      </Text>
+                    )}
+                    {i > 0 && hasSavedCrew && state.savedCrew!.members[i]?.kit && (
+                      <Text size="xs" c="dimmed">
+                        Brings: {MEMBER_KIT_LABELS[state.savedCrew!.members[i]!.kit!]}
+                      </Text>
+                    )}
+                  </Stack>
+                </Paper>
+              ))}
+            </SimpleGrid>
+            <Group grow mt="auto">
+              <Button variant="light" onClick={shuffleCrewNames}>
+                Shuffle names
+              </Button>
+              <Button variant="default" color="orange" onClick={resetCrew}>
+                Reset crew
+              </Button>
+            </Group>
+          </Stack>
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <Stack gap="sm" h="100%" justify="space-between">
+            <Stack gap="sm">
+              <Text fw={600} size="sm">
+                Tour setup
+              </Text>
+              <Select
+                label="Home city"
+                data={[...CITIES]}
+                value={state.homeCity}
+                onChange={(v) => v && setHomeCity(v)}
+                searchable
+                comboboxProps={{ withinPortal: true }}
+              />
+              <TextInput
+                label="Favorite band vibe (flavor)"
+                placeholder="e.g. northeast barn circuit"
+                value={state.favoriteBandHint}
+                onChange={(e) => setFavoriteBandHint(e.currentTarget.value)}
+              />
+              <Select
+                label={hasSavedCrew ? 'Tour bank' : 'Starting budget'}
+                data={budgetData}
+                value={budgetValue}
+                disabled={hasSavedCrew}
+                onChange={(v) => v && !hasSavedCrew && setBudget(Number(v))}
+              />
+            </Stack>
+            <Stack gap="xs">
+              <Button onClick={saveCrew}>
+                {state.startRunAfterCrewSave ? 'Save & hit the road' : 'Save crew'}
+              </Button>
+              {!state.startRunAfterCrewSave && (
+                <Button variant="default" onClick={goToTitle}>
+                  Back to title
+                </Button>
+              )}
+            </Stack>
+          </Stack>
+        </Grid.Col>
+      </Grid>
     </Stack>
   )
 }

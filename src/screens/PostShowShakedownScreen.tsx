@@ -37,6 +37,7 @@ export function PostShowShakedownScreen() {
           flavor={state.marketFlavor}
           contextLabel="after-show shakedown"
           showTickets
+          showBalloons
         />
       )}
 

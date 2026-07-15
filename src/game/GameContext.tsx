@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { outcomeReport, type OutcomeSnapshot } from './outcome/report'
 import { payoutForBet, resolveSetlistBet } from './betting'
 import {
   buildRunResources,
@@ -33,25 +34,35 @@ import {
   applyDrinkToMember,
   applyEatToMember,
   applyHotelCrashToCrew,
+  applyBadEventVibeToCrew,
   applyBurnGasCruiseToCrew,
   applyHitchVibe,
   applyPushThroughToCrew,
   applyRestToCrew,
+  applyBalloonsToCrew,
+  applyPunchToRandomCrew,
   applyShowVibeToCrew,
   applySubstancesToMember,
-  applyWookFluToCrew,
+  applyVibeDeltaToActiveCrew,
+  BET_LOSS_VIBE,
+  BET_WIN_VIBE,
+  infectRandomCrewWithWookFlu,
+  applyPushThroughToWookFluMembers,
   collectCrewWarnings,
-  crewAllWookFlu,
   defaultMeters,
+  isWookFluDeath,
   tickCrewMeters,
   venueEntryBlockedMessage,
 } from './crew/meters'
 import { generateBand, generateCrewNames, generateTour } from './generators'
+import { defaultStickerId } from './crew/stickers'
 import { type MarketContext } from './market'
+import { resolveCopChase, rollBalloonCopChase, rollDrugSellCopChase } from './market/copChase'
 import { ensureMarket, persistMarketStock } from './marketCache'
 import { BALANCE } from './config'
 import { MAX_ACTIVE_BETS } from './betting'
 import {
+  balloonBuyMessage,
   bathroomFindResult,
   consumeFeedback,
   pulledOverResult,
@@ -60,6 +71,8 @@ import {
   showRecapLine,
   soloEventResult,
   travelFeedback,
+  wookFluDeathMessage,
+  wookFluResult,
 } from './travel/eventOutcomes'
 import { resolveIntelTrade, type IntelEventKey } from './travel/intelTips'
 import { resolvePulledOver } from './travel/pulledOverResolve'
@@ -72,9 +85,19 @@ import {
   rollMissShowHustleEvent,
 } from './hustle/missShowEvents'
 import {
+  applyLotShakedownEventEffects,
   applyShakedownEventEffects,
+  rollLotShakedownEvent,
   rollPostShowShakedownEvent,
 } from './shakedown/events'
+import {
+  clownJuiceBuyMessage,
+  clownJuiceDoses,
+  clownJuicePrice,
+  rollClownJuicePunch,
+  type ClownJuiceChoice,
+} from './shakedown/clownJuice'
+import { applySpotFindOnVisit, spotFindCashReward } from './location/spotFind'
 import { goToVenueGates, needsVenueGates } from './venueGates'
 import { generateTravelLegs, pushThroughCost } from './travel/legs'
 import type {
@@ -90,6 +113,13 @@ import type {
 
 type RunOutcome = 'completed' | 'day_job' | 'shuffle'
 
+type BetPhase = 'shakedown' | 'location' | 'show'
+
+function canEditSetlistBets(phase: GameState['phase']): phase is BetPhase {
+  return phase === 'shakedown' || phase === 'location' || phase === 'show'
+}
+
+
 interface GameContextValue {
   state: GameState
   goToTitle: () => void
@@ -101,6 +131,7 @@ interface GameContextValue {
   shuffleCrewNames: () => void
   resetCrew: () => void
   setCrewMemberName: (index: number, name: string) => void
+  setCrewMemberSticker: (index: number, stickerId: string) => void
   setHomeCity: (city: string) => void
   setFavoriteBandHint: (hint: string) => void
   setBudget: (budget: number) => void
@@ -111,8 +142,12 @@ interface GameContextValue {
   visitRoadside: () => void
   leaveRoadside: () => void
   placeSetlistBet: (songId: string, songTitle: string, amount: number, slot: BetSlot) => void
+  cancelSetlistBet: (songId: string) => void
   marketBuy: (item: 'food' | 'beer' | 'drugs' | 'tickets') => void
+  buyBalloons: () => void
+  clownJuiceBalloonChoice: (choice: ClownJuiceChoice) => void
   marketSell: (item: 'food' | 'beer' | 'drugs') => void
+  resolveMarketCopChase: (choice: 'stay' | 'run') => void
   shuffleOnHome: () => void
   missShow: () => void
   goToLocation: (location: LocationId) => void
@@ -143,20 +178,22 @@ function crewFromSaved(saved: SavedCrew): CrewMember[] {
   return saved.members.map((m, i) => ({
     id: `p${i + 1}`,
     name: m.name,
+    stickerId: m.stickerId ?? defaultStickerId(i),
     ...defaultMeters(),
   }))
 }
 
-function buildCrewFromNames(names: string[]): CrewMember[] {
+function buildCrewFromNames(names: string[], seed: number): CrewMember[] {
   return names.map((name, i) => ({
     id: `p${i + 1}`,
     name,
+    stickerId: defaultStickerId(seed + i * 7),
     ...defaultMeters(),
   }))
 }
 
 function defaultCrew(size = 1, seed = Date.now() % 100000): CrewMember[] {
-  return buildCrewFromNames(generateCrewNames(size, seed))
+  return buildCrewFromNames(generateCrewNames(size, seed), seed)
 }
 
 function createInitialState(): GameState {
@@ -176,6 +213,8 @@ function createInitialState(): GameState {
     lastSetlist: null,
     postShowRecap: '',
     postShowShakedownEvent: null,
+    shakedownLotEvent: null,
+    spotFindEvent: null,
     missShowHustleEvent: null,
     rngSeed: Date.now() % 100000,
     runStats: emptyRunStats(),
@@ -194,7 +233,9 @@ function createInitialState(): GameState {
     marketFlavor: null,
     stopMarkets: {},
     activeMarketKey: null,
+    marketCopChase: null,
     crewAlert: null,
+    lastOutcome: null,
   }
 }
 
@@ -225,6 +266,64 @@ function applyMarket(
   seed: number,
 ): GameState {
   return ensureMarket(s, context, seed)
+}
+
+function arriveAtShakedownHub(
+  s: GameState,
+  seed: number,
+  opts?: { skipLastOutcome?: boolean },
+): GameState {
+  const rolled = rollLotShakedownEvent(seed + 7)
+  const resourcesBefore = { ...s.resources }
+  const resources = applyLotShakedownEventEffects(s.resources, rolled)
+  let next: GameState = {
+    ...s,
+    phase: 'shakedown',
+    currentLocation: 'shakedown',
+    turnsUntilShow: BALANCE.travel.turnsUntilShow,
+    travel: null,
+    marketCopChase: null,
+    shakedownLotEvent: rolled,
+    spotFindEvent: null,
+    resources,
+    crewAlert: null,
+  }
+  next = applyMarket(next, 'shakedown', seed + 50)
+  if (rolled) {
+    next = {
+      ...next,
+      tourStory: appendStory(
+        next.tourStory,
+        storyEvent(seed, rolled.title, rolled.body),
+      ),
+    }
+  }
+  next = applySpotFindOnVisit(next, 'shakedown', seed + 19, { skipLastOutcome: true })
+  if (opts?.skipLastOutcome) return next
+  if (next.spotFindEvent) {
+    const cash = spotFindCashReward(next.spotFindEvent.id)
+    return {
+      ...next,
+      lastOutcome: outcomeReport(next.spotFindEvent.title, {
+        resourcesBefore: { ...next.resources, cash: next.resources.cash - cash },
+        resourcesAfter: next.resources,
+      }),
+    }
+  }
+  if (!rolled) return next
+  const resourcesChanged =
+    resources.cash !== resourcesBefore.cash ||
+    resources.food !== resourcesBefore.food ||
+    resources.beer !== resourcesBefore.beer ||
+    resources.drugs !== resourcesBefore.drugs ||
+    resources.tickets !== resourcesBefore.tickets
+  next = {
+    ...next,
+    lastOutcome: resourcesChanged
+      ? outcomeReport(rolled.title, { resourcesBefore, resourcesAfter: resources })
+      : rolled.title,
+  }
+  return next
 }
 
 export function GameProvider({ children }: { children: ReactNode }) {
@@ -307,11 +406,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const afterCrewTick = useCallback(
     (s: GameState, crew: CrewMember[], extraRecap = ''): GameState => {
-      const { crew: ticked, bailMessages, warnings } = tickCrewMeters(crew)
-      const alertParts = [...bailMessages, ...warnings]
+      const tickSeed = s.rngSeed + 7
+      const { crew: ticked, bailMessages, warnings, spreadMessages, neglectMessages } = tickCrewMeters(
+        crew,
+        tickSeed,
+      )
+      const alertParts = [...neglectMessages, ...spreadMessages, ...bailMessages, ...warnings]
       let next: GameState = {
         ...s,
         crew: ticked,
+        rngSeed: tickSeed,
         crewAlert: alertParts.length > 0 ? alertParts.join(' ') : null,
       }
       if (bailMessages.length) {
@@ -321,6 +425,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       }
       if (activeCrew(ticked).length === 0 && ticked.length > 0) {
+        if (isWookFluDeath(ticked)) {
+          return endRun(next, 'day_job', wookFluDeathMessage())
+        }
         return endRun(
           next,
           'shuffle',
@@ -334,22 +441,28 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const maybeEndRunIfAllBailed = useCallback(
     (s: GameState, message: string): GameState => {
-      if (allCrewBailed(s.crew)) {
-        return endRun(s, 'shuffle', message)
+      if (!allCrewBailed(s.crew)) return s
+      if (isWookFluDeath(s.crew)) {
+        return endRun(s, 'day_job', wookFluDeathMessage())
       }
-      return s
+      return endRun(s, 'shuffle', message)
     },
     [endRun],
   )
 
   const finalizeCrewCare = useCallback(
-    (s: GameState, crew: CrewMember[], feedback: string | null): GameState => {
+    (
+      s: GameState,
+      crew: CrewMember[],
+      flavor: string,
+      snap?: OutcomeSnapshot,
+    ): GameState => {
       const warnings = collectCrewWarnings(crew)
-      const alertParts = feedback ? [feedback, ...warnings] : warnings
       const next: GameState = {
         ...s,
         crew,
-        crewAlert: alertParts.length > 0 ? alertParts.join(' ') : null,
+        crewAlert: warnings.length > 0 ? warnings.join(' ') : null,
+        lastOutcome: snap ? outcomeReport(flavor, snap) : flavor,
       }
       return maybeEndRunIfAllBailed(next, next.crewAlert ?? 'Everyone shuffled on home.')
     },
@@ -360,12 +473,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
     (s: GameState, memberId: string, item: 'eat' | 'drink' | 'substances'): GameState => {
       if (!s.tour) return s
       if (allCrewBailed(s.crew)) {
-        return endRun(s, 'shuffle', s.crewAlert ?? 'Everyone shuffled on home.')
+        return maybeEndRunIfAllBailed(s, s.crewAlert ?? 'Everyone shuffled on home.')
       }
 
       const member = s.crew.find((c) => c.id === memberId)
       if (!member || member.bailed) return s
 
+      const resourcesBefore = { ...s.resources }
+      const crewBefore = s.crew.map((c) => ({ ...c }))
       let resources = { ...s.resources }
       let runStats = { ...s.runStats }
       let crew = s.crew.map((c) => ({ ...c }))
@@ -395,6 +510,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
         { ...s, resources, runStats, rngSeed: s.rngSeed + 1 },
         crew,
         feedback,
+        {
+          resourcesBefore,
+          resourcesAfter: resources,
+          crewBefore,
+          crewAfter: crew,
+        },
       )
     },
     [endRun, finalizeCrewCare],
@@ -480,6 +601,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       lastSetlist: null,
       postShowRecap: '',
       postShowShakedownEvent: null,
+      shakedownLotEvent: null,
+      spotFindEvent: null,
       missShowHustleEvent: null,
       runRecapMessage: '',
       dayJobStipend: null,
@@ -488,6 +611,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       activeMarketKey: null,
       currentMarket: null,
       marketContext: null,
+      marketCopChase: null,
+      lastOutcome: null,
     }
     next = applyMarket(next, 'shakedown', seed + 99)
     return next
@@ -504,6 +629,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     marketContext: null,
     currentMarketStock: null,
     marketFlavor: null,
+    marketCopChase: null,
   })
 
   const requestStartRun = useCallback(() => {
@@ -541,6 +667,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const tier = (s.starterTier ?? s.resources.cash) as StarterTier
       const members = s.crew.map((c, i) => ({
         name: c.name,
+        stickerId: c.stickerId ?? defaultStickerId(i),
         kit:
           i === 0
             ? undefined
@@ -594,7 +721,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const seed = Date.now() % 100000
         const newNames = generateCrewNames(n - crew.length, seed + crew.length * 7)
         newNames.forEach((name) => {
-          crew.push({ id: `p${crew.length + 1}`, name, ...defaultMeters() })
+          crew.push({
+            id: `p${crew.length + 1}`,
+            name,
+            stickerId: defaultStickerId(seed + crew.length * 11),
+            ...defaultMeters(),
+          })
           memberKits.push(rollMemberKit(seed + crew.length * 23))
         })
         return { ...s, crew, memberKits, rngSeed: seed }
@@ -644,6 +776,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }))
   }, [])
 
+  const setCrewMemberSticker = useCallback((index: number, stickerId: string) => {
+    setState((s) => ({
+      ...s,
+      crew: s.crew.map((c, i) => (i === index ? { ...c, stickerId } : c)),
+    }))
+  }, [])
+
   const setHomeCity = useCallback((city: string) => {
     setState((s) => ({ ...s, homeCity: city }))
   }, [])
@@ -679,15 +818,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setState((s) => {
         if (!s.travel) return s
         if (allCrewBailed(s.crew)) {
-          return endRun(s, 'shuffle', s.crewAlert ?? 'Everyone shuffled on home.')
+          return maybeEndRunIfAllBailed(s, s.crewAlert ?? 'Everyone shuffled on home.')
         }
 
         let resources = { ...s.resources }
         let runStats = { ...s.runStats }
         let crew = s.crew.map((c) => ({ ...c }))
+        const resourcesBefore = { ...s.resources }
+        const crewBefore = s.crew.map((c) => ({ ...c }))
         let rngSeed = s.rngSeed + 1
 
         const TA = BALANCE.travel
+        let actionFlavor = 'Road action'
         switch (action) {
           case 'rest':
             crew = applyRestToCrew(crew)
@@ -695,6 +837,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
               { ...s, resources, runStats, crew, rngSeed },
               crew,
               consumeFeedback('rest', 'Crew', rngSeed),
+              {
+                resourcesBefore,
+                resourcesAfter: resources,
+                crewBefore,
+                crewAfter: crew,
+              },
             )
           case 'hitch':
             runStats = patchRunStats(runStats, {
@@ -708,6 +856,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
                 (rngSeed % 100 < TA.hitch.beerChancePercent ? 1 : 0),
             }
             crew = applyHitchVibe(crew)
+            actionFlavor = 'Hitch'
             break
           case 'push_through': {
             if (s.travel.pendingEvent || s.travel.atRoadside) return s
@@ -718,19 +867,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
             if (resources.food < cost.food) {
               return {
                 ...s,
-                crewAlert: travelFeedback('push_through_need_food', rngSeed, {
+                lastOutcome: travelFeedback('push_through_need_food', rngSeed, {
                   food: cost.food,
                   legs: cost.legs,
                 }),
+                crewAlert: null,
               }
             }
             if (resources.hasVehicle && resources.gas < cost.gas) {
               return {
                 ...s,
-                crewAlert: travelFeedback('push_through_need_gas', rngSeed, {
+                lastOutcome: travelFeedback('push_through_need_gas', rngSeed, {
                   gas: cost.gas,
                   legs: cost.legs,
                 }),
+                crewAlert: null,
               }
             }
 
@@ -756,17 +907,25 @@ export function GameProvider({ children }: { children: ReactNode }) {
               resources = next.resources
             }
 
-            next = applyMarket(next, 'shakedown', next.rngSeed + 50)
             return {
-              ...next,
-              phase: 'shakedown',
-              currentLocation: 'shakedown',
-              turnsUntilShow: BALANCE.travel.turnsUntilShow,
-              travel: null,
-              crewAlert: travelFeedback('push_through_success', next.rngSeed, {
-                legs: cost.legs,
-                miles: cost.miles,
-              }),
+              ...arriveAtShakedownHub(
+                { ...next, resources, runStats, crew, rngSeed: next.rngSeed },
+                next.rngSeed + 50,
+                { skipLastOutcome: true },
+              ),
+              crewAlert: null,
+              lastOutcome: outcomeReport(
+                travelFeedback('push_through_success', next.rngSeed, {
+                  legs: cost.legs,
+                  miles: cost.miles,
+                }),
+                {
+                  resourcesBefore,
+                  resourcesAfter: resources,
+                  crewBefore,
+                  crewAfter: crew,
+                },
+              ),
             }
           }
           case 'burn_gas': {
@@ -816,13 +975,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
             }
 
             if (newIndex >= s.travel.legs.length) {
-              next = applyMarket(next, 'shakedown', rngSeed + 50)
               return {
-                ...next,
-                phase: 'shakedown',
-                currentLocation: 'shakedown',
-                turnsUntilShow: BALANCE.travel.turnsUntilShow,
-                travel: null,
+                ...arriveAtShakedownHub(
+                  { ...next, resources, runStats, crew, rngSeed },
+                  rngSeed + 50,
+                  { skipLastOutcome: true },
+                ),
+                lastOutcome: outcomeReport(message, {
+                  resourcesBefore,
+                  resourcesAfter: resources,
+                  crewBefore,
+                  crewAfter: crew,
+                }),
               }
             }
 
@@ -835,6 +999,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
                 atRoadside: false,
                 lastEventResult: message,
               },
+              lastOutcome: outcomeReport(message, {
+                resourcesBefore,
+                resourcesAfter: resources,
+                crewBefore,
+                crewAfter: crew,
+              }),
             }
           }
           case 'roadside_food': {
@@ -846,6 +1016,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
               food: resources.food + rf.food,
             }
             runStats = patchRunStats(runStats, { foodConsumed: runStats.foodConsumed + 1 })
+            actionFlavor = 'Roadside food'
             break
           }
           case 'roadside_beer': {
@@ -857,6 +1028,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
               beer: resources.beer + rb.beer,
             }
             runStats = patchRunStats(runStats, { beerConsumed: runStats.beerConsumed + 1 })
+            actionFlavor = 'Roadside beer'
             break
           }
           case 'roadside_sell_drugs': {
@@ -867,19 +1039,38 @@ export function GameProvider({ children }: { children: ReactNode }) {
               drugs: resources.drugs + rd.drugs,
               cash: resources.cash + rd.cash,
             }
+            actionFlavor = 'Roadside substance sale'
             break
           }
         }
 
-        return afterCrewTick({ ...s, resources, runStats, crew, rngSeed, crewAlert: null }, crew)
+        return afterCrewTick(
+          {
+            ...s,
+            resources,
+            runStats,
+            crew,
+            rngSeed,
+            crewAlert: null,
+            lastOutcome: outcomeReport(actionFlavor, {
+              resourcesBefore,
+              resourcesAfter: resources,
+              crewBefore,
+              crewAfter: crew,
+            }),
+          },
+          crew,
+        )
       })
     },
-    [afterCrewTick, endRun, finalizeCrewCare],
+    [afterCrewTick, endRun, finalizeCrewCare, maybeEndRunIfAllBailed],
   )
 
   const applyEventEffects = useCallback(
     (s: GameState, event: NonNullable<GameState['travel']>['pendingEvent'], choiceId?: string) => {
       if (!event) return s
+      const resourcesBefore = { ...s.resources }
+      const crewBefore = s.crew.map((c) => ({ ...c }))
       let resources = { ...s.resources }
       let runStats = { ...s.runStats }
       let crew = s.crew.map((c) => ({ ...c }))
@@ -899,6 +1090,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             cash: Math.max(0, resources.cash + fx.cash),
             gas: resources.hasVehicle ? Math.max(0, resources.gas + fx.gas) : resources.gas,
           }
+          crew = applyBadEventVibeToCrew(crew)
           break
         }
         case 'robbed': {
@@ -908,6 +1100,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             cash: Math.max(0, resources.cash + fx.cash),
             drugs: Math.max(0, resources.drugs + fx.drugs),
           }
+          crew = applyBadEventVibeToCrew(crew)
           break
         }
         case 'hitchhiker_intel':
@@ -928,16 +1121,25 @@ export function GameProvider({ children }: { children: ReactNode }) {
           resultMessage = resolved.message
           break
         }
-        case 'wook_flu':
-          crew = applyWookFluToCrew(crew)
-          if (crewAllWookFlu(crew)) {
-            return endRun(
-              { ...s, resources, runStats, crew, rngSeed },
-              'day_job',
-              soloEventResult('wook_flu', rngSeed),
-            )
+        case 'wook_flu': {
+          const infected = infectRandomCrewWithWookFlu(crew, rngSeed)
+          crew = infected.crew
+          crew = applyBadEventVibeToCrew(crew)
+          if (choiceId === 'rest') {
+            crew = applyRestToCrew(crew)
+            resultMessage = wookFluResult('rest', rngSeed, {
+              name: infected.infectedName ?? 'the crew',
+              flare: infected.flare,
+            })
+          } else {
+            crew = applyPushThroughToWookFluMembers(crew)
+            resultMessage = wookFluResult('push', rngSeed, {
+              name: infected.infectedName ?? 'the crew',
+              flare: infected.flare,
+            })
           }
           break
+        }
         case 'pulled_over': {
           const resolved = resolvePulledOver(resources, crew, choiceId, rngSeed)
           resources = resolved.resources
@@ -954,6 +1156,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
             resolved.wasted,
             rngSeed,
           )
+          if (resolved.outcome !== 'clean') {
+            crew = applyBadEventVibeToCrew(crew)
+          }
           break
         }
         case 'bathroom_find':
@@ -976,6 +1181,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
           break
       }
 
+      const reported = outcomeReport(resultMessage, {
+        resourcesBefore,
+        resourcesAfter: resources,
+        crewBefore,
+        crewAfter: crew,
+      })
+
       return {
         ...s,
         resources,
@@ -983,12 +1195,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
         crew,
         rngSeed,
         activeSetlistBets,
+        lastOutcome: reported,
         tourStory: appendStory(
           s.tourStory,
-          storyEvent(rngSeed, event.title, resultMessage),
+          storyEvent(rngSeed, event.title, reported),
         ),
         travel: s.travel
-          ? { ...s.travel, pendingEvent: null, lastEventResult: resultMessage }
+          ? { ...s.travel, pendingEvent: null, lastEventResult: reported }
           : null,
       }
     },
@@ -1011,7 +1224,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setState((s) => {
       if (!s.travel || s.travel.pendingEvent || s.travel.atRoadside) return s
       if (allCrewBailed(s.crew)) {
-        return endRun(s, 'shuffle', s.crewAlert ?? 'Everyone shuffled on home.')
+        return maybeEndRunIfAllBailed(s, s.crewAlert ?? 'Everyone shuffled on home.')
       }
       const leg = s.travel.legs[s.travel.currentLegIndex]
       if (!leg) return s
@@ -1021,6 +1234,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ? {
             catalog: s.tour.catalog,
             plannedSetlist: s.tour.stops[s.tour.currentStopIndex]?.plannedSetlist,
+            crew: s.crew,
           }
         : undefined)
       if (event) {
@@ -1039,14 +1253,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       const nextIndex = s.travel.currentLegIndex + 1
       if (nextIndex >= s.travel.legs.length) {
-        next = applyMarket(next, 'shakedown', rngSeed + 50)
-        return {
-          ...next,
-          phase: 'shakedown',
-          currentLocation: 'shakedown',
-          turnsUntilShow: BALANCE.travel.turnsUntilShow,
-          travel: null,
-        }
+        return arriveAtShakedownHub(next, rngSeed + 50)
       }
 
       return {
@@ -1060,7 +1267,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         },
       }
     })
-  }, [afterCrewTick, endRun])
+  }, [afterCrewTick, endRun, maybeEndRunIfAllBailed])
 
   const visitRoadside = useCallback(() => {
     setState((s) => {
@@ -1085,26 +1292,60 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const placeSetlistBet = useCallback(
     (songId: string, songTitle: string, amount: number, slot: BetSlot) => {
       setState((s) => {
+        if (!canEditSetlistBets(s.phase)) return s
         if (s.resources.cash < amount || s.activeSetlistBets.length >= MAX_ACTIVE_BETS) return s
-        if (s.activeSetlistBets.some((b) => b.songId === songId && b.slot === slot)) return s
+        if (s.activeSetlistBets.some((b) => b.songId === songId || b.songTitle === songTitle)) {
+          return s
+        }
         return {
           ...s,
           resources: { ...s.resources, cash: s.resources.cash - amount },
           activeSetlistBets: [...s.activeSetlistBets, { songId, songTitle, amount, slot }],
+          lastOutcome: outcomeReport(`Bet placed — ${songTitle} (${slot})`, {
+            resourcesBefore: s.resources,
+            resourcesAfter: { ...s.resources, cash: s.resources.cash - amount },
+          }),
         }
       })
     },
     [],
   )
 
+  const cancelSetlistBet = useCallback((songId: string) => {
+    setState((s) => {
+      if (!canEditSetlistBets(s.phase)) return s
+      const bet = s.activeSetlistBets.find((b) => b.songId === songId)
+      if (!bet) return s
+
+      const resourcesBefore = { ...s.resources }
+      const resources = { ...s.resources, cash: s.resources.cash + bet.amount }
+      return {
+        ...s,
+        resources,
+        activeSetlistBets: s.activeSetlistBets.filter((b) => b.songId !== songId),
+        lastOutcome: outcomeReport(`Bet cancelled — ${bet.songTitle}`, {
+          resourcesBefore,
+          resourcesAfter: resources,
+        }),
+      }
+    })
+  }, [])
+
   const marketBuy = useCallback((item: 'food' | 'beer' | 'drugs' | 'tickets') => {
     setState((s) => {
       const p = s.currentMarket
       const stock = s.currentMarketStock
       if (!p || !stock) return s
+      const resourcesBefore = { ...s.resources }
       let resources = { ...s.resources }
       let runStats = { ...s.runStats }
       let nextStock = { ...stock }
+      const labels: Record<typeof item, string> = {
+        food: 'Bought food',
+        beer: 'Bought beer',
+        drugs: 'Bought substances',
+        tickets: 'Bought ticket',
+      }
 
       if (item === 'food' && resources.cash >= p.foodBuy && nextStock.food > 0) {
         resources = { ...resources, cash: resources.cash - p.foodBuy, food: resources.food + 1 }
@@ -1138,6 +1379,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
           runStats,
           currentMarketStock: nextStock,
           crewAlert: null,
+          lastOutcome: outcomeReport(labels[item], {
+            resourcesBefore,
+            resourcesAfter: resources,
+          }),
         },
         nextStock,
       )
@@ -1146,17 +1391,188 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const marketSell = useCallback((item: 'food' | 'beer' | 'drugs') => {
     setState((s) => {
+      if (s.marketCopChase) return s
       const p = s.currentMarket
       if (!p) return s
+      const resourcesBefore = { ...s.resources }
       let resources = { ...s.resources }
+      const rngSeed = s.rngSeed + 1
+      const labels: Record<typeof item, string> = {
+        food: 'Sold food',
+        beer: 'Sold beer',
+        drugs: 'Sold substances',
+      }
+
       if (item === 'food' && resources.food > 0) {
         resources = { ...resources, food: resources.food - 1, cash: resources.cash + p.foodSell }
       } else if (item === 'beer' && resources.beer > 0) {
         resources = { ...resources, beer: resources.beer - 1, cash: resources.cash + p.beerSell }
       } else if (item === 'drugs' && resources.drugs > 0) {
-        resources = { ...resources, drugs: resources.drugs - 1, cash: resources.cash + p.drugsSell }
+        const proceeds = p.drugsSell
+        resources = {
+          ...resources,
+          drugs: resources.drugs - 1,
+          cash: resources.cash + proceeds,
+        }
+        if (rollDrugSellCopChase(rngSeed)) {
+          return {
+            ...s,
+            resources,
+            rngSeed,
+            marketCopChase: {
+              fine: BALANCE.markets.copChase.fine,
+              proceeds,
+              reason: 'drug_sell',
+            },
+            lastOutcome: outcomeReport(`${labels.drugs} — cops noticed`, {
+              resourcesBefore,
+              resourcesAfter: resources,
+            }),
+          }
+        }
       } else return s
-      return { ...s, resources }
+
+      return {
+        ...s,
+        resources,
+        rngSeed,
+        lastOutcome: outcomeReport(labels[item], {
+          resourcesBefore,
+          resourcesAfter: resources,
+        }),
+      }
+    })
+  }, [])
+
+  const buyBalloons = useCallback(() => {
+    setState((s) => {
+      if (s.phase !== 'post_show_shakedown' || s.marketCopChase) return s
+      const price = BALANCE.markets.balloons.price
+      if (s.resources.cash < price) return s
+
+      const resourcesBefore = { ...s.resources }
+      const crewBefore = s.crew.map((c) => ({ ...c }))
+      const resources = { ...s.resources, cash: s.resources.cash - price }
+      const crew = applyBalloonsToCrew(s.crew.map((c) => ({ ...c })))
+      const rngSeed = s.rngSeed + 23
+      const flavor = balloonBuyMessage(rngSeed)
+      const snap = {
+        resourcesBefore,
+        resourcesAfter: resources,
+        crewBefore,
+        crewAfter: crew,
+      }
+
+      if (rollBalloonCopChase(rngSeed + 5)) {
+        return {
+          ...s,
+          resources,
+          crew,
+          rngSeed,
+          marketCopChase: {
+            fine: BALANCE.markets.copChase.fine,
+            proceeds: 0,
+            reason: 'balloons',
+          },
+          lastOutcome: outcomeReport(`${flavor} — cops noticed`, snap),
+        }
+      }
+
+      return {
+        ...s,
+        resources,
+        crew,
+        rngSeed,
+        crewAlert: null,
+        lastOutcome: outcomeReport(flavor, snap),
+      }
+    })
+  }, [])
+
+  const clownJuiceBalloonChoice = useCallback((choice: ClownJuiceChoice) => {
+    setState((s) => {
+      if (
+        s.phase !== 'shakedown' ||
+        s.shakedownLotEvent?.id !== 'clown_juice_mafia' ||
+        s.marketCopChase
+      ) {
+        return s
+      }
+      const price = clownJuicePrice(choice)
+      if (s.resources.cash < price) return s
+
+      const resourcesBefore = { ...s.resources }
+      const crewBefore = s.crew.map((c) => ({ ...c }))
+      const resources = { ...s.resources, cash: s.resources.cash - price }
+      const doses = clownJuiceDoses(choice)
+      let crew = applyBalloonsToCrew(s.crew.map((c) => ({ ...c })), doses)
+      const rngSeed = s.rngSeed + (choice === 'retail' ? 23 : 37)
+      let flavor = clownJuiceBuyMessage(choice, rngSeed)
+
+      if (choice === 'deal' && rollClownJuicePunch(rngSeed + 9)) {
+        const punch = applyPunchToRandomCrew(
+          crew,
+          BALANCE.shakedown.clownJuiceMafia.punchHealth,
+          rngSeed,
+        )
+        crew = punch.crew
+        flavor = clownJuiceBuyMessage(choice, rngSeed, true)
+        if (punch.victimName) {
+          flavor += ` ${punch.victimName} took one to the mouth.`
+        }
+      }
+
+      const snap = {
+        resourcesBefore,
+        resourcesAfter: resources,
+        crewBefore,
+        crewAfter: crew,
+      }
+
+      if (rollBalloonCopChase(rngSeed + 5)) {
+        return {
+          ...s,
+          resources,
+          crew,
+          rngSeed,
+          marketCopChase: {
+            fine: BALANCE.markets.copChase.fine,
+            proceeds: 0,
+            reason: 'balloons',
+          },
+          lastOutcome: outcomeReport(`${flavor} — cops noticed`, snap),
+        }
+      }
+
+      return {
+        ...s,
+        resources,
+        crew,
+        rngSeed,
+        crewAlert: null,
+        lastOutcome: outcomeReport(flavor, snap),
+      }
+    })
+  }, [])
+
+  const resolveMarketCopChase = useCallback((choice: 'stay' | 'run') => {
+    setState((s) => {
+      const chase = s.marketCopChase
+      if (!chase) return s
+      const seed = s.rngSeed + 19
+      const resourcesBefore = { ...s.resources }
+      const { resources, message } = resolveCopChase(s.resources, choice, chase.fine, seed)
+      return {
+        ...s,
+        resources,
+        rngSeed: seed,
+        marketCopChase: null,
+        crewAlert: null,
+        lastOutcome: outcomeReport(message, {
+          resourcesBefore,
+          resourcesAfter: resources,
+        }),
+      }
     })
   }, [])
 
@@ -1200,6 +1616,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       let next: GameState = {
         ...s,
         currentLocation: location,
+        spotFindEvent: null,
         phase: (location === 'shakedown' ? 'shakedown' : 'location') as PhaseId,
         turnsUntilShow: Math.max(0, s.turnsUntilShow - 1),
         tourStory: appendStory(
@@ -1212,6 +1629,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ),
       }
       next = applyMarket(next, location, s.rngSeed + location.length * 3)
+      next = applySpotFindOnVisit(next, location, s.rngSeed + location.length * 7)
       next = afterCrewTick(next, next.crew)
       if (needsVenueGates(next)) {
         next = goToVenueGates(next, applyMarket)
@@ -1228,7 +1646,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setState((s) => {
       const blocked = venueEntryBlockedMessage(s.crew)
       if (blocked) {
-        return { ...s, crewAlert: blocked }
+        return { ...s, crewAlert: blocked, lastOutcome: blocked }
       }
       return { ...s, phase: 'show', currentLocation: 'venue', crewAlert: null }
     })
@@ -1242,6 +1660,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   ) => {
     const attendShow = options?.attendShow ?? true
     let resources = { ...s.resources }
+    let crew = s.crew.map((c) => ({ ...c }))
     let recapOut = recap
     let runBetsWon = s.runBetsWon
     for (const bet of s.activeSetlistBets) {
@@ -1254,12 +1673,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (hit) {
         resources = { ...resources, cash: resources.cash + pay }
         runBetsWon += 1
+        crew = applyVibeDeltaToActiveCrew(crew, BET_WIN_VIBE)
         recapOut += ` Bet “${bet.songTitle}” (${bet.slot}) HIT +$${pay}.`
       } else {
+        crew = applyVibeDeltaToActiveCrew(crew, BET_LOSS_VIBE)
         recapOut += ` Bet “${bet.songTitle}” (${bet.slot}) missed.`
       }
     }
-    return { resources, recapOut, runBetsWon }
+    return { resources, recapOut, runBetsWon, crew }
   }
 
   const finishShow = useCallback(() => {
@@ -1267,17 +1688,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!s.tour) return s
       const blocked = venueEntryBlockedMessage(s.crew)
       if (blocked) {
-        return { ...s, crewAlert: blocked }
+        return { ...s, crewAlert: blocked, lastOutcome: blocked }
       }
       const stop = s.tour.stops[s.tour.currentStopIndex]
       if (!stop) return s
       const setlist = stop.plannedSetlist
       const active = activeCrew(s.crew)
       const ticketsOk = s.resources.tickets >= active.length
+      const resourcesBefore = { ...s.resources }
+      const crewBefore = s.crew.map((c) => ({ ...c }))
       let recap = ticketsOk
         ? showRecapLine('made_it', s.rngSeed, { venue: stop.venue })
         : showRecapLine('chaos_gate', s.rngSeed, { venue: stop.venue })
-      const { resources, recapOut, runBetsWon } = resolveBets(s, setlist, recap)
+      const { resources, recapOut, runBetsWon, crew: crewAfterBets } = resolveBets(s, setlist, recap)
       let finalResources = resources
       if (ticketsOk) {
         finalResources = {
@@ -1290,13 +1713,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
         songsHeard: s.runStats.songsHeard + setlist.songs.length,
         bandsSeen: s.runStats.bandsSeen + 1,
       })
-      const crew = ticketsOk ? applyShowVibeToCrew(s.crew) : s.crew
+      const crew = ticketsOk ? applyShowVibeToCrew(crewAfterBets) : crewAfterBets
       return {
         ...s,
         crew,
         resources: finalResources,
         lastSetlist: setlist,
         postShowRecap: recapOut,
+        lastOutcome: outcomeReport(recapOut.trim(), {
+          resourcesBefore,
+          resourcesAfter: finalResources,
+          crewBefore,
+          crewAfter: crew,
+        }),
         missShowHustleEvent: null,
         runStats,
         runBetsWon,
@@ -1316,13 +1745,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const stop = s.tour.stops[s.tour.currentStopIndex]
       const seed = s.rngSeed + 37
       const hustle = rollMissShowHustleEvent(seed, s.crew)
+      const resourcesBefore = { ...s.resources }
+      const crewBefore = s.crew.map((c) => ({ ...c }))
       let recap = showRecapLine('missed', seed, { venue: stop?.venue ?? 'the show' })
-      const { resources: afterBets, recapOut, runBetsWon } = resolveBets(
-        s,
-        null,
-        recap,
-        { attendShow: false },
-      )
+      const {
+        resources: afterBets,
+        recapOut,
+        runBetsWon,
+        crew: crewAfterBets,
+      } = resolveBets(s, null, recap, { attendShow: false })
       let resources = afterBets
       if (hustle) {
         resources = applyMissShowHustleEffects(resources, hustle.id)
@@ -1330,9 +1761,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const runStats = patchRunStats(s.runStats, { showsMissed: s.runStats.showsMissed + 1 })
       return {
         ...s,
+        crew: crewAfterBets,
         resources,
         rngSeed: seed,
         postShowRecap: recapOut,
+        lastOutcome: outcomeReport(recapOut.trim(), {
+          resourcesBefore,
+          resourcesAfter: resources,
+          crewBefore,
+          crewAfter: crewAfterBets,
+        }),
         runStats,
         runBetsWon,
         missShowHustleEvent: hustle,
@@ -1361,6 +1799,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!s.tour) return s
       const seed = s.rngSeed + 41
       const rolled = rollPostShowShakedownEvent(seed)
+      const resourcesBefore = { ...s.resources }
       let resources = { ...s.resources }
       if (rolled) {
         resources = applyShakedownEventEffects(resources, rolled.id)
@@ -1370,10 +1809,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
         'post_show_shakedown',
         seed + 7,
       )
+      const flavor = rolled?.title ?? 'After-show shakedown'
       return {
         ...next,
         phase: 'post_show_shakedown',
         postShowShakedownEvent: rolled,
+        lastOutcome: outcomeReport(flavor, {
+          resourcesBefore,
+          resourcesAfter: resources,
+        }),
         tourStory: appendStory(
           next.tourStory,
           storyEvent(
@@ -1404,12 +1848,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
           turnsUntilShow: BALANCE.travel.turnsUntilShow,
           currentLocation: 'shakedown',
           postShowShakedownEvent: null,
+          shakedownLotEvent: null,
+          spotFindEvent: null,
           missShowHustleEvent: null,
           currentMarket: null,
           currentMarketStock: null,
           marketFlavor: null,
           marketContext: null,
           activeMarketKey: null,
+          marketCopChase: null,
+          lastOutcome: null,
         },
         nextIndex,
       )
@@ -1429,6 +1877,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       lastSetlist: null,
       postShowRecap: '',
       postShowShakedownEvent: null,
+      shakedownLotEvent: null,
+      spotFindEvent: null,
       missShowHustleEvent: null,
       runRecapMessage: '',
       dayJobStipend: null,
@@ -1438,6 +1888,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       currentMarketStock: null,
       marketFlavor: null,
       crewAlert: null,
+      lastOutcome: null,
     }))
   }, [])
 
@@ -1469,6 +1920,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const cost = BALANCE.resources.hotelCrashCost
       if (s.resources.cash < cost) return s
 
+      const resourcesBefore = { ...s.resources }
+      const crewBefore = s.crew.map((c) => ({ ...c }))
+      const resourcesAfter = { ...s.resources, cash: s.resources.cash - cost }
       const crew = applyHotelCrashToCrew(s.crew.map((c) => ({ ...c })))
       const rngSeed = s.rngSeed + 13
       const feedback = consumeFeedback('hotel_crash', 'Crew', rngSeed, { cost })
@@ -1476,11 +1930,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
       return finalizeCrewCare(
         {
           ...s,
-          resources: { ...s.resources, cash: s.resources.cash - cost },
+          resources: resourcesAfter,
           rngSeed,
         },
         crew,
         feedback,
+        {
+          resourcesBefore,
+          resourcesAfter,
+          crewBefore,
+          crewAfter: crew,
+        },
       )
     })
   }, [finalizeCrewCare])
@@ -1497,6 +1957,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       shuffleCrewNames,
       resetCrew,
       setCrewMemberName,
+      setCrewMemberSticker,
       setHomeCity,
       setFavoriteBandHint,
       setBudget,
@@ -1507,8 +1968,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       visitRoadside,
       leaveRoadside,
       placeSetlistBet,
+      cancelSetlistBet,
       marketBuy,
+      buyBalloons,
+      clownJuiceBalloonChoice,
       marketSell,
+      resolveMarketCopChase,
       shuffleOnHome,
       missShow,
       goToLocation,
@@ -1534,6 +1999,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       shuffleCrewNames,
       resetCrew,
       setCrewMemberName,
+      setCrewMemberSticker,
       setHomeCity,
       setFavoriteBandHint,
       setBudget,
@@ -1544,8 +2010,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       visitRoadside,
       leaveRoadside,
       placeSetlistBet,
+      cancelSetlistBet,
       marketBuy,
+      buyBalloons,
+      clownJuiceBalloonChoice,
       marketSell,
+      resolveMarketCopChase,
       shuffleOnHome,
       missShow,
       goToLocation,

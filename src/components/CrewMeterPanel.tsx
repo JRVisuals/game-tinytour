@@ -3,7 +3,6 @@ import {
   BAIL_ROUGH_THRESHOLD,
   ROUGH_THRESHOLD,
   STONED_WASTED_THRESHOLD,
-  activeCrew,
   healthLabel,
   hungerLabel,
   meterBarColor,
@@ -15,6 +14,7 @@ import {
   vibeLabel,
 } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
+import { CrewSticker } from './CrewSticker'
 
 function MeterRow({ label, value, valueLabel, color }: {
   label: string
@@ -102,7 +102,6 @@ function NeedMeterRow({
 export function CrewMeterPanel() {
   const { state, crewConsume } = useGame()
   const crew = state.crew
-  const active = activeCrew(crew)
   const canCare = !!state.tour
   const { food, beer, drugs } = state.resources
 
@@ -113,31 +112,28 @@ export function CrewMeterPanel() {
           {state.crewAlert}
         </Alert>
       )}
-      <Text fw={600} mb="sm">
-        Crew ({active.length}/{crew.length} active)
-      </Text>
       <Stack gap="md">
         {crew.map((m) => {
           const memberActive = !m.bailed
           return (
             <Stack key={m.id} gap={6}>
-              <Group justify="space-between" gap="xs" align="flex-start">
-                <Text size="sm" fw={500} c={m.bailed ? 'dimmed' : undefined}>
-                  {m.name}
-                  {m.bailed && ' — bailed'}
-                </Text>
-                {memberActive && m.roughTurns >= 2 && m.roughTurns < BAIL_ROUGH_THRESHOLD && (
-                  <Text size="xs" c="red">
-                    bail in {BAIL_ROUGH_THRESHOLD - m.roughTurns} turn
-                    {BAIL_ROUGH_THRESHOLD - m.roughTurns === 1 ? '' : 's'}
+              <Group justify="space-between" align="center" wrap="nowrap" gap="xs">
+                <Group gap={6} wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
+                  <CrewSticker stickerId={m.stickerId} size="sm" />
+                  <Text
+                    size="sm"
+                    fw={500}
+                    c={m.bailed ? 'dimmed' : undefined}
+                    truncate
+                  >
+                    {m.name}
+                    {m.bailed && ' — bailed'}
                   </Text>
-                )}
-              </Group>
-              {memberActive && (
-                <>
-                  <Group gap={4} grow>
+                </Group>
+                {memberActive && (
+                  <Group gap={4} wrap="nowrap">
                     <Button
-                      size="xs"
+                      size="compact-xs"
                       variant="light"
                       disabled={!canCare || food <= 0}
                       onClick={() => crewConsume(m.id, 'eat')}
@@ -145,7 +141,7 @@ export function CrewMeterPanel() {
                       Eat
                     </Button>
                     <Button
-                      size="xs"
+                      size="compact-xs"
                       variant="light"
                       disabled={!canCare || beer <= 0}
                       onClick={() => crewConsume(m.id, 'drink')}
@@ -153,7 +149,7 @@ export function CrewMeterPanel() {
                       Drink
                     </Button>
                     <Button
-                      size="xs"
+                      size="compact-xs"
                       variant="light"
                       color="grape"
                       disabled={!canCare || drugs <= 0}
@@ -162,7 +158,16 @@ export function CrewMeterPanel() {
                       Consume
                     </Button>
                   </Group>
-                  <Stack gap={6}>
+                )}
+              </Group>
+              {memberActive && m.roughTurns >= 2 && m.roughTurns < BAIL_ROUGH_THRESHOLD && (
+                <Text size="xs" c="red">
+                  bail in {BAIL_ROUGH_THRESHOLD - m.roughTurns} turn
+                  {BAIL_ROUGH_THRESHOLD - m.roughTurns === 1 ? '' : 's'}
+                </Text>
+              )}
+              {memberActive && (
+                <Stack gap={6}>
                     <NeedMeterRow
                       label="Hunger"
                       satisfaction={m.hunger}
@@ -178,6 +183,11 @@ export function CrewMeterPanel() {
                       rightLabel="Parched"
                     />
                     <MeterRow label="Health" value={m.health} valueLabel={healthLabel(m.health)} />
+                    {m.wookFlu && (
+                      <Text size="xs" c="red">
+                        Wook flu — contagious until rested or hotel crash
+                      </Text>
+                    )}
                     <MeterRow label="Vibe" value={m.vibe} valueLabel={vibeLabel(m.vibe)} />
                     <StonedMeterRow value={m.stoned} valueLabel={stonedLabel(m.stoned)} />
                     {m.stoned >= STONED_WASTED_THRESHOLD && (
@@ -190,11 +200,10 @@ export function CrewMeterPanel() {
                       m.health < ROUGH_THRESHOLD ||
                       m.vibe < ROUGH_THRESHOLD) && (
                       <Text size="xs" c="orange">
-                        Danger zone — feed, hydrate, or rest
+                        Danger zone — starving or parched drains health; run-down crew catches wook flu
                       </Text>
                     )}
                   </Stack>
-                </>
               )}
             </Stack>
           )

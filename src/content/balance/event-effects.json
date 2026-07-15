@@ -18,7 +18,7 @@
     "correctChancePercent": 90,
     "slot": "encore"
   },
-  "wook_flu": { "setHealthCap": 12 },
+  "wook_flu": { "healthDamage": -22 },
   "bathroom_find": {
     "try_it": { "drugs": 2, "lacedChancePercent": 5 },
     "toss_it": {}

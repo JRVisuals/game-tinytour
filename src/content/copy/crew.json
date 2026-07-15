@@ -39,6 +39,30 @@
       "{name} is not feeling the tour."
     ]
   },
+  "wookFluSpread": [
+    "{name} caught wook flu from the crew — rest or hotel before it spreads.",
+    "Wook flu jumped to {name}. Still contagious until someone heals up.",
+    "{name} is sweating through blankets now. 25% spread each turn while it's active."
+  ],
+  "neglect": {
+    "hunger": [
+      "{name} is starving — health taking hits.",
+      "No food for {name}. Health is dropping."
+    ],
+    "thirst": [
+      "{name} is parched — health taking hits.",
+      "{name} needs a drink. Health is dropping."
+    ],
+    "both": [
+      "{name} is starving and parched — health tanking.",
+      "Hungry and dry: {name}'s health is getting wrecked."
+    ]
+  },
+  "lowHealthWookFlu": [
+    "{name} is run down — wook flu caught them.",
+    "Half health and wook flu found {name}.",
+    "{name}'s immune system tapped out — wook flu."
+  ],
   "venueBlocked": [
     "Security won't let {names} in — too wasted. Eat food and sober up first.",
     "{names} can't pass the gate — too high. Food helps.",

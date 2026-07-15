@@ -12,9 +12,14 @@ export const EAT_STONED = C.eatStoned
 export const EAT_HEALTH = C.eatHealth
 export const BEER_STONED = C.beerStoned
 export const BEER_THIRST = C.beerThirst
+export const DRINK_HEALTH = C.drinkHealth
 export const CONSUME_DRUGS_VIBE = C.consumeDrugsVibe
 export const CONSUME_DRUGS_STONED = C.consumeDrugsStoned
+export const CONSUME_DRUGS_HEALTH = C.consumeDrugsHealth
 export const SHOW_VIBE = C.showVibe
+export const BET_WIN_VIBE = C.betWinVibe
+export const BET_LOSS_VIBE = C.betLossVibe
+export const BAD_EVENT_VIBE = C.badEventVibe
 export const STONED_WASTED_THRESHOLD = C.stonedWastedThreshold
 export const REST_HEALTH = C.restHealth
 export const REST_THIRST = C.restThirst
@@ -22,7 +27,13 @@ export const REST_VIBE = C.restVibe
 export const REST_STONED = C.restStoned
 export const HITCH_VIBE = C.hitchVibe
 export const PUSH_PENALTY = C.pushPenalty
-export const WOOK_FLU_HEALTH = C.wookFluHealth
+export const WOOK_FLU_HEALTH_DAMAGE = C.wookFluHealthDamage
+export const WOOK_FLU_SPREAD_CHANCE = C.wookFluSpreadChancePercent
+export const NEGLECT_HUNGER_HEALTH = C.neglectHungerHealthDamage
+export const NEGLECT_THIRST_HEALTH = C.neglectThirstHealthDamage
+export const LOW_HEALTH_WOOK_FLU_THRESHOLD = C.lowHealthWookFluThreshold
+export const WOOK_FLU_LOW_HEALTH_TICK_CHANCE = C.wookFluLowHealthTickChancePercent
+export const WOOK_FLU_EVENT_WEIGHT_BONUS = C.wookFluEventWeightBonusPerLowHealth
 export const BATHROOM_BAG_STONED = C.bathroomBagStoned
 
 const TIERS = C.labelTiers
@@ -140,6 +151,7 @@ export function defaultMeters() {
     stoned: d.stoned,
     roughTurns: 0,
     bailed: false,
+    wookFlu: false,
   }
 }
 
@@ -191,22 +203,96 @@ export function roughWarningMessage(
   )
 }
 
+function neglectMessage(
+  member: { name: string },
+  hits: ('hunger' | 'thirst')[],
+  seed: number,
+): string | null {
+  if (hits.length === 0) return null
+  const key = hits.length === 2 ? 'both' : hits[0]!
+  const pool = COPY.crew.neglect[key]
+  return pickText(pool, seed + nameSeed(member.name), `${member.name} needs food or drink.`, {
+    name: member.name,
+  })
+}
+
+function applyNeglectHealthDrain(member: MeterSnapshot): {
+  health: number
+  hits: ('hunger' | 'thirst')[]
+} {
+  let health = member.health
+  const hits: ('hunger' | 'thirst')[] = []
+  if (member.hunger < ROUGH_THRESHOLD) {
+    health = adjustMeter(health, NEGLECT_HUNGER_HEALTH)
+    hits.push('hunger')
+  }
+  if (member.thirst < ROUGH_THRESHOLD) {
+    health = adjustMeter(health, NEGLECT_THIRST_HEALTH)
+    hits.push('thirst')
+  }
+  return { health, hits }
+}
+
+function maybeCatchWookFluFromLowHealth<
+  T extends CrewMeterFields & { wookFlu?: boolean; id: string; name: string },
+>(member: T, seed: number): { member: T; message: string | null } {
+  if (member.bailed || member.wookFlu || member.health >= LOW_HEALTH_WOOK_FLU_THRESHOLD) {
+    return { member, message: null }
+  }
+  const roll = Math.abs(seed + nameSeed(member.name) * 17) % 100
+  if (roll >= WOOK_FLU_LOW_HEALTH_TICK_CHANCE) {
+    return { member, message: null }
+  }
+  const infected = infectMemberWithWookFlu(member)
+  const message = pickText(
+    COPY.crew.lowHealthWookFlu,
+    seed + nameSeed(member.name),
+    `${member.name} caught wook flu.`,
+    { name: member.name },
+  )
+  return { member: infected, message }
+}
+
 export function tickCrewMeters<
   T extends MeterSnapshot & {
     roughTurns: number
     bailed: boolean
+    id: string
     name: string
+    wookFlu?: boolean
   },
->(crew: T[]): { crew: T[]; bailMessages: string[]; warnings: string[] } {
+>(
+  crew: T[],
+  rngSeed?: number,
+): { crew: T[]; bailMessages: string[]; warnings: string[]; spreadMessages: string[]; neglectMessages: string[] } {
+  const spreadMessages: string[] = []
+  let working = crew
+  if (rngSeed != null && activeCrew(working).some((c) => c.wookFlu)) {
+    const spread = spreadWookFlu(working, rngSeed)
+    working = spread.crew
+    spreadMessages.push(...spread.messages)
+  }
+
   const bailMessages: string[] = []
   const warnings: string[] = []
-  const next = crew.map((m) => {
+  const neglectMessages: string[] = []
+  const tickSeed = rngSeed ?? 0
+  const next = working.map((m, i) => {
     if (m.bailed) return m
-    const member = {
+    let member = {
       ...m,
       hunger: adjustMeter(m.hunger, -TICK_HUNGER),
       thirst: adjustMeter(m.thirst, -TICK_THIRST),
     }
+    const { health, hits } = applyNeglectHealthDrain(member)
+    member = { ...member, health }
+    const neglect = neglectMessage(member, hits, tickSeed + i * 3)
+    if (neglect) neglectMessages.push(neglect)
+
+    const lowHealthFlu = maybeCatchWookFluFromLowHealth(member, tickSeed + i * 11)
+    member = lowHealthFlu.member
+    if (lowHealthFlu.message) neglectMessages.push(lowHealthFlu.message)
+
     const rough = isRough(member)
     let roughTurns = rough ? member.roughTurns + 1 : 0
     let bailed = member.bailed
@@ -219,7 +305,7 @@ export function tickCrewMeters<
     }
     return { ...member, roughTurns, bailed }
   })
-  return { crew: next, bailMessages, warnings }
+  return { crew: next, bailMessages, warnings, spreadMessages, neglectMessages }
 }
 
 export function activeCrew<T extends { bailed: boolean }>(crew: T[]): T[] {
@@ -262,12 +348,19 @@ export function applyEatToMember<T extends CrewMeterFields>(m: T): T {
   }
 }
 
+export function applyVibeDeltaToActiveCrew<T extends CrewMeterFields>(crew: T[], delta: number): T[] {
+  return crew.map((m) =>
+    m.bailed ? m : { ...m, vibe: adjustMeter(m.vibe, delta) },
+  )
+}
+
 export function applyDrinkToMember<T extends CrewMeterFields>(m: T): T {
   if (m.bailed) return m
   return {
     ...m,
     thirst: adjustMeter(m.thirst, BEER_THIRST),
     stoned: adjustMeter(m.stoned, BEER_STONED),
+    health: adjustMeter(m.health, DRINK_HEALTH),
     roughTurns: 0,
   }
 }
@@ -290,6 +383,7 @@ export function applySubstancesToMember<T extends CrewMeterFields>(m: T): T {
     ...m,
     vibe: adjustMeter(m.vibe, CONSUME_DRUGS_VIBE),
     stoned: adjustMeter(m.stoned, CONSUME_DRUGS_STONED),
+    health: adjustMeter(m.health, CONSUME_DRUGS_HEALTH),
     roughTurns: 0,
   }
 }
@@ -306,6 +400,44 @@ export function applyShowVibeToCrew<T extends CrewMeterFields>(crew: T[]): T[] {
   )
 }
 
+export function applyBalloonsToCrew<T extends CrewMeterFields>(crew: T[], doses = 1): T[] {
+  const fx = BALANCE.markets.balloons
+  let next = crew
+  for (let i = 0; i < doses; i++) {
+    next = next.map((m) =>
+      m.bailed
+        ? m
+        : {
+            ...m,
+            vibe: adjustMeter(m.vibe, fx.vibe),
+            health: adjustMeter(m.health, fx.health),
+            roughTurns: 0,
+          },
+    )
+  }
+  return next
+}
+
+export function applyPunchToRandomCrew<
+  T extends CrewMeterFields & { id: string; name: string },
+>(
+  crew: T[],
+  healthDamage: number,
+  seed: number,
+): { crew: T[]; victimName: string | null } {
+  const eligible = crew.filter((m) => !m.bailed)
+  if (eligible.length === 0) return { crew, victimName: null }
+  const victim = eligible[Math.abs(seed + 11) % eligible.length]!
+  return {
+    crew: crew.map((m) =>
+      m.id === victim.id
+        ? { ...m, health: adjustMeter(m.health, healthDamage), roughTurns: m.roughTurns + 1 }
+        : m,
+    ),
+    victimName: victim.name,
+  }
+}
+
 export function applyEatToCrew<T extends CrewMeterFields>(crew: T[]): T[] {
   return crew.map((m) => applyEatToMember(m))
 }
@@ -314,22 +446,27 @@ export function applyDrinkToCrew<T extends CrewMeterFields>(crew: T[]): T[] {
   return crew.map((m) => applyDrinkToMember(m))
 }
 
-export function applyRestToCrew<T extends CrewMeterFields>(crew: T[]): T[] {
-  return crew.map((m) =>
-    m.bailed
-      ? m
-      : {
-          ...m,
-          health: adjustMeter(m.health, REST_HEALTH),
-          thirst: adjustMeter(m.thirst, REST_THIRST),
-          vibe: adjustMeter(m.vibe, REST_VIBE),
-          stoned: adjustMeter(m.stoned, REST_STONED),
-          roughTurns: 0,
-        },
-  )
+export function applyRestToCrew<T extends CrewMeterFields & { wookFlu?: boolean }>(
+  crew: T[],
+): T[] {
+  return crew.map((m) => {
+    if (m.bailed) return m
+    const health = adjustMeter(m.health, REST_HEALTH)
+    return {
+      ...m,
+      health,
+      thirst: adjustMeter(m.thirst, REST_THIRST),
+      vibe: adjustMeter(m.vibe, REST_VIBE),
+      stoned: adjustMeter(m.stoned, REST_STONED),
+      roughTurns: 0,
+      wookFlu: m.wookFlu && health < TIERS.mid ? true : false,
+    }
+  })
 }
 
-export function applyHotelCrashToCrew<T extends CrewMeterFields>(crew: T[]): T[] {
+export function applyHotelCrashToCrew<T extends CrewMeterFields & { wookFlu?: boolean }>(
+  crew: T[],
+): T[] {
   return crew.map((m) =>
     m.bailed
       ? m
@@ -341,6 +478,7 @@ export function applyHotelCrashToCrew<T extends CrewMeterFields>(crew: T[]): T[]
           vibe: METER_MAX,
           stoned: 0,
           roughTurns: 0,
+          wookFlu: false,
         },
   )
 }
@@ -372,15 +510,92 @@ export function applyHitchVibe<T extends CrewMeterFields>(crew: T[]): T[] {
   )
 }
 
-export function applyWookFluToCrew<T extends CrewMeterFields>(crew: T[]): T[] {
+export function applyBadEventVibeToCrew<T extends CrewMeterFields>(crew: T[]): T[] {
+  return applyVibeDeltaToActiveCrew(crew, BAD_EVENT_VIBE)
+}
+
+export function applyPushThroughToWookFluMembers<
+  T extends CrewMeterFields & { wookFlu?: boolean },
+>(crew: T[]): T[] {
   return crew.map((m) =>
-    m.bailed ? m : { ...m, health: Math.min(m.health, WOOK_FLU_HEALTH) },
+    m.bailed || !m.wookFlu
+      ? m
+      : {
+          ...m,
+          health: adjustMeter(m.health, -PUSH_PENALTY),
+          hunger: adjustMeter(m.hunger, -PUSH_PENALTY),
+          thirst: adjustMeter(m.thirst, -PUSH_PENALTY),
+          vibe: adjustMeter(m.vibe, -PUSH_PENALTY),
+        },
   )
 }
 
-export function crewAllWookFlu<T extends CrewMeterFields>(crew: T[]): boolean {
-  return (
-    activeCrew(crew).length > 0 &&
-    activeCrew(crew).every((c) => c.health < ROUGH_THRESHOLD)
-  )
+export function infectMemberWithWookFlu<
+  T extends CrewMeterFields & { wookFlu?: boolean },
+>(m: T): T {
+  if (m.bailed) return m
+  return {
+    ...m,
+    health: adjustMeter(m.health, WOOK_FLU_HEALTH_DAMAGE),
+    wookFlu: true,
+  }
+}
+
+export function infectRandomCrewWithWookFlu<
+  T extends CrewMeterFields & { wookFlu?: boolean; id: string; name: string },
+>(
+  crew: T[],
+  seed: number,
+): { crew: T[]; infectedName: string | null; flare: boolean } {
+  const candidates = activeCrew(crew).filter((c) => !c.wookFlu)
+  if (candidates.length === 0) {
+    return {
+      crew: crew.map((m) =>
+        m.bailed || !m.wookFlu
+          ? m
+          : {
+              ...m,
+              health: adjustMeter(m.health, WOOK_FLU_HEALTH_DAMAGE),
+            },
+      ),
+      infectedName: null,
+      flare: true,
+    }
+  }
+  const target = candidates[Math.abs(seed) % candidates.length]!
+  return {
+    crew: crew.map((m) => (m.id === target.id ? infectMemberWithWookFlu(m) : m)),
+    infectedName: target.name,
+    flare: false,
+  }
+}
+
+export function spreadWookFlu<
+  T extends CrewMeterFields & { wookFlu?: boolean; id: string; name: string },
+>(crew: T[], seed: number): { crew: T[]; messages: string[] } {
+  if (!activeCrew(crew).some((c) => c.wookFlu)) {
+    return { crew, messages: [] }
+  }
+
+  const messages: string[] = []
+  let next = crew
+  for (const m of activeCrew(crew)) {
+    if (m.wookFlu) continue
+    const roll = Math.abs(seed + nameSeed(m.name) * 13) % 100
+    if (roll >= WOOK_FLU_SPREAD_CHANCE) continue
+    next = next.map((x) => (x.id === m.id ? infectMemberWithWookFlu(x) : x))
+    messages.push(
+      pickText(
+        COPY.crew.wookFluSpread,
+        nameSeed(m.name) + seed,
+        `${m.name} caught wook flu.`,
+        { name: m.name },
+      ),
+    )
+  }
+  return { crew: next, messages }
+}
+
+export function isWookFluDeath(crew: { bailed: boolean; wookFlu?: boolean }[]): boolean {
+  return crew.length > 0 && crew.every((c) => c.bailed && c.wookFlu)
 }

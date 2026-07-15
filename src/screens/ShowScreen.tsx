@@ -1,4 +1,4 @@
-import { Alert, Button, Group, Stack, Text, Title } from '@mantine/core'
+import { Alert, Button, Group, Stack, Text } from '@mantine/core'
 import { activeCrew, canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
 
@@ -13,7 +13,6 @@ export function ShowScreen() {
 
   return (
     <Stack>
-      <Title order={2}>The show</Title>
       <Text>
         {stop?.dayLabel} — <strong>{stop?.venue}</strong>, {stop?.city}
       </Text>

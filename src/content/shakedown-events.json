@@ -1,5 +1,5 @@
 {
-  "events": [
+  "postShow": [
     {
       "id": "vendor_dump",
       "title": "Vendor dump",
@@ -47,6 +47,29 @@
       "title": "Quiet lot",
       "body": "The lot exhales. Vendors packing, stragglers humming. Nothing wild — just space to hustle.",
       "weight": 14,
+      "effects": {}
+    }
+  ],
+  "lot": [
+    {
+      "id": "clown_juice_mafia",
+      "title": "Clown Juice Mafia has arrived!",
+      "body": "Skull-painted cart under a palm tree. Buy balloons ($30) or try to make a deal (3 for $10) — haggle at your own risk.",
+      "weight": 14,
+      "effects": {}
+    },
+    {
+      "id": "lot_buzz",
+      "title": "Lot buzz",
+      "body": "Vendors shouting, tape decks humming, someone selling pins out of a hatchback. Normal shakedown energy.",
+      "weight": 18,
+      "effects": { "cash": 8 }
+    },
+    {
+      "id": "quiet_shakedown",
+      "title": "Quiet lot",
+      "body": "The lot's mellow. Time to scout prices and plan the hustle before showtime.",
+      "weight": 22,
       "effects": {}
     }
   ]

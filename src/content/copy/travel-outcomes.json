@@ -16,14 +16,31 @@
       "Robbed at a rest stop. The tour giveth and taketh."
     ],
     "wook_flu": [
-      "The crew is sweating through blankets. Rest hard or regret it.",
-      "Wook flu hits the van. Everyone sounds like a sad harmonica.",
-      "Fever and regret. The lot can wait — your immune system cannot."
+      "{name} caught wook flu — tour continues, health doesn't.",
+      "Wook flu patient zero: {name}. Rest or hotel before the van becomes a petri dish.",
+      "{name} sounds like a sad harmonica. Keep rolling if you dare."
     ],
     "default": [
       "You dealt with it and kept rolling.",
       "Handled. No poetry required.",
       "Survived another mile of nonsense."
+    ]
+  },
+  "wook_flu": {
+    "rest": [
+      "Camped out so {name} could sleep it off. Health climbing — still contagious until truly recovered.",
+      "Rest stop triage for {name}: blankets, bad tea, slow recovery.",
+      "Let the fever break. {name}'s bruised but still in the game."
+    ],
+    "push": [
+      "{name} powered through wook flu. Health took a beating — vibes in the gutter.",
+      "Kept rolling while {name} was sick. Bad idea. They look haunted.",
+      "No rest for the wicked — {name} paid in health. Still on the road."
+    ],
+    "flare": [
+      "Wook flu flares — the sick crew takes another health hit.",
+      "Nobody rested. The outbreak worsens across the van.",
+      "Still contagious. Everyone who's sick just took more damage."
     ]
   },
   "pulled_over": {
@@ -191,6 +208,50 @@
       "Hotel crash (${cost}) — fed, quenched, sober. Everyone's human again.",
       "Room booked (${cost}). Hot shower, cold fridge, zero stoned. Crew restored.",
       "Paid ${cost} for real sleep. Hunger, thirst, health, vibe maxed. Sober."
+    ],
+    "balloons": [
+      "Balloons — crew vibe up, health a little down.",
+      "Nitrous in the lot. Everyone's floating; lungs disagree.",
+      "Balloon cart hit. High vibes, sketchy health."
+    ]
+  },
+  "clown_juice": {
+    "retail": [
+      "Mafia retail — one hit for $30. Vibe up, health down.",
+      "Full price at the skull cart. No haggling, just nitrous.",
+      "You pay the clown tax. Crew floats; bodies complain."
+    ],
+    "deal": [
+      "Three for ten. The mafia nods. Crew's gone orbital.",
+      "You talked them down — three balloons, suspiciously cheap.",
+      "Bulk nitrous hustle. Everyone's buzzing; nobody's bleeding. Yet."
+    ],
+    "deal_punched": [
+      "You pushed the deal. Skull paint met your jaw. Extra health damage.",
+      "Three for ten — then a fist to the mouth for talking too much.",
+      "The mafia honored three for ten. Your teeth honored the fine print."
+    ]
+  },
+  "market_cop_chase": {
+    "prompt": [
+      "Undercovers saw the handoff. Sirens incoming.",
+      "Badge flash in the lot — someone definitely narced.",
+      "Cops materialize like a bad trip. Sale's done; now what?"
+    ],
+    "balloons_prompt": [
+      "Undercovers clocked the balloon cart. Sirens incoming.",
+      "Badge flash by the nitrous guy — someone's talking.",
+      "Cops rolled up on the balloon hustle. Vibes were up; now what?"
+    ],
+    "stay": [
+      "Stayed cool, paid ${fine}. Kept the sale money. Walked away sweaty.",
+      "Fine was ${fine}. Cheaper than running. Barely.",
+      "Paid ${fine} and acted innocent. Oscar-worthy panic."
+    ],
+    "run": [
+      "Bolted — dropped {stash} in the scramble.",
+      "Ran like encore just started. Lost {stash}.",
+      "Sprinted through the lot. Stash became {stash} on the pavement."
     ]
   },
   "travel": {
@@ -242,6 +303,10 @@
     "all_bailed": [
       "Everyone shuffled on home.",
       "The crew tapped out. Tour over."
-    ]
+    ],
+    "wook_flu_death": {
+      "title": "You have \"died\" of the wook flu.",
+      "subtitle": "(now you have to get a day job)"
+    }
   }
 }

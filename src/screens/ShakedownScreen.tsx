@@ -1,15 +1,20 @@
-import { Button, Group, Stack, Text, Title } from '@mantine/core'
+import { Alert, Button, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { ClownJuiceMafiaPanel } from '../components/ClownJuiceMafiaPanel'
 import { LocationNav } from '../components/LocationNav'
 import { MarketPanel } from '../components/MarketPanel'
+import { SpotFindAlert } from '../components/SpotFindAlert'
 import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
-import { RESOURCE_BALANCE } from '../game/resources'
 import { useGame } from '../game/GameContext'
+import { RESOURCE_BALANCE } from '../game/resources'
+import { isClownJuiceMafia } from '../game/shakedown/events'
 
 export function ShakedownScreen() {
-  const { state, goToLocation, goToVenueGates, enterShow, adjustResources } = useGame()
+  const { state, goToLocation, goToVenueGates, adjustResources } = useGame()
   const stop = state.tour?.stops[state.tour.currentStopIndex]
   const venueOk = canEnterVenue(state.crew)
   const gateMessage = venueEntryBlockedMessage(state.crew)
+  const event = state.shakedownLotEvent
+  const showBalloons = isClownJuiceMafia(event)
 
   return (
     <Stack>
@@ -18,6 +23,31 @@ export function ShakedownScreen() {
         Lot hub near <strong>{stop?.venue ?? 'the venue'}</strong> in{' '}
         {stop?.city ?? '…'}. Store / grab gear from the car when you have one.
       </Text>
+
+      {event && (
+        <Paper withBorder p="sm" bg="rgba(120,40,140,0.12)">
+          <Text fw={600} mb={4}>
+            {event.title}
+          </Text>
+          <Text size="sm">{event.body}</Text>
+        </Paper>
+      )}
+
+      {state.spotFindEvent && (
+        <SpotFindAlert
+          title={state.spotFindEvent.title}
+          body={state.spotFindEvent.body}
+        />
+      )}
+
+      {!event && (
+        <Alert color="teal" title="Quiet lot">
+          Vendors packing, stragglers humming. Scout prices before showtime.
+        </Alert>
+      )}
+
+      {showBalloons && <ClownJuiceMafiaPanel />}
+
       {state.resources.hasVehicle ? (
         <Text size="sm">Vehicle stash available (stub).</Text>
       ) : (
@@ -47,10 +77,10 @@ export function ShakedownScreen() {
       />
       <Button
         color="grape"
-        onClick={() => (state.turnsUntilShow > 0 ? enterShow() : goToVenueGates())}
+        onClick={goToVenueGates}
         disabled={!venueOk}
       >
-        {state.turnsUntilShow > 0 ? 'Head to show early' : 'Showtime — venue gates'}
+        {state.turnsUntilShow > 0 ? 'Head to venue gates' : 'Showtime — venue gates'}
       </Button>
       {!venueOk && gateMessage && (
         <Text size="sm" c="red">

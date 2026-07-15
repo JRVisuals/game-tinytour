@@ -12,10 +12,12 @@ import {
 } from '@mantine/core'
 import { buildRunResources } from '../game/crew/economy'
 import { crewRepLabel } from '../game/crew/repTitles'
+import { stickerLabel } from '../game/crew/stickers'
 import { useGame } from '../game/GameContext'
 import { RESOURCE_LABELS } from '../game/resources'
 import type { CrewCareerStats, Resources, RunStats, SavedCrew } from '../game/types'
 import { STAT_LABELS } from '../game/types'
+import { CrewSticker } from '../components/CrewSticker'
 
 const SUPPLY_KEYS: (keyof Resources)[] = ['food', 'beer', 'drugs', 'tickets', 'gas']
 
@@ -84,9 +86,19 @@ function CurrentCrewPanel({
     <Paper withBorder p="md" radius="md" h="100%">
       <Stack gap="sm">
         <Title order={4}>This crew</Title>
-        <Text fw={600} size="lg">
-          {saved.members.map((m) => m.name).join(' · ')}
-        </Text>
+        <Stack gap="xs">
+          {saved.members.map((m) => (
+            <Group key={m.name} gap="sm" wrap="nowrap">
+              <CrewSticker stickerId={m.stickerId} size="lg" />
+              <Stack gap={0}>
+                <Text fw={600}>{m.name}</Text>
+                <Text size="xs" c="dimmed">
+                  {stickerLabel(m.stickerId)}
+                </Text>
+              </Stack>
+            </Group>
+          ))}
+        </Stack>
         <Text size="sm" c="dimmed">
           Home: {saved.homeCity}
         </Text>

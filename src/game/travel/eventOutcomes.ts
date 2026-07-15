@@ -13,6 +13,27 @@ function pulledOverPoolKey(
   return `${choice}_${suffix}`
 }
 
+export function balloonBuyMessage(seed: number): string {
+  return pickText(COPY.travelOutcomes.consume.balloons, seed, 'Balloons — vibe up.')
+}
+
+export function wookFluResult(
+  choiceId: string | undefined,
+  seed: number,
+  vars?: { name?: string; flare?: boolean },
+): string {
+  const key = choiceId === 'rest' ? 'rest' : 'push'
+  if (vars?.flare && key === 'push') {
+    return pickText(COPY.travelOutcomes.wook_flu.flare, seed, 'Wook flu flares.')
+  }
+  return pickText(
+    COPY.travelOutcomes.wook_flu[key],
+    seed,
+    'Wook flu ran its course.',
+    vars?.name ? { name: vars.name } : undefined,
+  )
+}
+
 export function soloEventResult(eventKey: string, seed = 0): string {
   const pool =
     COPY.travelOutcomes.solo[eventKey] ?? COPY.travelOutcomes.solo.default
@@ -132,6 +153,11 @@ export function showRecapLine(
 
 export function runEndLine(key: 'shuffle' | 'all_bailed', seed: number): string {
   return pickText(COPY.travelOutcomes.run[key], seed, 'Tour over.')
+}
+
+export function wookFluDeathMessage(): string {
+  const block = COPY.travelOutcomes.run.wook_flu_death
+  return `${block.title}\n${block.subtitle}`
 }
 
 export function shuffleHomeBlockedMessage(seed: number): string {

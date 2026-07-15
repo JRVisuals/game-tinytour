@@ -42,5 +42,23 @@
       "tickets": 5
     },
     "flavor": "Gate prices — tourist trap buys, desperate-fan sell prices. Flip your stash before doors."
+  },
+  "drugSellCopChancePercent": 14,
+  "balloons": {
+    "price": 10,
+    "copChancePercent": 12,
+    "vibe": 20,
+    "health": -5
+  },
+  "copChase": {
+    "fine": 45,
+    "runDrop": {
+      "foodChancePercent": 55,
+      "beerChancePercent": 50,
+      "drugsChancePercent": 35,
+      "foodMax": 2,
+      "beerMax": 2,
+      "drugsMax": 1
+    }
   }
 }

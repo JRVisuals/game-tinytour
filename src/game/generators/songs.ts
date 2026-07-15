@@ -14,34 +14,60 @@ const DEAD = [
   'Uncle John\'s Band',
 ]
 
+const ALL_SONGS = [...PHISH, ...GOOSE, ...DEAD]
+const TITLE_SUFFIXES = [' (live)', ' Reprise', ' (acoustic)', ' (slow)']
+
 function pick<T>(list: T[], n: number): T {
   return list[Math.abs(Math.floor(n)) % list.length]!
 }
 
-function mashTitle(seed: number): string {
-  const roll = seed % 5
-  const a = pick(PHISH, seed)
-  const b = pick(GOOSE, seed * 3)
-  const c = pick(DEAD, seed * 7)
+function mashTitle(seed: number, variant = 0): string {
+  const roll = (seed + variant * 17) % 5
+  const a = pick(PHISH, seed + variant)
+  const b = pick(GOOSE, seed * 3 + variant * 5)
+  const c = pick(DEAD, seed * 7 + variant * 11)
   if (roll === 0) return `${a} > ${b}`
   if (roll === 1) return `${b} (${c} tease)`
   if (roll === 2) return `${c} Jam`
-  if (roll === 3) return `${a} / ${c}`
-  return `${b} into ${a}`
+  if (roll === 3) return `${a} > ${c}`
+  return `${b} > ${a}`
 }
 
-/** ~20 songs: hot / deep_cut / bust_out tiers */
+function fallbackTitle(seed: number, used: Set<string>): string {
+  for (let i = 0; i < ALL_SONGS.length * (TITLE_SUFFIXES.length + 1); i++) {
+    const base = pick(ALL_SONGS, seed + i * 3)
+    const suffix = i < ALL_SONGS.length ? '' : TITLE_SUFFIXES[(i - ALL_SONGS.length) % TITLE_SUFFIXES.length]!
+    const title = `${base}${suffix}`
+    if (!used.has(title)) return title
+  }
+  return pick(ALL_SONGS, seed + 999)
+}
+
+/** ~20 songs: hot / deep_cut / bust_out tiers — each title appears once */
 export function generateBandCatalog(bandSeed: number): BandCatalog {
   const songs: BandSong[] = []
+  const usedTitles = new Set<string>()
   const tiers: SongTier[] = [
     ...Array(8).fill('hot' as SongTier),
     ...Array(10).fill('deep_cut' as SongTier),
     ...Array(2).fill('bust_out' as SongTier),
   ]
   for (let i = 0; i < 20; i++) {
+    let title = ''
+    for (let attempt = 0; attempt < 64; attempt++) {
+      const candidate = mashTitle(bandSeed + i * 19, attempt)
+      if (!usedTitles.has(candidate)) {
+        title = candidate
+        break
+      }
+    }
+    if (!title) {
+      title = fallbackTitle(bandSeed + i * 41, usedTitles)
+    }
+    usedTitles.add(title)
     songs.push({
       id: `song-${bandSeed}-${i}`,
-      title: mashTitle(bandSeed + i * 19),
+      title,
       tier: tiers[i]!,
     })
   }

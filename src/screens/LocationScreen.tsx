@@ -1,6 +1,7 @@
 import { Button, Group, Stack, Text, Title } from '@mantine/core'
 import { LocationNav } from '../components/LocationNav'
 import { MarketPanel } from '../components/MarketPanel'
+import { SpotFindAlert } from '../components/SpotFindAlert'
 import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { COPY } from '../game/config'
 import { useGame } from '../game/GameContext'
@@ -40,6 +41,19 @@ export function LocationScreen() {
             showTickets
           />
         )}
+        {state.turnsUntilShow > 0 && (
+          <>
+            <Text size="sm" c="dimmed">
+              Still time on the lot — head back if you need supplies.
+            </Text>
+            <LocationNav
+              current="venue"
+              turnsUntilShow={state.turnsUntilShow}
+              onGo={goToLocation}
+              exclude={['venue']}
+            />
+          </>
+        )}
         <Button color="grape" onClick={enterShow} disabled={!venueOk}>
           Into the show
         </Button>
@@ -56,6 +70,12 @@ export function LocationScreen() {
     <Stack>
       <Title order={2}>{loc.split('_').join(' ')}</Title>
       <Text>{COPY.locations[loc]}</Text>
+      {state.spotFindEvent && (
+        <SpotFindAlert
+          title={state.spotFindEvent.title}
+          body={state.spotFindEvent.body}
+        />
+      )}
       <Text size="sm" c="dimmed">
         Turns left before show: {state.turnsUntilShow}
       </Text>

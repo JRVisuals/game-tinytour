@@ -1,12 +1,17 @@
 import travelEventsJson from '../../content/travel-events.json'
 import { BALANCE } from '../config'
 import {
+  LOW_HEALTH_WOOK_FLU_THRESHOLD,
+  WOOK_FLU_EVENT_WEIGHT_BONUS,
+  activeCrew,
+} from '../crew/meters'
+import {
   buildIntelTipSongId,
   intelEffect,
   setlistSongId,
   type IntelEventKey,
 } from './intelTips'
-import type { BandCatalog, Setlist, TravelEvent, TravelEventType } from '../types'
+import type { BandCatalog, CrewMember, Setlist, TravelEvent, TravelEventType } from '../types'
 
 interface EventTemplate {
   id: string
@@ -29,16 +34,32 @@ const INTEL_EVENT_TYPES = new Set<TravelEventType>([
 export interface TravelEventContext {
   catalog: BandCatalog
   plannedSetlist?: Setlist
+  crew?: CrewMember[]
 }
 
-function pickWeighted(pool: EventTemplate[], seed: number): EventTemplate {
-  const total = pool.reduce((a, e) => a + e.weight, 0)
+function wookFluWeightBonus(crew?: CrewMember[]): number {
+  if (!crew) return 0
+  const lowHealth = activeCrew(crew).filter(
+    (c) => c.health < LOW_HEALTH_WOOK_FLU_THRESHOLD,
+  ).length
+  return lowHealth * WOOK_FLU_EVENT_WEIGHT_BONUS
+}
+
+function pickWeighted(pool: EventTemplate[], seed: number, crew?: CrewMember[]): EventTemplate {
+  const bonus = wookFluWeightBonus(crew)
+  const weighted =
+    bonus > 0
+      ? pool.map((e) =>
+          e.id === 'wook_flu' ? { ...e, weight: e.weight + bonus } : e,
+        )
+      : pool
+  const total = weighted.reduce((a, e) => a + e.weight, 0)
   let roll = Math.abs(seed) % total
-  for (const e of pool) {
+  for (const e of weighted) {
     roll -= e.weight
     if (roll < 0) return e
   }
-  return pool[0]!
+  return weighted[0]!
 }
 
 function canRollIntel(template: EventTemplate, ctx?: TravelEventContext): boolean {
@@ -79,7 +100,9 @@ function buildIntelEvent(
 
 function eventPool(ctx?: TravelEventContext): EventTemplate[] {
   return templates.filter((e) => {
-    if (e.eventType === 'solo' || e.eventType === 'bathroom_find') return true
+    if (e.eventType === 'solo' || e.eventType === 'bathroom_find' || e.eventType === 'wook_flu') {
+      return true
+    }
     if (INTEL_EVENT_TYPES.has(e.eventType)) return canRollIntel(e, ctx)
     return false
   })
@@ -104,7 +127,7 @@ export function maybeRollTravelEvent(
   const pool = eventPool(ctx)
   if (pool.length === 0) return null
 
-  const template = pickWeighted(pool, seed)
+  const template = pickWeighted(pool, seed, ctx?.crew)
   if (INTEL_EVENT_TYPES.has(template.eventType) && ctx?.plannedSetlist) {
     return buildIntelEvent(template, seed, ctx)
   }

@@ -1,12 +1,14 @@
 import { AppShell, Badge, Container, Grid, Group, Paper, Stack, Title } from '@mantine/core'
+import { OutcomeBanner } from './components/OutcomeBanner'
 import { CrewMeterPanel } from './components/CrewMeterPanel'
 import { SongCatalogPanel } from './components/SongCatalogPanel'
 import { TourStoryPanel } from './components/TourStoryPanel'
 import { ShuffleOnHomeButton } from './components/ShuffleOnHomeButton'
 import { StatusBar } from './components/StatusBar'
 import { VersionBadge } from './components/VersionBadge'
+import { ScreenFrame } from './components/ScreenFrame'
 import { useGame } from './game/GameContext'
-import { PHASE_LABELS } from './game/types'
+import { PHASE_LABELS, type GameState } from './game/types'
 import { CrewCreateScreen } from './screens/CrewCreateScreen'
 import { DayJobScreen } from './screens/DayJobScreen'
 import { LocationScreen } from './screens/LocationScreen'
@@ -20,6 +22,11 @@ import { TitleScreen } from './screens/TitleScreen'
 import { TravelScreen } from './screens/TravelScreen'
 
 const MENU_PHASES = new Set(['title', 'crew', 'stats', 'run_recap', 'day_job'])
+
+function phaseLabel(state: GameState): string {
+  if (state.phase === 'location' && state.currentLocation === 'venue') return 'Venue gates'
+  return PHASE_LABELS[state.phase]
+}
 
 function PhaseRouter() {
   const { state } = useGame()
@@ -52,11 +59,9 @@ function PhaseRouter() {
 export default function App() {
   const { state } = useGame()
   const showShell = !MENU_PHASES.has(state.phase)
-  const showBets =
+  const showBetsInSidebar =
     state.tour != null &&
-    state.phase !== 'show' &&
-    state.phase !== 'post_show' &&
-    state.phase !== 'post_show_shakedown'
+    (state.phase === 'shakedown' || state.phase === 'location' || state.phase === 'show')
 
   if (state.phase === 'title') {
     return (
@@ -80,7 +85,7 @@ export default function App() {
             <Group gap="sm">
               <ShuffleOnHomeButton />
               <Badge size="lg" variant="light">
-                {PHASE_LABELS[state.phase]}
+                {phaseLabel(state)}
               </Badge>
             </Group>
           </Group>
@@ -91,23 +96,30 @@ export default function App() {
               <Grid gap="md" align="flex-start">
                 <Grid.Col span={{ base: 12, md: 8, lg: 7 }}>
                   <StatusBar />
+                  <OutcomeBanner />
                   <Paper withBorder p="lg" radius="md">
-                    <PhaseRouter />
+                    <ScreenFrame compactArt>
+                      <PhaseRouter />
+                    </ScreenFrame>
                   </Paper>
                   <TourStoryPanel />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, md: 4, lg: 5 }}>
                   <Stack gap="md">
                     <CrewMeterPanel />
-                    {showBets && <SongCatalogPanel />}
+                    {showBetsInSidebar && <SongCatalogPanel />}
                   </Stack>
                 </Grid.Col>
               </Grid>
             ) : state.phase === 'stats' ? (
-              <PhaseRouter />
+              <ScreenFrame>
+                <PhaseRouter />
+              </ScreenFrame>
             ) : (
               <Paper withBorder p="lg" radius="md">
-                <PhaseRouter />
+                <ScreenFrame>
+                  <PhaseRouter />
+                </ScreenFrame>
               </Paper>
             )}
           </Container>

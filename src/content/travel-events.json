@@ -34,10 +34,14 @@
     },
     {
       "id": "wook_flu",
-      "eventType": "solo",
+      "eventType": "wook_flu",
       "title": "Wook flu",
-      "body": "The crew is wrecked. Fever dreams of rail-riding unicorns. Rest now or HR gets your application.",
-      "weight": 8
+      "body": "Someone's wrecked — wook flu. One crew member catches it; if it isn't healed, 25% chance each turn someone else does. Camp and rest, power through, or hit a hotel.",
+      "weight": 8,
+      "choices": [
+        { "id": "rest", "label": "Camp and rest" },
+        { "id": "push", "label": "Power through" }
+      ]
     },
     {
       "id": "pulled_over",

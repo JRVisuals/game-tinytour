@@ -89,11 +89,6 @@ export function TravelScreen() {
         {travel.legs.length === 1 ? '' : 's'}
       </Text>
       <Progress value={progress} size="sm" color="teal" />
-      {travel.lastEventResult && !event && (
-        <Alert color="teal" title="What happened">
-          {travel.lastEventResult}
-        </Alert>
-      )}
       {leg && !event && (
         <>
           <Text fw={500}>

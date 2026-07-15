@@ -7,13 +7,17 @@ export function DayJobScreen() {
   const { state, finishRunRecap, takeDayJobStipend, resetCrew } = useGame()
   const perMember = BALANCE.crewEconomy.dayJobStipendPerMember
   const stipend = state.dayJobStipend ?? 0
+  const [recapTitle, recapSubtitle] = state.runRecapMessage.includes('\n')
+    ? state.runRecapMessage.split('\n', 2)
+    : [state.runRecapMessage, null]
 
   const crewSize = state.savedCrew?.members.length ?? state.crew.length
 
   return (
     <Stack>
       <Title order={2}>Day job</Title>
-      <Text>{state.runRecapMessage}</Text>
+      <Text fw={500}>{recapTitle}</Text>
+      {recapSubtitle && <Text c="dimmed">{recapSubtitle}</Text>}
       <Text c="dimmed">
         The tour can wait. Nametags, time clock, burnt coffee. Your crew rep carries — cash
         doesn&apos;t.

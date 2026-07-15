@@ -10,14 +10,20 @@ interface ShakedownEventTemplate {
   effects: Partial<Record<keyof Resources, number>>
 }
 
-const templates = shakedownEventsJson.events as ShakedownEventTemplate[]
+const postShowTemplates = shakedownEventsJson.postShow as ShakedownEventTemplate[]
+const lotTemplates = shakedownEventsJson.lot as ShakedownEventTemplate[]
+const allTemplates = [...postShowTemplates, ...lotTemplates]
 const S = BALANCE.shakedown
 
-export interface PostShowShakedownEvent {
+export const CLOWN_JUICE_MAFIA_ID = 'clown_juice_mafia'
+
+export interface ShakedownLotEvent {
   id: string
   title: string
   body: string
 }
+
+export type PostShowShakedownEvent = ShakedownLotEvent
 
 function pickWeighted(pool: ShakedownEventTemplate[], seed: number): ShakedownEventTemplate {
   const total = pool.reduce((a, e) => a + e.weight, 0)
@@ -31,15 +37,25 @@ function pickWeighted(pool: ShakedownEventTemplate[], seed: number): ShakedownEv
 
 export function rollPostShowShakedownEvent(seed: number): PostShowShakedownEvent | null {
   if (Math.abs(seed) % 100 > S.postShowEventChancePercent) return null
-  const t = pickWeighted(templates, seed)
+  const t = pickWeighted(postShowTemplates, seed)
   return { id: t.id, title: t.title, body: t.body }
+}
+
+export function rollLotShakedownEvent(seed: number): ShakedownLotEvent | null {
+  if (Math.abs(seed) % 100 > S.lotEventChancePercent) return null
+  const t = pickWeighted(lotTemplates, seed + 3)
+  return { id: t.id, title: t.title, body: t.body }
+}
+
+export function isClownJuiceMafia(event: ShakedownLotEvent | null | undefined): boolean {
+  return event?.id === CLOWN_JUICE_MAFIA_ID
 }
 
 export function applyShakedownEventEffects(
   resources: Resources,
   eventId: string,
 ): Resources {
-  const t = templates.find((e) => e.id === eventId)
+  const t = allTemplates.find((e) => e.id === eventId)
   if (!t?.effects) return resources
   let next = { ...resources }
   for (const [key, delta] of Object.entries(t.effects) as [keyof Resources, number][]) {
@@ -50,4 +66,12 @@ export function applyShakedownEventEffects(
     }
   }
   return next
+}
+
+export function applyLotShakedownEventEffects(
+  resources: Resources,
+  event: ShakedownLotEvent | null,
+): Resources {
+  if (!event) return resources
+  return applyShakedownEventEffects(resources, event.id)
 }

@@ -1,4 +1,15 @@
 {
   "postShowEventChancePercent": 85,
-  "missShowHustleEventChancePercent": 92
+  "lotEventChancePercent": 55,
+  "missShowHustleEventChancePercent": 92,
+  "clownJuiceMafia": {
+    "retailPrice": 30,
+    "dealPrice": 10,
+    "dealDoses": 3,
+    "punchChancePercent": 38,
+    "punchHealth": -10
+  },
+  "spotFind": {
+    "chancePercent": 9
+  }
 }

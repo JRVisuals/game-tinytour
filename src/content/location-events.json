@@ -1,0 +1,11 @@
+{
+  "events": [
+    {
+      "id": "found_twenty_spot",
+      "title": "Found a $20 spot!",
+      "body": "Crushed can, folded bill, same energy — twenty bucks just sitting there in the lot.",
+      "locations": ["park", "shakedown"],
+      "effects": { "cash": 20 }
+    }
+  ]
+}

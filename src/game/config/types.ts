@@ -10,16 +10,27 @@ export interface CrewMetersBalance {
   eatHealth: number
   beerStoned: number
   beerThirst: number
+  drinkHealth: number
   consumeDrugsVibe: number
   consumeDrugsStoned: number
+  consumeDrugsHealth: number
   showVibe: number
+  betWinVibe: number
+  betLossVibe: number
+  badEventVibe: number
   restHealth: number
   restThirst: number
   restVibe: number
   restStoned: number
   hitchVibe: number
   pushPenalty: number
-  wookFluHealth: number
+  wookFluHealthDamage: number
+  wookFluSpreadChancePercent: number
+  neglectHungerHealthDamage: number
+  neglectThirstHealthDamage: number
+  lowHealthWookFluThreshold: number
+  wookFluLowHealthTickChancePercent: number
+  wookFluEventWeightBonusPerLowHealth: number
   stonedWastedThreshold: number
   bathroomBagStoned: number
   defaultMeters: {
@@ -67,7 +78,18 @@ export interface IntelEventEffect {
 
 export interface ShakedownBalance {
   postShowEventChancePercent: number
+  lotEventChancePercent: number
   missShowHustleEventChancePercent: number
+  clownJuiceMafia: {
+    retailPrice: number
+    dealPrice: number
+    dealDoses: number
+    punchChancePercent: number
+    punchHealth: number
+  }
+  spotFind: {
+    chancePercent: number
+  }
 }
 
 export interface EventEffectsBalance {
@@ -77,7 +99,7 @@ export interface EventEffectsBalance {
   hitchhiker_intel: IntelEventEffect
   lot_rumor: IntelEventEffect
   encore_whisper: IntelEventEffect
-  wook_flu: { setHealthCap: number }
+  wook_flu: { healthDamage: number }
   bathroom_find: {
     try_it: { drugs: number; lacedChancePercent: number }
     toss_it: Record<string, never>
@@ -142,6 +164,24 @@ export interface MarketsBalance {
     }
     flavor: string
   }
+  drugSellCopChancePercent: number
+  balloons: {
+    price: number
+    copChancePercent: number
+    vibe: number
+    health: number
+  }
+  copChase: {
+    fine: number
+    runDrop: {
+      foodChancePercent: number
+      beerChancePercent: number
+      drugsChancePercent: number
+      foodMax: number
+      beerMax: number
+      drugsMax: number
+    }
+  }
 }
 
 export interface CrewEconomyBalance {
@@ -194,7 +234,15 @@ export interface MeterLabelTiers {
   midHigh?: string
 }
 
+export interface RunOutcomesCopy {
+  shuffle: string[]
+  shuffle_blocked: string[]
+  all_bailed: string[]
+  wook_flu_death: { title: string; subtitle: string }
+}
+
 export interface TravelOutcomesCopy {
+  wook_flu: Record<string, string[]>
   solo: Record<string, string[]>
   pulled_over: {
     wasted: Record<string, string[]>
@@ -204,15 +252,20 @@ export interface TravelOutcomesCopy {
   lot_rumor: Record<string, string[]>
   encore_whisper: Record<string, string[]>
   hitchhiker_intel: Record<string, string[]>
+  market_cop_chase: Record<string, string[]>
   consume: Record<string, string[]>
+  clown_juice: Record<string, string[]>
   travel: Record<string, string[]>
   show: Record<string, string[]>
-  run: Record<string, string[]>
+  run: RunOutcomesCopy
 }
 
 export interface CrewCopy {
   bail: Record<string, string[]>
   warnings: Record<string, string[]>
+  wookFluSpread: string[]
+  neglect: Record<string, string[]>
+  lowHealthWookFlu: string[]
   venueBlocked: string[]
   meterLabels: Record<string, MeterLabelTiers>
 }

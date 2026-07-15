@@ -48,6 +48,7 @@ function normalizeSavedCrew(raw: unknown, legacyLifetime?: unknown): SavedCrew |
   if (Array.isArray(o.members)) {
     members = (o.members as SavedCrew['members']).map((m) => ({
       name: m.name,
+      stickerId: typeof m.stickerId === 'string' ? m.stickerId : undefined,
       kit: m.kit,
     }))
   } else if (typeof o.name === 'string') {

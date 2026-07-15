@@ -22,6 +22,8 @@ export type LocationId =
 export interface CrewMember {
   id: string
   name: string
+  /** Emoji sticker id — future portrait slot */
+  stickerId?: string
   hunger: number
   thirst: number
   health: number
@@ -29,6 +31,8 @@ export interface CrewMember {
   stoned: number
   roughTurns: number
   bailed: boolean
+  /** Set when the crew catches wook flu — run can end with day job if everyone taps out sick */
+  wookFlu?: boolean
 }
 
 export type StarterTier = 100 | 200 | 400
@@ -37,6 +41,8 @@ export type MemberKitId = 'flat' | 'ticket_fairy' | 'driver' | 'stash' | 'cooler
 
 export interface SavedCrewMember {
   name: string
+  /** Emoji sticker id — future portrait slot */
+  stickerId?: string
   /** Extra members only — leader always gets flat leader kit */
   kit?: MemberKitId
 }
@@ -148,6 +154,7 @@ export type TravelEventType =
   | 'bathroom_find'
   | 'hitchhiker_intel'
   | 'encore_intel'
+  | 'wook_flu'
   | 'solo'
 
 export interface TravelEvent {
@@ -229,6 +236,10 @@ export interface GameState {
   postShowRecap: string
   /** Random lot moment after the show — title + body from shakedown-events.json */
   postShowShakedownEvent: { id: string; title: string; body: string } | null
+  /** Random lot moment on pre-show shakedown — e.g. Clown Juice Mafia */
+  shakedownLotEvent: { id: string; title: string; body: string } | null
+  /** Rare cash find when visiting park or shakedown */
+  spotFindEvent: { id: string; title: string; body: string } | null
   /** Lot hustle when you skip the show */
   missShowHustleEvent: { id: string; title: string; body: string } | null
   rngSeed: number
@@ -252,8 +263,12 @@ export interface GameState {
   /** Cached prices/stock per stop or road pull-over for this show */
   stopMarkets: Record<string, MarketSnapshot>
   activeMarketKey: string | null
+  /** Cops noticed a shady lot transaction — stay (fine) or run (drop stash) */
+  marketCopChase: { fine: number; proceeds: number; reason?: 'drug_sell' | 'balloons' } | null
   /** Last crew bail / warning — shown in UI */
   crewAlert: string | null
+  /** Clear mechanical recap: resource + crew deltas after an action */
+  lastOutcome: string | null
 }
 
 export const PHASE_LABELS: Record<PhaseId, string> = {
@@ -263,7 +278,7 @@ export const PHASE_LABELS: Record<PhaseId, string> = {
   travel: 'Travel',
   shakedown: 'Shakedown',
   location: 'Location',
-  show: 'The show',
+  show: 'The Show',
   post_show: 'Post-show',
   post_show_shakedown: 'After-show shakedown',
   run_recap: 'Run recap',

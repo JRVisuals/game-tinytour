@@ -1,4 +1,4 @@
-import { Badge, Button, Group, Paper, ScrollArea, Select, Stack, Text } from '@mantine/core'
+import { ActionIcon, Badge, Button, Group, Paper, ScrollArea, Select, Stack, Text } from '@mantine/core'
 import { useState } from 'react'
 import {
   BET_SLOT_LABEL,
@@ -28,8 +28,10 @@ const BET_SLOTS: { value: BetSlot; label: string }[] = [
   { value: 'encore', label: BET_SLOT_LABEL.encore },
 ]
 
+const AMOUNT_OPTIONS = BET_UI_AMOUNTS.map((n) => String(n))
+
 export function SongCatalogPanel() {
-  const { state, placeSetlistBet } = useGame()
+  const { state, placeSetlistBet, cancelSetlistBet } = useGame()
   const catalog = state.tour?.catalog
   const stop = state.tour?.stops[state.tour.currentStopIndex]
   const [slot, setSlot] = useState<BetSlot>('anywhere')
@@ -54,18 +56,30 @@ export function SongCatalogPanel() {
         </Text>
       )}
       <Text size="xs" c="dimmed" mb="sm">
-        Pick placement & amount, then tap a song. {slotsLeft}/{MAX_ACTIVE_BETS} bets left.
+        Pick placement & amount, then tap a song. Cancel anytime before you walk in.{' '}
+        {slotsLeft}/{MAX_ACTIVE_BETS} slots open.
       </Text>
 
       {state.activeSetlistBets.length > 0 && (
         <Stack gap={4} mb="sm" p="xs" style={{ background: 'rgba(0,80,70,0.15)', borderRadius: 6 }}>
           <Text size="xs" fw={600}>
-            Active bets
+            Your bets
           </Text>
           {state.activeSetlistBets.map((b) => (
-            <Text key={`${b.songId}-${b.slot}`} size="sm">
-              {b.songTitle} — ${b.amount} · {BET_SLOT_SHORT[b.slot]}
-            </Text>
+            <Group key={`${b.songId}-${b.slot}`} gap={6} wrap="nowrap">
+              <Text size="sm" truncate style={{ flex: 1, minWidth: 0 }} title={b.songTitle}>
+                {b.songTitle} — ${b.amount} · {BET_SLOT_SHORT[b.slot]}
+              </Text>
+              <ActionIcon
+                size="sm"
+                variant="subtle"
+                color="red"
+                aria-label={`Cancel bet on ${b.songTitle}`}
+                onClick={() => cancelSetlistBet(b.songId)}
+              >
+                ×
+              </ActionIcon>
+            </Group>
           ))}
         </Stack>
       )}
@@ -81,7 +95,7 @@ export function SongCatalogPanel() {
         <Select
           label="Bet amount"
           size="xs"
-          data={BET_UI_AMOUNTS.map((n) => String(n))}
+          data={AMOUNT_OPTIONS}
           value={amount}
           onChange={(v) => v && setAmount(v)}
         />
@@ -94,7 +108,9 @@ export function SongCatalogPanel() {
       <ScrollArea h={220} type="auto" offsetScrollbars>
         <Stack gap={6} pr="xs">
           {catalog.songs.map((song) => {
-            const already = state.activeSetlistBets.some((b) => b.songId === song.id)
+            const already = state.activeSetlistBets.some(
+              (b) => b.songId === song.id || b.songTitle === song.title,
+            )
             return (
               <Group key={song.id} justify="space-between" wrap="nowrap">
                 <Group gap="xs" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>

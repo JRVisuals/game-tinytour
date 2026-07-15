@@ -1,0 +1,94 @@
+{
+  "scenes": {
+    "title-logo": {
+      "label": "Logo",
+      "hint": "public/art/logo.png",
+      "src": null,
+      "height": 72
+    },
+    "title": {
+      "label": "Title scene",
+      "hint": "public/art/title.png",
+      "src": null,
+      "height": 140
+    },
+    "crew": {
+      "label": "Crew",
+      "hint": "public/art/crew.png",
+      "src": null,
+      "height": 110
+    },
+    "stats": {
+      "label": "Career wall",
+      "hint": "public/art/stats.png",
+      "src": null,
+      "height": 100
+    },
+    "travel": {
+      "label": "On the road",
+      "hint": "public/art/travel.png",
+      "src": null,
+      "height": 96
+    },
+    "shakedown": {
+      "label": "Lot shakedown",
+      "hint": "public/art/shakedown.png",
+      "src": null,
+      "height": 96
+    },
+    "location:venue": {
+      "label": "Venue gates",
+      "hint": "public/art/venue-gates.png",
+      "src": null,
+      "height": 96
+    },
+    "location:hotel": {
+      "label": "Hotel crash",
+      "hint": "public/art/hotel.png",
+      "src": null,
+      "height": 96
+    },
+    "location:friends_house": {
+      "label": "Friends' couch",
+      "hint": "public/art/friends-house.png",
+      "src": null,
+      "height": 96
+    },
+    "show": {
+      "label": "Inside the room",
+      "hint": "public/art/show.png",
+      "src": null,
+      "height": 110
+    },
+    "post_show": {
+      "label": "After the encore",
+      "hint": "public/art/post-show.png",
+      "src": null,
+      "height": 96
+    },
+    "post_show_shakedown": {
+      "label": "Late lot",
+      "hint": "public/art/post-show-shakedown.png",
+      "src": null,
+      "height": 96
+    },
+    "run_recap": {
+      "label": "Tour memory",
+      "hint": "public/art/run-recap.png",
+      "src": null,
+      "height": 100
+    },
+    "day_job": {
+      "label": "Day job",
+      "hint": "public/art/day-job.png",
+      "src": null,
+      "height": 100
+    },
+    "default": {
+      "label": "Scene",
+      "hint": "public/art/scene.png",
+      "src": null,
+      "height": 88
+    }
+  }
+}
