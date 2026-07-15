@@ -1,5 +1,4 @@
 import { Button, Group, Stack, Text } from '@mantine/core'
-import { BackToSceneButton } from '../components/BackToSceneButton'
 import { LocationNav } from '../components/LocationNav'
 import { SceneBeatAlert } from '../components/SceneBeatAlert'
 import { TabHintButton } from '../components/TabHintButton'
@@ -10,7 +9,7 @@ import { RESOURCE_BALANCE } from '../game/resources'
 import { showtimeTurnsLabel } from '../game/showtime'
 
 export function LocationScreen() {
-  const { state, goToLocation, enterShow, hotelCrash } = useGame()
+  const { state, goToLocation, enterShow, hotelCrash, returnToShakedown } = useGame()
   const loc = state.currentLocation
   const prices = state.currentMarket
   const venueOk = canEnterVenue(state.crew)
@@ -70,7 +69,9 @@ export function LocationScreen() {
         {showtimeTurnsLabel(state.turnsUntilShow)}
       </Text>
       <Text>{COPY.locations[loc]}</Text>
-      <BackToSceneButton />
+      <Button variant="default" onClick={returnToShakedown}>
+        Back to shakedown
+      </Button>
       {state.spotFindEvent && (
         <SceneBeatAlert
           title={state.spotFindEvent.title}

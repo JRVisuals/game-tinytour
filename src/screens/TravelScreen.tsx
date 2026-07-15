@@ -1,5 +1,5 @@
 import { Alert, Button, Group, Progress, Stack, Text } from '@mantine/core'
-import { BackToSceneButton } from '../components/BackToSceneButton'
+import { SceneCrewNudge } from '../components/SceneCrewNudge'
 import { BALANCE } from '../game/config'
 import { activeCrew } from '../game/crew/meters'
 import {
@@ -16,6 +16,7 @@ export function TravelScreen() {
     resolveTravelEvent,
     advanceTravelLeg,
     visitRoadside,
+    leaveRoadside,
   } = useGame()
 
   const tour = state.tour
@@ -62,7 +63,9 @@ export function TravelScreen() {
       <Stack>
         <Text fw={600}>{ROADSIDE_LABELS[roadside]}</Text>
         <Text size="sm">{ROADSIDE_COPY[roadside]}</Text>
-        <BackToSceneButton />
+        <Button variant="default" onClick={leaveRoadside}>
+          Back on the road
+        </Button>
       </Stack>
     )
   }
@@ -119,6 +122,7 @@ export function TravelScreen() {
               Everyone bailed. Shuffle on home from the header.
             </Alert>
           )}
+          <SceneCrewNudge inline />
           <Text fw={500} size="sm">
             Road actions
           </Text>

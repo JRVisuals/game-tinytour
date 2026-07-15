@@ -16,7 +16,7 @@ import {
 } from '../../game/hustle/tab'
 
 interface HustleTabProps {
-  onBackToScene?: () => void
+  onBackToScene: () => void
 }
 
 export function HustleTab({ onBackToScene }: HustleTabProps) {

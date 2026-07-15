@@ -3,9 +3,10 @@ import { useGame } from '../game/GameContext'
 import { isAtRoadsideHustle } from '../game/hustle/tab'
 
 interface BackToSceneButtonProps {
-  onBackToScene?: () => void
+  onBackToScene: () => void
 }
 
+/** Hustle tab only — one tap returns to Scene and exits roadside / lot sub-stops. */
 export function BackToSceneButton({ onBackToScene }: BackToSceneButtonProps) {
   const { state, returnToShakedown, leaveRoadside } = useGame()
 
@@ -15,21 +16,10 @@ export function BackToSceneButton({ onBackToScene }: BackToSceneButtonProps) {
     state.currentLocation !== 'shakedown' &&
     state.currentLocation !== 'venue'
 
-  const tabReturnOnly =
-    !!onBackToScene &&
-    (state.phase === 'shakedown' ||
-      state.phase === 'location' ||
-      isAtRoadsideHustle(state))
-
-  if (!atRoadside && !atLotStop && !tabReturnOnly) return null
-
   const handleClick = () => {
-    if (atRoadside) {
-      leaveRoadside()
-    } else if (!onBackToScene && atLotStop) {
-      returnToShakedown()
-    }
-    onBackToScene?.()
+    if (atRoadside) leaveRoadside()
+    else if (atLotStop) returnToShakedown()
+    onBackToScene()
   }
 
   return (
