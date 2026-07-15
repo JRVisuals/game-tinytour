@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { ActionIcon, CopyButton, Stack, Text, Textarea, Tooltip } from '@mantine/core'
 import { useGame } from '../game/GameContext'
 
-export function TourStoryPanel() {
+export function TourStoryPanel({ embedded }: { embedded?: boolean }) {
   const { state } = useGame()
   const text = state.tourStory.join('\n\n')
   const visible =
@@ -16,10 +16,12 @@ export function TourStoryPanel() {
   if (!visible) return null
 
   return (
-    <Stack gap="xs" mt="md">
-      <Text size="sm" fw={600}>
-        Tour story
-      </Text>
+    <Stack gap="xs" mt={embedded ? 0 : 'md'}>
+      {!embedded && (
+        <Text size="sm" fw={600}>
+          Tour story
+        </Text>
+      )}
       <Textarea
         ref={scrollToBottom}
         value={text}

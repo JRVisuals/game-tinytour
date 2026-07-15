@@ -1,7 +1,6 @@
 import { Alert, Button, Group, Paper, Stack, Text, Title } from '@mantine/core'
 import { ClownJuiceMafiaPanel } from '../components/ClownJuiceMafiaPanel'
 import { LocationNav } from '../components/LocationNav'
-import { MarketPanel } from '../components/MarketPanel'
 import { SpotFindAlert } from '../components/SpotFindAlert'
 import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
@@ -87,14 +86,10 @@ export function ShakedownScreen() {
           {gateMessage}
         </Text>
       )}
-      {state.currentMarket && state.currentMarketStock && (
-        <MarketPanel
-          prices={state.currentMarket}
-          stock={state.currentMarketStock}
-          flavor={state.marketFlavor}
-          contextLabel="shakedown"
-          showTickets
-        />
+      {state.currentMarket && (
+        <Text size="xs" c="dimmed" ta="center">
+          Vendors in the lot — open Crew → Hustle to trade.
+        </Text>
       )}
     </Stack>
   )

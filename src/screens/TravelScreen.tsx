@@ -1,5 +1,4 @@
 import { Alert, Button, Group, Progress, Stack, Text, Title } from '@mantine/core'
-import { MarketPanel } from '../components/MarketPanel'
 import { BALANCE } from '../game/config'
 import { activeCrew } from '../game/crew/meters'
 import {
@@ -64,12 +63,9 @@ export function TravelScreen() {
       <Stack>
         <Title order={2}>{ROADSIDE_LABELS[roadside]}</Title>
         <Text size="sm">{ROADSIDE_COPY[roadside]}</Text>
-        <MarketPanel
-          prices={state.currentMarket}
-          stock={state.currentMarketStock}
-          flavor={state.marketFlavor}
-          contextLabel={ROADSIDE_LABELS[roadside]}
-        />
+        <Text size="xs" c="dimmed" ta="center">
+          Roadside vendors — open Crew → Hustle to buy or sell.
+        </Text>
         <Button variant="default" onClick={leaveRoadside}>
           Back on the road
         </Button>

@@ -1,5 +1,4 @@
 import { Alert, Button, Paper, Stack, Text, Title } from '@mantine/core'
-import { MarketPanel } from '../components/MarketPanel'
 import { useGame } from '../game/GameContext'
 
 export function PostShowShakedownScreen() {
@@ -30,15 +29,10 @@ export function PostShowShakedownScreen() {
         </Alert>
       )}
 
-      {state.currentMarket && state.currentMarketStock && (
-        <MarketPanel
-          prices={state.currentMarket}
-          stock={state.currentMarketStock}
-          flavor={state.marketFlavor}
-          contextLabel="after-show shakedown"
-          showTickets
-          showBalloons
-        />
+      {state.currentMarket && (
+        <Text size="xs" c="dimmed" ta="center">
+          After-show vendors — open Crew → Hustle (balloons too).
+        </Text>
       )}
 
       <Button color="teal" onClick={prepNextLeg}>

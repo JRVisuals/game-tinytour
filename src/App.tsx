@@ -1,25 +1,17 @@
-import { AppShell, Badge, Container, Grid, Group, Paper, Stack, Title } from '@mantine/core'
-import { OutcomeBanner } from './components/OutcomeBanner'
-import { CrewMeterPanel } from './components/CrewMeterPanel'
-import { SongCatalogPanel } from './components/SongCatalogPanel'
-import { TourStoryPanel } from './components/TourStoryPanel'
-import { ShuffleOnHomeButton } from './components/ShuffleOnHomeButton'
-import { StatusBar } from './components/StatusBar'
-import { VersionBadge } from './components/VersionBadge'
+import { AppShell, Badge, Container, Group, Paper, Title } from '@mantine/core'
+import { useMemo, useState } from 'react'
+import { PhaseRouter } from './components/PhaseRouter'
 import { ScreenFrame } from './components/ScreenFrame'
+import { ShuffleOnHomeButton } from './components/ShuffleOnHomeButton'
+import { TourTabBar, type PlayTabId } from './components/TourTabBar'
+import { CrewTab } from './components/tabs/CrewTab'
+import { JournalTab } from './components/tabs/JournalTab'
+import { SceneTab } from './components/tabs/SceneTab'
+import { VersionBadge } from './components/VersionBadge'
+import { crewStatusChip } from './game/crew/meters'
 import { useGame } from './game/GameContext'
 import { PHASE_LABELS, type GameState } from './game/types'
-import { CrewCreateScreen } from './screens/CrewCreateScreen'
-import { DayJobScreen } from './screens/DayJobScreen'
-import { LocationScreen } from './screens/LocationScreen'
-import { PostShowScreen } from './screens/PostShowScreen'
-import { PostShowShakedownScreen } from './screens/PostShowShakedownScreen'
-import { RunRecapScreen } from './screens/RunRecapScreen'
-import { ShakedownScreen } from './screens/ShakedownScreen'
-import { ShowScreen } from './screens/ShowScreen'
-import { StatsScreen } from './screens/StatsScreen'
 import { TitleScreen } from './screens/TitleScreen'
-import { TravelScreen } from './screens/TravelScreen'
 
 const MENU_PHASES = new Set(['title', 'crew', 'stats', 'run_recap', 'day_job'])
 
@@ -28,40 +20,33 @@ function phaseLabel(state: GameState): string {
   return PHASE_LABELS[state.phase]
 }
 
-function PhaseRouter() {
-  const { state } = useGame()
-  switch (state.phase) {
-    case 'title':
-      return <TitleScreen />
-    case 'crew':
-      return <CrewCreateScreen />
-    case 'stats':
-      return <StatsScreen />
-    case 'travel':
-      return <TravelScreen />
-    case 'shakedown':
-      return <ShakedownScreen />
-    case 'location':
-      return <LocationScreen />
-    case 'show':
-      return <ShowScreen />
-    case 'post_show':
-      return <PostShowScreen />
-    case 'post_show_shakedown':
-      return <PostShowShakedownScreen />
-    case 'run_recap':
-      return <RunRecapScreen />
-    case 'day_job':
-      return <DayJobScreen />
-  }
+function hasUrgentCrew(state: GameState): boolean {
+  return state.crew.some((m) => {
+    const s = crewStatusChip(m)
+    return s.severity === 'critical' || s.severity === 'warning'
+  })
 }
 
 export default function App() {
   const { state } = useGame()
-  const showShell = !MENU_PHASES.has(state.phase)
-  const showBetsInSidebar =
+  const [playTab, setPlayTab] = useState<PlayTabId>('scene')
+  const showPlayShell = !MENU_PHASES.has(state.phase)
+  const showBets =
     state.tour != null &&
     (state.phase === 'shakedown' || state.phase === 'location' || state.phase === 'show')
+  const hustleAvailable = !!(state.currentMarket && state.currentMarketStock)
+  const crewAlert = hasUrgentCrew(state) || !!state.crewAlert
+
+  const playContent = useMemo(() => {
+    switch (playTab) {
+      case 'crew':
+        return <CrewTab />
+      case 'journal':
+        return <JournalTab />
+      default:
+        return <SceneTab showBets={showBets} />
+    }
+  }, [playTab, showBets])
 
   if (state.phase === 'title') {
     return (
@@ -78,7 +63,11 @@ export default function App() {
 
   return (
     <>
-      <AppShell header={{ height: 56 }} padding="md">
+      <AppShell
+        header={{ height: 56 }}
+        footer={showPlayShell ? { height: 56 } : undefined}
+        padding="md"
+      >
         <AppShell.Header>
           <Group h="100%" px="md" justify="space-between">
             <Title order={3}>Little Jam Band Tour</Title>
@@ -91,26 +80,9 @@ export default function App() {
           </Group>
         </AppShell.Header>
         <AppShell.Main>
-          <Container size="xl" py="xs">
-            {showShell ? (
-              <Grid gap="md" align="flex-start">
-                <Grid.Col span={{ base: 12, md: 8, lg: 7 }}>
-                  <StatusBar />
-                  <OutcomeBanner />
-                  <Paper withBorder p="lg" radius="md">
-                    <ScreenFrame compactArt>
-                      <PhaseRouter />
-                    </ScreenFrame>
-                  </Paper>
-                  <TourStoryPanel />
-                </Grid.Col>
-                <Grid.Col span={{ base: 12, md: 4, lg: 5 }}>
-                  <Stack gap="md">
-                    <CrewMeterPanel />
-                    {showBetsInSidebar && <SongCatalogPanel />}
-                  </Stack>
-                </Grid.Col>
-              </Grid>
+          <Container size="sm" py="xs" pb={showPlayShell ? 72 : 'xs'}>
+            {showPlayShell ? (
+              playContent
             ) : state.phase === 'stats' ? (
               <ScreenFrame>
                 <PhaseRouter />
@@ -124,6 +96,17 @@ export default function App() {
             )}
           </Container>
         </AppShell.Main>
+        {showPlayShell && (
+          <AppShell.Footer withBorder>
+            <TourTabBar
+              active={playTab}
+              onChange={setPlayTab}
+              crewAlert={crewAlert}
+              betsAvailable={showBets}
+              hustleAvailable={hustleAvailable}
+            />
+          </AppShell.Footer>
+        )}
       </AppShell>
       <VersionBadge />
     </>

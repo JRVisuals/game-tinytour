@@ -1,6 +1,5 @@
 import { Button, Group, Stack, Text, Title } from '@mantine/core'
 import { LocationNav } from '../components/LocationNav'
-import { MarketPanel } from '../components/MarketPanel'
 import { SpotFindAlert } from '../components/SpotFindAlert'
 import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { COPY } from '../game/config'
@@ -32,14 +31,10 @@ export function LocationScreen() {
         <Text size="sm" c="orange" fw={500}>
           Showtime — last chance to flip stash or grab tickets.
         </Text>
-        {prices && state.currentMarketStock && (
-          <MarketPanel
-            prices={prices}
-            stock={state.currentMarketStock}
-            flavor={state.marketFlavor}
-            contextLabel="venue gates"
-            showTickets
-          />
+        {prices && (
+          <Text size="xs" c="dimmed" ta="center">
+            Gate vendors — open Crew → Hustle to trade.
+          </Text>
         )}
         {state.turnsUntilShow > 0 && (
           <>
@@ -84,13 +79,10 @@ export function LocationScreen() {
         turnsUntilShow={state.turnsUntilShow}
         onGo={goToLocation}
       />
-      {prices && state.currentMarketStock && (
-        <MarketPanel
-          prices={prices}
-          stock={state.currentMarketStock}
-          flavor={state.marketFlavor}
-          contextLabel={state.marketContext ?? loc}
-        />
+      {prices && (
+        <Text size="xs" c="dimmed" ta="center">
+          Vendors nearby — open Crew → Hustle to trade.
+        </Text>
       )}
       {loc === 'hotel' && (
         <Button
