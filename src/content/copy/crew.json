@@ -71,7 +71,7 @@
   "meterLabels": {
     "hunger": { "high": "Full", "mid": "Hungry", "low": "Peckish", "worst": "Starving" },
     "thirst": { "high": "Hydrated", "mid": "Thirsty", "low": "Dry", "worst": "Parched" },
-    "health": { "high": "Healthy", "mid": "Tired", "low": "Run down", "worst": "Wook flu" },
+    "health": { "high": "Healthy", "mid": "Tired", "low": "Run down", "worst": "Sick" },
     "vibe": { "high": "High", "mid": "Chill", "low": "Flat", "worst": "Low" },
     "stoned": { "high": "Wasted", "midHigh": "Too high to drive", "mid": "High", "low": "Buzzed", "worst": "Sober" }
   }

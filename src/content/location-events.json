@@ -6,6 +6,20 @@
       "body": "Crushed can, folded bill, same energy — twenty bucks just sitting there in the lot.",
       "locations": ["park", "shakedown"],
       "effects": { "cash": 20 }
+    },
+    {
+      "id": "hotel_loose_cash",
+      "title": "Loose cash in the nightstand",
+      "body": "Last guest left a rumpled ten and a prayer card. Finders keepers in this economy.",
+      "locations": ["hotel"],
+      "effects": { "cash": 10 }
+    },
+    {
+      "id": "friends_stash_beer",
+      "title": "Friend's fridge came through",
+      "body": "Someone's roommate stocked up. Two cold ones with your name on them.",
+      "locations": ["friends_house"],
+      "effects": { "beer": 2 }
     }
   ]
 }

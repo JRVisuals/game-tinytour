@@ -1,4 +1,4 @@
-import { Badge, Button, Group } from '@mantine/core'
+import { Button } from '@mantine/core'
 
 export type PlayTabId = 'scene' | 'hustle' | 'crew' | 'journal'
 
@@ -25,11 +25,12 @@ export function TourTabBar({
   hustleEnabled = true,
 }: TourTabBarProps) {
   return (
-    <Group grow gap={4} px="xs" py="xs">
+    <div className="game-shell-tab-bar">
       {TABS.map((tab) => {
-        const dot =
+        const attention =
           (tab.id === 'crew' && crewAlert) || (tab.id === 'hustle' && hustleActive)
         const disabled = tab.id === 'hustle' && !hustleEnabled
+        const pulse = attention && active !== tab.id
 
         return (
           <Button
@@ -39,18 +40,12 @@ export function TourTabBar({
             color={active === tab.id ? 'teal' : 'gray'}
             disabled={disabled}
             onClick={() => onChange(tab.id)}
-            rightSection={
-              dot ? (
-                <Badge size="xs" circle color="orange" variant="filled">
-                  {' '}
-                </Badge>
-              ) : undefined
-            }
+            className={pulse ? 'tab-bar-attention' : undefined}
           >
             {tab.label.toUpperCase()}
           </Button>
         )
       })}
-    </Group>
+    </div>
   )
 }

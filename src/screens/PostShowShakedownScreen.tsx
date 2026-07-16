@@ -1,7 +1,7 @@
-import { Alert, Button, Stack, Text } from '@mantine/core'
-import { SceneBeatAlert } from '../components/SceneBeatAlert'
-import { TabHintButton } from '../components/TabHintButton'
+import { Button, Stack, Text } from '@mantine/core'
+import { SceneBeatSlot } from '../components/SceneBeatSlot'
 import { useGame } from '../game/GameContext'
+import { postShowShakedownSceneBeat } from '../game/scene/beat'
 
 export function PostShowShakedownScreen() {
   const { state, prepNextLeg } = useGame()
@@ -15,19 +15,7 @@ export function PostShowShakedownScreen() {
         {stop?.city ?? '…'}. One more hustle before the next leg.
       </Text>
 
-      {event && (
-        <SceneBeatAlert title={event.title} body={event.body} loot={event.loot} />
-      )}
-
-      {!event && (
-        <Alert color="teal" title="Quiet lot">
-          Vendors packing, stragglers humming. Nothing wild — just space to trade.
-        </Alert>
-      )}
-
-      {state.currentMarket && (
-        <TabHintButton tab="hustle">After-show vendors — Hustle</TabHintButton>
-      )}
+      <SceneBeatSlot beat={postShowShakedownSceneBeat(event)} />
 
       <Button color="teal" onClick={prepNextLeg}>
         Hit the road

@@ -9,6 +9,7 @@ import {
   canShowHustleMarket,
   hasClownJuiceMafia,
   hustleContextBlurb,
+  hustleLocationLabel,
   hustleTabActive,
   isHustleContext,
   marketShowTickets,
@@ -27,10 +28,12 @@ export function HustleTab({ onBackToScene }: HustleTabProps) {
   const bets = showSetlistBets(state)
   const postShowBalloons = state.phase === 'post_show_shakedown'
   const showMarket = canShowHustleMarket(state)
+  const locationLabel = hustleLocationLabel(state)
+  const hustleTitle = locationLabel ? `Hustle: ${locationLabel}` : 'Hustle'
 
   return (
     <Stack gap="sm">
-      <TabPanelHeader title="Hustle" blurb={hustleContextBlurb(state)} />
+      <TabPanelHeader title={hustleTitle} blurb={hustleContextBlurb(state)} />
 
       {inContext && clownJuice && <ClownJuiceMafiaPanel />}
 
@@ -66,7 +69,7 @@ export function HustleTab({ onBackToScene }: HustleTabProps) {
         </Paper>
       )}
 
-      <BackToSceneButton onBackToScene={onBackToScene} />
+      <BackToSceneButton onBackToScene={onBackToScene} exitSubStop />
     </Stack>
   )
 }

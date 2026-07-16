@@ -209,6 +209,11 @@
       "Room booked (${cost}). Hot shower, cold fridge, zero stoned. Crew restored.",
       "Paid ${cost} for real sleep. Hunger, thirst, health, vibe maxed. Sober."
     ],
+    "friends_crash": [
+      "Couch crash (${cost}) — half a reset. Wook flu still hanging around.",
+      "Friend's floor (${cost}). Crew halfway back; flu doesn't care about hospitality.",
+      "Cheap crash (${cost}). Hunger and health improved, not cured."
+    ],
     "balloons": [
       "Balloons — crew vibe up, health a little down.",
       "Nitrous in the lot. Everyone's floating; lungs disagree.",
@@ -291,16 +296,34 @@
     "made_it": [
       "Made it into {venue}. Crew intact. The floor was soup.",
       "{venue} swallowed you whole. Good show energy.",
-      "You're in. {venue} is humming."
+      "You're in. {venue} is humming.",
+      "Doors parted at {venue}. Somebody's sign blocked the rail — worth it.",
+      "Whole crew through the gate at {venue}. The room already smells like possibility."
     ],
     "chaos_gate": [
       "Chaos at the gate. Not everyone got in clean — the night still happened around you.",
       "Gate was a scene. You made it work anyway.",
-      "Tickets messy. Show still happened around you."
+      "Tickets messy. Show still happened around you.",
+      "Security had opinions at {venue}. You had tickets and patience.",
+      "Scalpers lied, wristbands didn't scan — somehow you're still inside {venue}."
     ],
     "missed": [
       "Missed {venue} — sat out to hustle gas money and sanity.",
-      "Skipped {venue} to regroup. The lot will forgive. Maybe."
+      "Skipped {venue} to regroup. The lot will forgive. Maybe.",
+      "Never made it past the parking lot at {venue}. The hustle was real though.",
+      "Show went on without you at {venue}. Wallet's heavier, FOMO heavier too."
+    ],
+    "flavor": [
+      "Merch table smelled like patchouli and ambition.",
+      "Someone's dreadlock caught your beer mid-song. Apologies were exchanged.",
+      "The bathroom line moved slower than the jam in the second set.",
+      "A parking ticket appeared under the wiper like a curse.",
+      "You heard the opener from the lot and still got goosebumps.",
+      "Post-show tacos redeemed most of your life choices tonight.",
+      "The lot after was louder than the encore.",
+      "Your crew argued about the best song until someone produced a beer.",
+      "A stranger handed you a sticker like it was sacred scripture.",
+      "The vibe peaked somewhere between the first note and last light."
     ]
   },
   "run": {

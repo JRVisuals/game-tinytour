@@ -1,5 +1,6 @@
-import { Button, List, Stack, Text } from '@mantine/core'
-import { SceneBeatAlert } from '../components/SceneBeatAlert'
+import { Button, Stack, Text } from '@mantine/core'
+import { SceneBeatSlot } from '../components/SceneBeatSlot'
+import { SetlistRecap } from '../components/SetlistRecap'
 import { useGame } from '../game/GameContext'
 
 export function PostShowScreen() {
@@ -14,23 +15,23 @@ export function PostShowScreen() {
       <Text>{state.postShowRecap}</Text>
 
       {hustle && (
-        <SceneBeatAlert title={hustle.title} body={hustle.body} loot={hustle.loot} />
+        <SceneBeatSlot
+          beat={{
+            title: hustle.title,
+            body: hustle.body,
+            loot: hustle.loot,
+          }}
+        />
       )}
 
       {state.lastSetlist && (
-        <>
-          <Text fw={500}>Setlist</Text>
-          {(band || stop) && (
-            <Text size="sm" c="dimmed">
-              {[band, stop?.venue, stop?.city].filter(Boolean).join(' · ')}
-            </Text>
-          )}
-          <List size="sm">
-            {state.lastSetlist.songs.map((song) => (
-              <List.Item key={song}>{song}</List.Item>
-            ))}
-          </List>
-        </>
+        <SetlistRecap
+          setlist={state.lastSetlist}
+          betResults={state.lastShowBetResults}
+          band={band}
+          venue={stop?.venue}
+          city={stop?.city}
+        />
       )}
 
       {missed && !hustle && (

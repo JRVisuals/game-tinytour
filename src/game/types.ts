@@ -53,6 +53,7 @@ export interface CrewCareerStats {
   bandsSeen: number
   milesTraveled: number
   substancesConsumed: number
+  balloonsHuffed: number
   foodConsumed: number
   beerConsumed: number
   showsMissed: number
@@ -78,6 +79,16 @@ export interface SavedCrew {
 }
 
 export type BetSlot = 'anywhere' | 'opener' | 'closer' | 'encore'
+
+export type ShowBetOutcome = 'hit' | 'miss' | 'void'
+
+export interface ShowBetResult {
+  songId: string
+  songTitle: string
+  slot: BetSlot
+  outcome: ShowBetOutcome
+  payout: number
+}
 
 export interface SetlistBet {
   songId: string
@@ -219,6 +230,7 @@ export interface RunStats {
   bandsSeen: number
   milesTraveled: number
   substancesConsumed: number
+  balloonsHuffed: number
   foodConsumed: number
   beerConsumed: number
   showsMissed: number
@@ -244,6 +256,8 @@ export interface GameState {
   turnsUntilShow: number
   lastSetlist: Setlist | null
   postShowRecap: string
+  /** Resolved setlist bets from the last show — icons on recap setlist */
+  lastShowBetResults: ShowBetResult[]
   /** Random lot moment after the show — title + body from shakedown-events.json */
   postShowShakedownEvent: SceneLotEvent | null
   /** Random lot moment on pre-show shakedown — e.g. Clown Juice Mafia */
@@ -306,6 +320,7 @@ export const STAT_LABELS: Record<keyof RunStats, string> = {
   bandsSeen: 'Bands seen',
   milesTraveled: 'Miles traveled',
   substancesConsumed: 'Substances consumed',
+  balloonsHuffed: 'Balloons huffed',
   foodConsumed: 'Food consumed',
   beerConsumed: 'Beer consumed',
   showsMissed: 'Shows missed',

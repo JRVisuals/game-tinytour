@@ -1,4 +1,5 @@
 import type { GameState } from '../types'
+import { playLocationLabel } from './labels'
 
 export function sceneContextBlurb(state: GameState): string {
   if (state.phase === 'travel') {
@@ -13,8 +14,7 @@ export function sceneContextBlurb(state: GameState): string {
     if (state.currentLocation === 'venue') {
       return 'Venue gates — last chance to flip stash or grab tickets.'
     }
-    const label = state.currentLocation.split('_').join(' ')
-    return `${label} — wander the stop and burn a turn.`
+    return `${playLocationLabel(state)} — wander the stop and burn a turn.`
   }
   if (state.phase === 'show') return 'Inside the venue — showtime.'
   if (state.phase === 'post_show') {

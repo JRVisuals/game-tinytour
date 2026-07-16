@@ -19,10 +19,12 @@ export function ShuffleOnHomeButton() {
           size="compact-sm"
           variant="light"
           color="gray"
+          className="shuffle-home-btn"
           onClick={shuffleOnHome}
           disabled={!allowed}
         >
-          Go home
+          <span className="shuffle-home-btn__long">Go home</span>
+          <span className="shuffle-home-btn__short">Home</span>
         </Button>
       </span>
     </Tooltip>

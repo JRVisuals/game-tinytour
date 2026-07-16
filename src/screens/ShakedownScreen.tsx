@@ -1,20 +1,18 @@
-import { Alert, Button, Group, Stack, Text } from '@mantine/core'
+import { Button, Group, Stack, Text } from '@mantine/core'
 import { LocationNav } from '../components/LocationNav'
-import { SceneBeatAlert } from '../components/SceneBeatAlert'
-import { TabHintButton } from '../components/TabHintButton'
+import { SceneBeatSlot } from '../components/SceneBeatSlot'
 import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
 import { RESOURCE_BALANCE } from '../game/resources'
+import { shakedownSceneBeat } from '../game/scene/beat'
 import { showtimeTurnsLabel } from '../game/showtime'
-import { isClownJuiceMafia } from '../game/shakedown/events'
 
 export function ShakedownScreen() {
   const { state, goToLocation, goToVenueGates, adjustResources } = useGame()
   const stop = state.tour?.stops[state.tour.currentStopIndex]
   const venueOk = canEnterVenue(state.crew)
   const gateMessage = venueEntryBlockedMessage(state.crew)
-  const event = state.shakedownLotEvent
-  const clownJuice = isClownJuiceMafia(event)
+  const beat = shakedownSceneBeat(state)
 
   return (
     <Stack>
@@ -26,30 +24,7 @@ export function ShakedownScreen() {
         {stop?.city ?? '…'}. Store / grab gear from the car when you have one.
       </Text>
 
-      {event && (
-        <SceneBeatAlert
-          title={event.title}
-          body={event.body}
-          color={clownJuice ? 'grape' : 'teal'}
-        />
-      )}
-
-      {state.spotFindEvent && (
-        <SceneBeatAlert
-          title={state.spotFindEvent.title}
-          body={state.spotFindEvent.body}
-        />
-      )}
-
-      {!event && (
-        <Alert color="teal" title="Quiet lot">
-          Vendors packing, stragglers humming. Scout prices before showtime.
-        </Alert>
-      )}
-
-      {clownJuice && (
-        <TabHintButton tab="hustle">Balloon deals — Hustle</TabHintButton>
-      )}
+      <SceneBeatSlot beat={beat} />
 
       {state.resources.hasVehicle ? (
         <Text size="sm">Vehicle stash available (stub).</Text>
@@ -89,9 +64,6 @@ export function ShakedownScreen() {
         <Text size="sm" c="red">
           {gateMessage}
         </Text>
-      )}
-      {state.currentMarket && (
-        <TabHintButton tab="hustle">Vendors in the lot — Hustle</TabHintButton>
       )}
     </Stack>
   )

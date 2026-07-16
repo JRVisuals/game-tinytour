@@ -1,11 +1,12 @@
-import { AppShell, Badge, Container, Group, Paper, Stack } from '@mantine/core'
+import { Badge, Container, Paper, Stack } from '@mantine/core'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AsciiHeaderLogo } from './components/AsciiHeaderLogo'
 import { PhaseRouter } from './components/PhaseRouter'
-import { ScreenFrame } from './components/ScreenFrame'
 import { ShuffleOnHomeButton } from './components/ShuffleOnHomeButton'
 import { StatusLine } from './components/StatusLine'
 import { TourTabBar, type PlayTabId } from './components/TourTabBar'
+import { CrewActionBar } from './components/CrewActionBar'
+import { StatsActionBar } from './components/StatsActionBar'
 import { CrewTab } from './components/tabs/CrewTab'
 import { HustleTab } from './components/tabs/HustleTab'
 import { JournalTab } from './components/tabs/JournalTab'
@@ -22,8 +23,13 @@ import { TitleScreen } from './screens/TitleScreen'
 const MENU_PHASES = new Set(['title', 'crew', 'stats', 'run_recap', 'day_job'])
 
 function phaseLabel(state: GameState): string {
-  if (state.phase === 'location' && state.currentLocation === 'venue') return 'Venue gates'
-  return PHASE_LABELS[state.phase]
+  if (state.phase === 'location' && state.currentLocation === 'venue') return 'Gates'
+  const short: Partial<Record<GameState['phase'], string>> = {
+    post_show_shakedown: 'After-show',
+    run_recap: 'Recap',
+    day_job: 'Day job',
+  }
+  return short[state.phase] ?? PHASE_LABELS[state.phase]
 }
 
 function hasUrgentCrew(state: GameState): boolean {
@@ -37,6 +43,8 @@ export default function App() {
   const { state } = useGame()
   const [playTab, setPlayTab] = useState<PlayTabId>('scene')
   const showPlayShell = !MENU_PHASES.has(state.phase)
+  const showCrewShell = state.phase === 'crew'
+  const showStatsShell = state.phase === 'stats'
   const hustleActive = hustleTabActive(state)
   const hustleEnabled = isHustleContext(state)
   const crewAlert = hasUrgentCrew(state) || !!state.crewAlert
@@ -54,14 +62,23 @@ export default function App() {
     wasAtRoadside.current = atRoadside
   }, [state.phase, state.travel?.atRoadside])
 
+  useEffect(() => {
+    if (state.phase === 'title') {
+      document.documentElement.classList.remove('game-chrome-lock')
+      return
+    }
+    document.documentElement.classList.add('game-chrome-lock')
+    return () => document.documentElement.classList.remove('game-chrome-lock')
+  }, [state.phase])
+
   const playContent = useMemo(() => {
     switch (playTab) {
       case 'hustle':
         return <HustleTab onBackToScene={() => setPlayTab('scene')} />
       case 'crew':
-        return <CrewTab />
+        return <CrewTab onBackToScene={() => setPlayTab('scene')} />
       case 'journal':
-        return <JournalTab />
+        return <JournalTab onBackToScene={() => setPlayTab('scene')} />
       default:
         return <SceneTab />
     }
@@ -81,64 +98,60 @@ export default function App() {
   }
 
   return (
-    <>
-      <AppShell
-        header={{ height: 56 }}
-        footer={showPlayShell ? { height: 56 } : undefined}
-        padding="md"
-      >
-        <AppShell.Header>
-          <Group h="100%" px="md" justify="space-between" wrap="nowrap" gap="xs">
+    <div className={`game-shell${showPlayShell || showCrewShell || showStatsShell ? ' game-shell--tabs' : ''}`}>
+      <header className="game-shell-header">
+        <div className="game-shell-header-row">
+          <div className="game-shell-header-logo">
             <AsciiHeaderLogo />
-            <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
-              <ShuffleOnHomeButton />
-              <Badge size="lg" variant="light">
-                {phaseLabel(state)}
-              </Badge>
-            </Group>
-          </Group>
-        </AppShell.Header>
-        <AppShell.Main>
-          <Container
-            size="sm"
-            py="xs"
-            pb={showPlayShell ? 'calc(4.5rem + env(safe-area-inset-bottom, 0px))' : 'xs'}
-            pt="xs"
-          >
-            {showPlayShell ? (
-              <PlayTabProvider setPlayTab={setPlayTab}>
-                <Stack gap="sm">
-                  <StatusLine />
-                  {playContent}
-                </Stack>
-              </PlayTabProvider>
-            ) : state.phase === 'stats' ? (
-              <ScreenFrame>
-                <PhaseRouter />
-              </ScreenFrame>
-            ) : (
-              <Paper withBorder p="lg" radius="md">
-                <ScreenFrame>
-                  <PhaseRouter />
-                </ScreenFrame>
-              </Paper>
-            )}
-          </Container>
-        </AppShell.Main>
-        {showPlayShell && (
-          <AppShell.Footer withBorder>
-            <TourTabBar
-              active={playTab}
-              onChange={setPlayTab}
-              crewAlert={crewAlert}
-              hustleActive={hustleActive}
-              hustleEnabled={hustleEnabled}
-            />
-          </AppShell.Footer>
-        )}
-      </AppShell>
+          </div>
+          <div className="game-shell-header-actions">
+            <ShuffleOnHomeButton />
+            <Badge size="sm" variant="light" className="phase-badge">
+              {phaseLabel(state)}
+            </Badge>
+          </div>
+        </div>
+      </header>
+
+      <main className="game-shell-main">
+        <Container size="sm" py="sm" px={0}>
+          {showPlayShell ? (
+            <PlayTabProvider setPlayTab={setPlayTab}>
+              <Stack gap="sm">
+                <StatusLine />
+                {playContent}
+              </Stack>
+            </PlayTabProvider>
+          ) : (
+            <PhaseRouter />
+          )}
+        </Container>
+      </main>
+
+      {showPlayShell && (
+        <footer className="game-shell-footer">
+          <TourTabBar
+            active={playTab}
+            onChange={setPlayTab}
+            crewAlert={crewAlert}
+            hustleActive={hustleActive}
+            hustleEnabled={hustleEnabled}
+          />
+        </footer>
+      )}
+      {showCrewShell && (
+        <footer className="game-shell-footer">
+          <CrewActionBar />
+        </footer>
+      )}
+      {showStatsShell && (
+        <footer className="game-shell-footer">
+          <StatsActionBar />
+        </footer>
+      )}
+
       {showPlayShell && <OutcomeToast />}
       <VersionBadge />
-    </>
+    </div>
   )
 }

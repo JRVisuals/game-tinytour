@@ -1,8 +1,8 @@
 import { SimpleGrid, Text } from '@mantine/core'
-import type { RunStats } from '../game/types'
+import type { CrewCareerStats, RunStats } from '../game/types'
 import { STAT_LABELS } from '../game/types'
 
-export function RunStatsGrid({ stats }: { stats: RunStats }) {
+export function RunStatsGrid({ stats }: { stats: RunStats | CrewCareerStats }) {
   return (
     <SimpleGrid cols={2} spacing="xs">
       {(Object.keys(STAT_LABELS) as (keyof typeof STAT_LABELS)[]).map((key) => (
