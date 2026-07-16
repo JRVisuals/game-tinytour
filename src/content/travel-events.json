@@ -86,6 +86,76 @@
         { "id": "trade_drugs", "label": "Trade 1 substance for the encore tip" },
         { "id": "decline", "label": "Pass" }
       ]
+    },
+    {
+      "id": "rest_stop_dog",
+      "eventType": "solo",
+      "title": "Rest stop dog",
+      "body": "A golden retriever in a tie-dye bandana approaches the van with the confidence of someone who's done this before. Everyone's morale improves.",
+      "weight": 9
+    },
+    {
+      "id": "wrong_exit",
+      "eventType": "solo",
+      "title": "Wrong exit",
+      "body": "Someone read the map upside down. You ended up at a Cracker Barrel 40 miles east. Nobody's mad. Nobody's apologizing either.",
+      "weight": 8
+    },
+    {
+      "id": "speedrun_trucker",
+      "eventType": "solo",
+      "title": "Speedrun trucker",
+      "body": "An 18-wheeler with 'HONK IF YOU LOVE THE JAM' stenciled on the back drafts you for 60 miles. The van's never felt faster.",
+      "weight": 7
+    },
+    {
+      "id": "toll_booth_vibes",
+      "eventType": "solo",
+      "title": "Toll booth moment",
+      "body": "The toll collector leans out, looks at your crew, and says 'Nice. Have a good show.' You didn't tell them where you were going.",
+      "weight": 7
+    },
+    {
+      "id": "radio_find",
+      "eventType": "solo",
+      "title": "Radio find",
+      "body": "Somewhere between two corn states, a college station plays three of their songs back to back. The crew sings every word.",
+      "weight": 8
+    },
+    {
+      "id": "gas_station_prophet",
+      "eventType": "solo",
+      "title": "Gas station prophet",
+      "body": "A man pumping diesel tells you the encore is always the one you don't expect. You write it on a napkin. You lose the napkin.",
+      "weight": 6
+    },
+    {
+      "id": "roadside_burger",
+      "eventType": "roadside_burger",
+      "title": "Drive-through score",
+      "body": "A roadside stand sells breakfast burritos out of a cooler. Someone orders for everyone. Nobody complains.",
+      "weight": 8
+    },
+    {
+      "id": "speeding_fine",
+      "eventType": "speeding_fine",
+      "title": "Speeding ticket",
+      "body": "The officer was not impressed by your explanation. The fine is not negotiable. The vibes take a hit.",
+      "weight": 7
+    },
+    {
+      "id": "gas_station_deal",
+      "eventType": "gas_station_deal",
+      "title": "Lot connection at the pump",
+      "body": "Guy at the next pump recognizes a sticker on the van. Ends up trading two beers and some directions for a gas top-up.",
+      "weight": 7
+    },
+    {
+      "id": "van_breakdown_minor",
+      "eventType": "van_breakdown_minor",
+      "title": "Van hiccup",
+      "body": "The van shudders, backfires twice, then continues. Everyone silently agrees not to mention it.",
+      "weight": 6
     }
   ]
 }

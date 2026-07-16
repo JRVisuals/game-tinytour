@@ -1,50 +1,42 @@
 import type { BandSong, BandCatalog, Setlist, SongTier } from '../types'
-
-const PHISH = [
-  'Tweezer', 'Harry Hood', 'Ghost', 'Divided Sky', 'Bathtub Gin',
-  'Run Like an Antelope', 'Sample in a Jar', 'Fluffhead', 'Stash', 'Free',
-]
-const GOOSE = [
-  'Hungersite', 'Arcadia', 'Elizabeth', 'So Ready', 'Madhuvan',
-  'Turned Clouds', 'Into the Myst', 'Hot Tea', 'Your Direction', 'Butter Rum',
-]
-const DEAD = [
-  'Scarlet Begonias', 'Fire on the Mountain', 'Dark Star', 'China Cat Sunflower',
-  'Terrapin Station', 'Truckin\'', 'Ripple', 'Sugar Magnolia', 'Touch of Grey',
-  'Uncle John\'s Band',
-]
-
-const ALL_SONGS = [...PHISH, ...GOOSE, ...DEAD]
-const TITLE_SUFFIXES = [' (live)', ' Reprise', ' (acoustic)', ' (slow)']
+import { DEFAULT_GENRE, getGenre, type GenreId } from './genre'
 
 function pick<T>(list: T[], n: number): T {
   return list[Math.abs(Math.floor(n)) % list.length]!
 }
 
-function mashTitle(seed: number, variant = 0): string {
-  const roll = (seed + variant * 17) % 5
-  const a = pick(PHISH, seed + variant)
-  const b = pick(GOOSE, seed * 3 + variant * 5)
-  const c = pick(DEAD, seed * 7 + variant * 11)
-  if (roll === 0) return `${a} > ${b}`
-  if (roll === 1) return `${b} (${c} tease)`
-  if (roll === 2) return `${c} Jam`
-  if (roll === 3) return `${a} > ${c}`
-  return `${b} > ${a}`
-}
+/** Build a song title from 4 genre pools.
+ *  Patterns (vary by seed):
+ *  - opener closer                 ("Dark Star", "Fire Mountain")
+ *  - opener middle connector closer ("Fire on the Mountain")
+ *  - opener middle closer          ("Dark Star Groove")
+ *  - opener > middle               ("Tweezer > Ghost")
+ *  - opener middle (tease)         ("Ghost Jam (Dark Star tease)")
+ */
+function makeTitle(pools: GenreData['songs'], seed: number, variant = 0): string {
+  const s = seed + variant * 17
+  const pattern = Math.abs(s) % 6
+  const op = pick(pools.openers, s)
+  const mid = pick(pools.middles, s * 3 + 7)
+  const con = pick(pools.connectors, s * 5 + 11)
+  const cl = pick(pools.closers, s * 7 + 13)
+  const op2 = pick(pools.openers, s * 11 + 19)
 
-function fallbackTitle(seed: number, used: Set<string>): string {
-  for (let i = 0; i < ALL_SONGS.length * (TITLE_SUFFIXES.length + 1); i++) {
-    const base = pick(ALL_SONGS, seed + i * 3)
-    const suffix = i < ALL_SONGS.length ? '' : TITLE_SUFFIXES[(i - ALL_SONGS.length) % TITLE_SUFFIXES.length]!
-    const title = `${base}${suffix}`
-    if (!used.has(title)) return title
+  switch (pattern) {
+    case 0: return `${op} ${cl}`
+    case 1: return `${op} ${mid} ${con} ${cl}`
+    case 2: return `${op} ${mid} ${cl}`
+    case 3: return `${op} > ${op2}`
+    case 4: return `${op} ${mid} (${op2} tease)`
+    default: return `${op} ${cl} Jam`
   }
-  return pick(ALL_SONGS, seed + 999)
 }
 
-/** ~20 songs: hot / deep_cut / bust_out tiers — each title appears once */
-export function generateBandCatalog(bandSeed: number): BandCatalog {
+type GenreData = ReturnType<typeof getGenre>
+
+/** ~20 songs: hot / deep_cut / bust_out tiers — each title unique */
+export function generateBandCatalog(bandSeed: number, genre: GenreId = DEFAULT_GENRE): BandCatalog {
+  const pools = getGenre(genre).songs
   const songs: BandSong[] = []
   const usedTitles = new Set<string>()
   const tiers: SongTier[] = [
@@ -52,24 +44,19 @@ export function generateBandCatalog(bandSeed: number): BandCatalog {
     ...Array(10).fill('deep_cut' as SongTier),
     ...Array(2).fill('bust_out' as SongTier),
   ]
+
   for (let i = 0; i < 20; i++) {
     let title = ''
     for (let attempt = 0; attempt < 64; attempt++) {
-      const candidate = mashTitle(bandSeed + i * 19, attempt)
+      const candidate = makeTitle(pools, bandSeed + i * 19, attempt)
       if (!usedTitles.has(candidate)) {
         title = candidate
         break
       }
     }
-    if (!title) {
-      title = fallbackTitle(bandSeed + i * 41, usedTitles)
-    }
+    if (!title) title = `${pick(pools.openers, bandSeed + i * 41)} ${pick(pools.closers, bandSeed + i * 43)}`
     usedTitles.add(title)
-    songs.push({
-      id: `song-${bandSeed}-${i}`,
-      title,
-      tier: tiers[i]!,
-    })
+    songs.push({ id: `song-${bandSeed}-${i}`, title, tier: tiers[i]! })
   }
   return { songs }
 }
@@ -110,10 +97,7 @@ export function generateShowSetlist(
     let chosen = available[0]!
     for (let i = 0; i < available.length; i++) {
       roll -= weights[i]!
-      if (roll < 0) {
-        chosen = available[i]!
-        break
-      }
+      if (roll < 0) { chosen = available[i]!; break }
     }
     picked.push(chosen)
     if (chosen.tier === 'bust_out') newBustOut = chosen.id

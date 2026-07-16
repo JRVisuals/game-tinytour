@@ -14,6 +14,7 @@ import { CITIES } from '../game/cities'
 import { crewStickerSelectData } from '../game/crew/stickers'
 import { MEMBER_KIT_LABELS } from '../game/crew/starterKit'
 import { crewRepLabel } from '../game/crew/repTitles'
+import { GENRE_OPTIONS, DEFAULT_GENRE, type GenreId } from '../game/generators/genre'
 import { useGame } from '../game/GameContext'
 
 const BUDGETS = [
@@ -37,7 +38,7 @@ export function CrewCreateScreen() {
     setCrewMemberName,
     setCrewMemberSticker,
     setHomeCity,
-    setFavoriteBandHint,
+    setGenre,
     setBudget,
   } = useGame()
 
@@ -125,11 +126,12 @@ export function CrewCreateScreen() {
                 searchable
                 comboboxProps={{ withinPortal: true }}
               />
-              <TextInput
-                label="Favorite band vibe (flavor)"
-                placeholder="e.g. northeast barn circuit"
-                value={state.favoriteBandHint}
-                onChange={(e) => setFavoriteBandHint(e.currentTarget.value)}
+              <Select
+                label="Jam scene"
+                data={GENRE_OPTIONS}
+                value={state.genre ?? DEFAULT_GENRE}
+                onChange={(v) => v && setGenre(v as GenreId)}
+                comboboxProps={{ withinPortal: true }}
               />
               <Select
                 label={hasSavedCrew ? 'Tour bank' : 'Starting budget'}

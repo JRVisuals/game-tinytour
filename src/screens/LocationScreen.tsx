@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Text } from '@mantine/core'
+import { Button, Stack, Text } from '@mantine/core'
 import { LocationNav } from '../components/LocationNav'
 import { SceneBeatSlot } from '../components/SceneBeatSlot'
 import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
@@ -9,7 +9,7 @@ import { showtimeTurnsLabel } from '../game/showtime'
 import { locationSceneBeat } from '../game/scene/beat'
 
 export function LocationScreen() {
-  const { state, goToLocation, enterShow, hotelCrash, friendsCrash } = useGame()
+  const { state, goToLocation, goToVenueGates, enterShow, hotelCrash, friendsCrash } = useGame()
   const loc = state.currentLocation
   const venueOk = canEnterVenue(state.crew)
   const gateMessage = venueEntryBlockedMessage(state.crew)
@@ -34,7 +34,7 @@ export function LocationScreen() {
         <Text size="sm" c="orange" fw={500}>
           Showtime — last chance to flip stash or grab tickets.
         </Text>
-        {state.turnsUntilShow > 0 && (
+        {state.turnsUntilShow > 0 ? (
           <>
             <Text size="sm" c="dimmed">
               Still time on the lot — head back if you need supplies.
@@ -44,16 +44,27 @@ export function LocationScreen() {
               turnsUntilShow={state.turnsUntilShow}
               onGo={goToLocation}
               exclude={['venue']}
+              primaryActions={[{
+                label: 'Into the show',
+                onClick: enterShow,
+                disabled: !venueOk,
+                disabledReason: gateMessage ?? undefined,
+              }]}
             />
           </>
-        )}
-        <Button color="grape" onClick={enterShow} disabled={!venueOk}>
-          Into the show
-        </Button>
-        {!venueOk && gateMessage && (
-          <Text size="sm" c="red">
-            {gateMessage}
-          </Text>
+        ) : (
+          <LocationNav
+            current="venue"
+            turnsUntilShow={0}
+            onGo={goToLocation}
+            exclude={['venue']}
+            primaryActions={[{
+              label: 'Into the show',
+              onClick: enterShow,
+              disabled: !venueOk,
+              disabledReason: gateMessage ?? undefined,
+            }]}
+          />
         )}
       </Stack>
     )
@@ -75,6 +86,12 @@ export function LocationScreen() {
         current={loc}
         turnsUntilShow={state.turnsUntilShow}
         onGo={goToLocation}
+        primaryActions={[{
+          label: state.turnsUntilShow > 0 ? 'Venue gates' : 'Showtime — venue gates',
+          onClick: goToVenueGates,
+          disabled: !venueOk,
+          disabledReason: gateMessage ?? undefined,
+        }]}
       />
       {loc === 'hotel' && (
         <Button
@@ -97,13 +114,6 @@ export function LocationScreen() {
         >
           Crash on the couch (${RESOURCE_BALANCE.friendsCrashCost}) — half reset, wook flu stays
         </Button>
-      )}
-      {state.turnsUntilShow <= 0 && (
-        <Group>
-          <Text size="sm" c="dimmed">
-            Showtime — heading to the venue gates…
-          </Text>
-        </Group>
       )}
     </Stack>
   )

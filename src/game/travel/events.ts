@@ -100,7 +100,15 @@ function buildIntelEvent(
 
 function eventPool(ctx?: TravelEventContext): EventTemplate[] {
   return templates.filter((e) => {
-    if (e.eventType === 'solo' || e.eventType === 'bathroom_find' || e.eventType === 'wook_flu') {
+    if (
+      e.eventType === 'solo' ||
+      e.eventType === 'bathroom_find' ||
+      e.eventType === 'wook_flu' ||
+      e.eventType === 'roadside_burger' ||
+      e.eventType === 'speeding_fine' ||
+      e.eventType === 'gas_station_deal' ||
+      e.eventType === 'van_breakdown_minor'
+    ) {
       return true
     }
     if (INTEL_EVENT_TYPES.has(e.eventType)) return canRollIntel(e, ctx)

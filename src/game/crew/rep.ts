@@ -13,6 +13,7 @@ export function emptyCareerStats(): CrewCareerStats {
   return {
     venuesVisited: 0,
     songsHeard: 0,
+    showsSeen: 0,
     bandsSeen: 0,
     milesTraveled: 0,
     substancesConsumed: 0,
@@ -85,7 +86,7 @@ export function updateCrewRep(
 }
 
 export function createNewSavedCrew(
-  partial: Pick<SavedCrew, 'homeCity' | 'favoriteBandHint' | 'bank' | 'starterTier' | 'members'>,
+  partial: Pick<SavedCrew, 'homeCity' | 'genre' | 'bank' | 'starterTier' | 'members'>,
 ): SavedCrew {
   const bonus = starterRepBonus(partial.starterTier)
   return {

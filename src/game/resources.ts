@@ -27,7 +27,7 @@ export const RESOURCE_LABELS: Record<keyof Resources, string> = {
 
 export const RESOURCE_EMOJI: Record<keyof Resources, string> = {
   cash: '💵',
-  food: '🍗',
+  food: '🌮',
   beer: '🍺',
   drugs: '🍄',
   tickets: '🎟️',

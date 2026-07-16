@@ -48,6 +48,61 @@
       "body": "The lot exhales. Vendors packing, stragglers humming. Nothing wild — just space to hustle.",
       "weight": 14,
       "effects": {}
+    },
+    {
+      "id": "after_party_beer",
+      "title": "After-party at the {djBand} DJ set",
+      "body": "{djBand} spinning deep cuts in somebody's lot camp. The cooler is open and your crew is welcome. Everyone's dragging this morning.",
+      "weight": 9,
+      "djBand": true,
+      "healthDrain": 10,
+      "effects": { "beer": 3 }
+    },
+    {
+      "id": "after_party_food",
+      "title": "After-party — {djBand} in the lot",
+      "body": "{djBand} doing a late-night set, someone's firing a grill. Your crew eats well but didn't sleep much.",
+      "weight": 8,
+      "djBand": true,
+      "healthDrain": 10,
+      "effects": { "food": 3 }
+    },
+    {
+      "id": "after_party_balloon",
+      "title": "{djBand} after-party",
+      "body": "{djBand} laid down a set so good someone floated you a balloon. You didn't ask. They insisted. The crew is gassed but not rested.",
+      "weight": 7,
+      "djBand": true,
+      "healthDrain": 12,
+      "effects": { "drugs": 1 }
+    },
+    {
+      "id": "after_party_cash",
+      "title": "After-party flip — {djBand} set",
+      "body": "{djBand} drew a crowd. You sold off some extra supplies to the late arrivals. Good night, rough morning.",
+      "weight": 7,
+      "djBand": true,
+      "healthDrain": 10,
+      "effects": { "cash": 30 }
+    },
+    {
+      "id": "after_party_scam",
+      "title": "After-party — {djBand} in the lot",
+      "body": "{djBand} was vibing but some dude at the edge of the crowd sold your crew 'crystals' for $20. Classic. Everyone feels terrible.",
+      "weight": 6,
+      "djBand": true,
+      "healthDrain": 15,
+      "effects": { "cash": -20 }
+    },
+    {
+      "id": "after_party_wook_flu",
+      "title": "After-party — {djBand} DJ set",
+      "body": "{djBand} crushed it but someone in that crowd was absolutely cooked. One of your crew woke up rough. Everyone else isn't far behind.",
+      "weight": 5,
+      "djBand": true,
+      "healthDrain": 15,
+      "crewEffect": "wook_flu",
+      "effects": {}
     }
   ],
   "lot": [

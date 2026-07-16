@@ -110,7 +110,9 @@ export function TravelScreen() {
             </Group>
           ) : (
             <Button size="sm" onClick={() => resolveTravelEvent()}>
-              Deal with it
+              {(['Roll with it', 'Onward', 'Back on the road', 'Copy that'] as const)[
+                event.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 4
+              ]}
             </Button>
           )}
         </Stack>
@@ -128,6 +130,14 @@ export function TravelScreen() {
           </Text>
           <Stack gap="xs">
             <Group>
+              <Button
+                color="teal"
+                className={canAct ? 'title-start-btn' : undefined}
+                onClick={advanceTravelLeg}
+                disabled={!canAct}
+              >
+                Keep rolling
+              </Button>
               <Button size="sm" variant="light" onClick={() => travelAction('rest')} disabled={!canAct}>
                 Rest
               </Button>
@@ -170,9 +180,6 @@ export function TravelScreen() {
               </Text>
             )}
           </Stack>
-          <Button onClick={advanceTravelLeg} disabled={!canAct}>
-            Continue down the road
-          </Button>
         </>
       )}
     </Stack>

@@ -54,6 +54,18 @@
       "src": null,
       "height": 96
     },
+    "location:diner": {
+      "label": "Local diner",
+      "hint": "public/art/diner.png",
+      "src": null,
+      "height": 96
+    },
+    "location:record_store": {
+      "label": "Record store",
+      "hint": "public/art/record-store.png",
+      "src": null,
+      "height": 96
+    },
     "show": {
       "label": "Inside the room",
       "hint": "public/art/show.png",

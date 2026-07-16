@@ -106,6 +106,10 @@ export interface EventEffectsBalance {
     try_it: { drugs: number; lacedChancePercent: number }
     toss_it: Record<string, never>
   }
+  roadside_burger: { food: number }
+  speeding_fine: { cash: number }
+  gas_station_deal: { beer: number; gas: number }
+  van_breakdown_minor: { cash: number; gas: number }
 }
 
 export interface PulledOverBranch {

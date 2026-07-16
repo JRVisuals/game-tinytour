@@ -23,6 +23,7 @@ function migrateCareer(
     ...base,
     venuesVisited: Number(src.venuesVisited) || 0,
     songsHeard: Number(src.songsHeard) || 0,
+    showsSeen: Number(src.showsSeen) || 0,
     bandsSeen: Number(src.bandsSeen) || 0,
     milesTraveled: Number(src.milesTraveled) || 0,
     substancesConsumed: Number(src.substancesConsumed) || 0,
@@ -68,7 +69,7 @@ function normalizeSavedCrew(raw: unknown, legacyLifetime?: unknown): SavedCrew |
 
   return {
     homeCity: (o.homeCity as string) ?? 'Burlington, VT',
-    favoriteBandHint: (o.favoriteBandHint as string) ?? '',
+    genre: (o.genre as string) ?? 'mixed',
     bank,
     starterTier,
     rep: Number.isFinite(rep) ? rep : Math.max(0, starterRepBonus(starterTier)),

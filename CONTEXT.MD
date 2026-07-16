@@ -54,6 +54,40 @@ Bottom tabs — **Scene · Hustle · Crew · Journal**
 - Bank + rep persist on saved crew; supplies liquidate on run end
 - Rep cap **9999** with 25 tier titles; shuffle home **−25 rep**, no partial-run gains
 
+## Bail & run-end conditions
+
+### Per-member bail
+- Meters decay **−8 hunger / −8 thirst per turn** passively
+- A member is **rough** when any meter (hunger, thirst, health, vibe) < **25**
+- Rough for **5 consecutive turns** → member **bails** (leaves the tour)
+- Warning status "BAILING · Xt" shows after **2 turns** rough
+- **Wook flu** — caught when health < **50** (6% chance/tick); deals **−22 health/turn**; spreads to others at **25% chance/turn**
+- **Wasted** — stoned meter ≥ **60** (warning, doesn't directly bail)
+
+### Run outcomes
+
+| Outcome | Trigger | Phase |
+|---|---|---|
+| **Completed** | All tour stops visited | `run_recap` |
+| **Shuffle** | All crew bailed (not all wook flu) | `run_recap` |
+| **Shuffle** | Player manually shuffles home (needs ≥1 venue visited or show missed) | `run_recap` |
+| **Day job** | All crew bailed AND every bailout was wook flu | `day_job` |
+| **Day job** | Certain travel/show events force it | `day_job` |
+
+- **Completed / Shuffle** → supplies liquidate to bank, rep updated
+- **Day job** → cash wiped, rep penalty applied, stipend offer shown
+
+## Substances vs balloons
+
+Two distinct drug resources tracked separately:
+
+| Thing | Resource key | Stat tracked | Source |
+|---|---|---|---|
+| **Substances** | `drugs` (🍄) | `substancesConsumed` | Bought at markets, lot fam hookup, bathroom find, encore whisper trade |
+| **Balloons** (nitrous oxide) | — (not stored, consumed immediately) | `balloonsHuffed` | Clown Juice Mafia only |
+
+Substances give vibe+stoned. Balloons (via CJM) give vibe up, health down. Only balloon purchases from CJM increment `balloonsHuffed` — not crew consumption of substances.
+
 ## Clown Juice Mafia deal
 
 - Retail: $30 / 1 balloon

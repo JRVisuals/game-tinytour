@@ -22,5 +22,9 @@
   "bathroom_find": {
     "try_it": { "drugs": 2, "lacedChancePercent": 5 },
     "toss_it": {}
-  }
+  },
+  "roadside_burger": { "food": 2 },
+  "speeding_fine": { "cash": -40 },
+  "gas_station_deal": { "beer": 2, "gas": 1 },
+  "van_breakdown_minor": { "cash": -20, "gas": -1 }
 }

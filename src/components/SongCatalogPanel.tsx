@@ -106,13 +106,20 @@ export function SongCatalogPanel() {
       </Text>
 
       <ScrollArea h={220} type="auto" offsetScrollbars>
-        <Stack gap={6} pr="xs">
-          {catalog.songs.map((song) => {
+        <div style={{ borderRadius: 6, overflow: 'hidden' }}>
+          {catalog.songs.map((song, i) => {
             const already = state.activeSetlistBets.some(
               (b) => b.songId === song.id || b.songTitle === song.title,
             )
             return (
-              <Group key={song.id} justify="space-between" wrap="nowrap">
+              <Group
+                key={song.id}
+                justify="space-between"
+                wrap="nowrap"
+                px="xs"
+                py={4}
+                style={{ background: i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'transparent' }}
+              >
                 <Group gap="xs" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
                   <Badge size="xs" color={TIER_COLOR[song.tier]} variant="light">
                     {TIER_LABEL[song.tier]}
@@ -133,7 +140,7 @@ export function SongCatalogPanel() {
               </Group>
             )
           })}
-        </Stack>
+        </div>
       </ScrollArea>
     </Paper>
   )

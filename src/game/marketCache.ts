@@ -80,6 +80,8 @@ export function persistMarketStock(s: GameState, stock: MarketStock): GameState 
 
 export const LOT_DESTINATIONS: { id: LocationId; label: string }[] = [
   { id: 'park', label: 'Park' },
+  { id: 'diner', label: 'Diner' },
+  { id: 'record_store', label: 'Record store' },
   { id: 'hotel', label: 'Hotel' },
   { id: 'friends_house', label: "Friend's house" },
   { id: 'shakedown', label: 'Shakedown' },

@@ -1,5 +1,6 @@
 import { CITIES } from '../cities'
 import type { Band, Tour, TourStop } from '../types'
+import { DEFAULT_GENRE, type GenreId } from './genre'
 import { generateBandCatalog, generateShowSetlist } from './songs'
 
 const VENUES = [
@@ -18,8 +19,8 @@ function pick<T>(list: T[], n: number): T {
 }
 
 /** Generate tour with catalog + pre-rolled setlists per stop */
-export function generateTour(band: Band, seed: number, stopCount = 5): Tour {
-  const catalog = generateBandCatalog(seed)
+export function generateTour(band: Band, seed: number, stopCount = 5, genre: GenreId = DEFAULT_GENRE): Tour {
+  const catalog = generateBandCatalog(seed, genre)
   const usedBustOuts: string[] = []
   const starts = Math.abs(seed) % CITIES.length
   const stops: TourStop[] = []

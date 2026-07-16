@@ -18,6 +18,8 @@ export type LocationId =
   | 'venue'
   | 'hotel'
   | 'friends_house'
+  | 'diner'
+  | 'record_store'
 
 export interface CrewMember {
   id: string
@@ -50,6 +52,7 @@ export interface SavedCrewMember {
 export interface CrewCareerStats {
   venuesVisited: number
   songsHeard: number
+  showsSeen: number
   bandsSeen: number
   milesTraveled: number
   substancesConsumed: number
@@ -68,7 +71,7 @@ export interface CrewCareerStats {
 
 export interface SavedCrew {
   homeCity: string
-  favoriteBandHint: string
+  genre: string
   bank: number
   starterTier: StarterTier
   rep: number
@@ -175,6 +178,10 @@ export type TravelEventType =
   | 'encore_intel'
   | 'wook_flu'
   | 'solo'
+  | 'roadside_burger'
+  | 'speeding_fine'
+  | 'gas_station_deal'
+  | 'van_breakdown_minor'
 
 export interface TravelEvent {
   id: string
@@ -227,6 +234,7 @@ export interface MarketPrices {
 export interface RunStats {
   venuesVisited: number
   songsHeard: number
+  showsSeen: number
   bandsSeen: number
   milesTraveled: number
   substancesConsumed: number
@@ -248,7 +256,7 @@ export interface GameState {
   phase: PhaseId
   crew: CrewMember[]
   homeCity: string
-  favoriteBandHint: string
+  genre: string
   resources: Resources
   tour: Tour | null
   travel: TravelState | null
@@ -317,7 +325,8 @@ export const PHASE_LABELS: Record<PhaseId, string> = {
 export const STAT_LABELS: Record<keyof RunStats, string> = {
   venuesVisited: 'Venues visited',
   songsHeard: 'Songs heard',
-  bandsSeen: 'Bands seen',
+  showsSeen: 'Shows seen',
+  bandsSeen: 'Bands seen (career)',
   milesTraveled: 'Miles traveled',
   substancesConsumed: 'Substances consumed',
   balloonsHuffed: 'Balloons huffed',

@@ -12,6 +12,7 @@ import { buildRunResources } from '../game/crew/economy'
 import { crewRepLabel } from '../game/crew/repTitles'
 import { stickerLabel } from '../game/crew/stickers'
 import { useGame } from '../game/GameContext'
+import { GENRE_OPTIONS } from '../game/generators/genre'
 import { RESOURCE_EMOJI } from '../game/resources'
 import type { CrewCareerStats, Resources, RunStats, SavedCrew } from '../game/types'
 import { CrewSticker } from '../components/CrewSticker'
@@ -79,8 +80,8 @@ function CurrentCrewPanel({
           <Badge size="lg" variant="light" color="teal">
             {crewRepLabel(saved.rep)}
           </Badge>
-          <Badge size="lg" variant="light" color="yellow">
-            Bank ${saved.bank}
+          <Badge size="lg" variant="light" color="grape">
+            {GENRE_OPTIONS.find(g => g.value === saved.genre)?.label ?? saved.genre}
           </Badge>
           {inRun && (
             <Badge size="lg" variant="light" color="blue">
@@ -146,7 +147,7 @@ export function StatsScreen() {
   const crewResources = inRun ? state.resources : nextRunResources!
 
   const blurb = saved
-    ? `${crewRepLabel(saved.rep)} · Bank $${saved.bank}${inRun ? ' · On tour' : ''}`
+    ? `${crewRepLabel(saved.rep)}${inRun ? ' · On tour' : ''}`
     : 'No crew saved yet.'
 
   return (

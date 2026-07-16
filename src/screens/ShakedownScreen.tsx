@@ -52,19 +52,13 @@ export function ShakedownScreen() {
         current="shakedown"
         turnsUntilShow={state.turnsUntilShow}
         onGo={goToLocation}
+        primaryActions={[{
+          label: state.turnsUntilShow > 0 ? 'Venue gates' : 'Showtime — venue gates',
+          onClick: goToVenueGates,
+          disabled: !venueOk,
+          disabledReason: gateMessage ?? undefined,
+        }]}
       />
-      <Button
-        color="grape"
-        onClick={goToVenueGates}
-        disabled={!venueOk}
-      >
-        {state.turnsUntilShow > 0 ? 'Head to venue gates' : 'Showtime — venue gates'}
-      </Button>
-      {!venueOk && gateMessage && (
-        <Text size="sm" c="red">
-          {gateMessage}
-        </Text>
-      )}
     </Stack>
   )
 }

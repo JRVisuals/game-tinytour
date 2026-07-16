@@ -195,6 +195,8 @@ const ALL_CONTEXTS: MarketContext[] = [
   'venue',
   'hotel',
   'friends_house',
+  'diner',
+  'record_store',
   'truck_stop',
   'rest_area',
   'farmers_market',

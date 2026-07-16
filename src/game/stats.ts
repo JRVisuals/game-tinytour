@@ -4,6 +4,7 @@ export function emptyRunStats(): RunStats {
   return {
     venuesVisited: 0,
     songsHeard: 0,
+    showsSeen: 0,
     bandsSeen: 0,
     milesTraveled: 0,
     substancesConsumed: 0,
@@ -32,7 +33,8 @@ export function mergeRunIntoCareer(
   return {
     venuesVisited: career.venuesVisited + run.venuesVisited,
     songsHeard: career.songsHeard + run.songsHeard,
-    bandsSeen: career.bandsSeen + run.bandsSeen,
+    showsSeen: career.showsSeen + run.showsSeen,
+    bandsSeen: career.bandsSeen + (run.bandsSeen > 0 ? 1 : 0),
     milesTraveled: career.milesTraveled + run.milesTraveled,
     substancesConsumed: career.substancesConsumed + run.substancesConsumed,
     balloonsHuffed: career.balloonsHuffed + run.balloonsHuffed,

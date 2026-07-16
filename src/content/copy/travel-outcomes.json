@@ -20,6 +20,56 @@
       "Wook flu patient zero: {name}. Rest or hotel before the van becomes a petri dish.",
       "{name} sounds like a sad harmonica. Keep rolling if you dare."
     ],
+    "roadside_burger": [
+      "Foil-wrapped breakfast in hand. Crew's happier. Miles taste better.",
+      "Burrito situation resolved. Everyone's eating. Tour continues.",
+      "Roadside score. +2 food. The van smells like success and salsa."
+    ],
+    "speeding_fine": [
+      "Officer was not moved by your vibes. Ticket issued. Wallet thinner.",
+      "Lead foot tax collected. $40 lighter and slightly humbled.",
+      "Fine paid on the shoulder. The badge wished you a good show. Sincerely unclear."
+    ],
+    "gas_station_deal": [
+      "Sticker handshake at the pump. Beers traded, tank nudged up. Community.",
+      "Lot connection in the gas line. +2 beer, +1 gas. The lot is everywhere.",
+      "Fellow traveler spotted the sticker. Fair trade. Rolling again."
+    ],
+    "van_breakdown_minor": [
+      "Van shuddered and kept going. Lighter on cash and gas. Heavier on dread.",
+      "Something rattled loose. You chose not to name it. Cost you though.",
+      "Brief mechanical trauma. Fixed enough to keep moving. Wallet disagrees."
+    ],
+    "rest_stop_dog": [
+      "Everyone petted the dog. Morale? Fully restored. The dog moved on.",
+      "Tie-dye bandana retriever. No notes. You're all better now.",
+      "The dog approved of the crew. Highest endorsement available."
+    ],
+    "wrong_exit": [
+      "Cracker Barrel detour logged. No regrets, no apologies. Still on tour.",
+      "Extra 40 miles, zero blame. The road has opinions.",
+      "Wrong exit, right attitude. You turned around. Tour resumes."
+    ],
+    "speedrun_trucker": [
+      "Trucked into the draft and held on. Time saved. Windows rattled. Worth it.",
+      "Big rig pulled you through. 60 miles of free horsepower.",
+      "You rode the trucker wake like a spiritual experience."
+    ],
+    "toll_booth_vibes": [
+      "Toll booth moment logged. The collector knew. You keep rolling.",
+      "Someone at a booth says 'have a good show.' You did not ask. Accepted.",
+      "The lot is everywhere. Even at the toll."
+    ],
+    "radio_find": [
+      "Three songs on college radio. The crew sang every word at volume.",
+      "Signal found between corn fields. Setlist preview or just luck.",
+      "Radio delivered. Vibe delivered. Miles delivered."
+    ],
+    "gas_station_prophet": [
+      "Napkin lost. Message received. The encore will surprise you.",
+      "Diesel prophet encountered. Advice unclear, energy noted.",
+      "You didn't find the napkin. You kept the feeling."
+    ],
     "default": [
       "You dealt with it and kept rolling.",
       "Handled. No poetry required.",

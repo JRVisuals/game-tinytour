@@ -7,6 +7,9 @@ interface ShakedownEventTemplate {
   title: string
   body: string
   weight: number
+  djBand?: boolean
+  healthDrain?: number
+  crewEffect?: string
   effects: Partial<Record<keyof Resources, number>>
 }
 
@@ -23,7 +26,10 @@ export interface ShakedownLotEvent {
   body: string
 }
 
-export type PostShowShakedownEvent = ShakedownLotEvent
+export interface PostShowShakedownEvent extends ShakedownLotEvent {
+  crewEffect?: string
+  healthDrain?: number
+}
 
 function pickWeighted(pool: ShakedownEventTemplate[], seed: number): ShakedownEventTemplate {
   const total = pool.reduce((a, e) => a + e.weight, 0)
@@ -35,10 +41,21 @@ function pickWeighted(pool: ShakedownEventTemplate[], seed: number): ShakedownEv
   return pool[0]!
 }
 
-export function rollPostShowShakedownEvent(seed: number): PostShowShakedownEvent | null {
+function subBand(text: string, djBand: string): string {
+  return text.replaceAll('{djBand}', djBand)
+}
+
+export function rollPostShowShakedownEvent(seed: number, djBand: string): PostShowShakedownEvent | null {
   if (Math.abs(seed) % 100 > S.postShowEventChancePercent) return null
   const t = pickWeighted(postShowTemplates, seed)
-  return { id: t.id, title: t.title, body: t.body }
+  const band = t.djBand ? djBand : ''
+  return {
+    id: t.id,
+    title: band ? subBand(t.title, band) : t.title,
+    body: band ? subBand(t.body, band) : t.body,
+    crewEffect: t.crewEffect,
+    healthDrain: t.healthDrain,
+  }
 }
 
 export function rollLotShakedownEvent(seed: number): ShakedownLotEvent | null {

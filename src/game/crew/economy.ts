@@ -95,7 +95,7 @@ export function previewRunSupplies(
   }
   const draft: SavedCrew = {
     homeCity: '',
-    favoriteBandHint: '',
+    genre: 'mixed',
     bank,
     starterTier: 200,
     rep: 0,

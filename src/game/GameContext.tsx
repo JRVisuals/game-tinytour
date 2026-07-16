@@ -56,6 +56,7 @@ import {
   venueEntryBlockedMessage,
 } from './crew/meters'
 import { generateBand, generateCrewNames, generateTour } from './generators'
+import { DEFAULT_GENRE, type GenreId } from './generators/genre'
 import { defaultStickerId } from './crew/stickers'
 import { type MarketContext } from './market'
 import { resolveCopChase, rollBalloonCopChase, rollDrugSellCopChase } from './market/copChase'
@@ -154,7 +155,7 @@ interface GameContextValue {
   setCrewMemberName: (index: number, name: string) => void
   setCrewMemberSticker: (index: number, stickerId: string) => void
   setHomeCity: (city: string) => void
-  setFavoriteBandHint: (hint: string) => void
+  setGenre: (genre: GenreId) => void
   setBudget: (budget: number) => void
   crewConsume: (memberId: string, item: 'eat' | 'drink' | 'substances') => void
   travelAction: (action: TravelAction) => void
@@ -227,7 +228,7 @@ function createInitialState(): GameState {
     phase: 'title',
     crew: saved ? crewFromSaved(saved) : defaultCrew(1),
     homeCity: saved?.homeCity ?? 'Burlington, VT',
-    favoriteBandHint: saved?.favoriteBandHint ?? '',
+    genre: saved?.genre ?? DEFAULT_GENRE,
     resources: createStartingResources(saved?.bank ?? tier),
     tour: null,
     travel: null,
@@ -526,7 +527,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           ...s,
           crew: crewFromSaved(s.savedCrew),
           homeCity: s.savedCrew.homeCity,
-          favoriteBandHint: s.savedCrew.favoriteBandHint,
+          genre: s.savedCrew.genre ?? DEFAULT_GENRE,
           resources: {
             ...createStartingResources(s.savedCrew.bank),
             hasVehicle: s.savedCrew.hasVehicle,
@@ -561,8 +562,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const seed = base.rngSeed + 17
     const resources = buildRunResources(saved, seed)
     const crew = crewFromSaved(saved)
-    const band = generateBand(seed)
-    const tour = generateTour(band, seed + 3, BALANCE.travel.tourStops)
+    const genre = (base.genre ?? DEFAULT_GENRE) as GenreId
+    const band = generateBand(seed, genre)
+    const tour = generateTour(band, seed + 3, BALANCE.travel.tourStops, genre)
     const stop = tour.stops[0]!
     const origin = base.homeCity
     let next: GameState = {
@@ -652,7 +654,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ...s,
         crew: crewFromSaved(s.savedCrew),
         homeCity: s.savedCrew.homeCity,
-        favoriteBandHint: s.savedCrew.favoriteBandHint,
+        genre: s.savedCrew.genre ?? DEFAULT_GENRE,
       })
     })
   }, [beginRun])
@@ -676,12 +678,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ? {
             ...s.savedCrew,
             homeCity: s.homeCity,
-            favoriteBandHint: s.favoriteBandHint,
+            genre: s.genre ?? DEFAULT_GENRE,
             members,
           }
         : createNewSavedCrew({
             homeCity: s.homeCity,
-            favoriteBandHint: s.favoriteBandHint,
+            genre: s.genre ?? DEFAULT_GENRE,
             bank: tier,
             starterTier: tier,
             members,
@@ -758,7 +760,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ...s,
         crew: defaultCrew(1, seed),
         homeCity: 'Burlington, VT',
-        favoriteBandHint: '',
+        genre: DEFAULT_GENRE,
         resources: createStartingResources(200),
         savedCrew: null,
         memberKits: [],
@@ -787,8 +789,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, homeCity: city }))
   }, [])
 
-  const setFavoriteBandHint = useCallback((hint: string) => {
-    setState((s) => ({ ...s, favoriteBandHint: hint }))
+  const setGenre = useCallback((genre: GenreId) => {
+    setState((s) => ({ ...s, genre }))
   }, [])
 
   const setBudget = useCallback((budget: number) => {
@@ -1107,6 +1109,32 @@ export function GameProvider({ children }: { children: ReactNode }) {
             ...resources,
             cash: Math.max(0, resources.cash + fx.cash),
             drugs: Math.max(0, resources.drugs + fx.drugs),
+          }
+          crew = applyBadEventVibeToCrew(crew)
+          break
+        }
+        case 'roadside_burger':
+          resources = { ...resources, food: resources.food + FX.roadside_burger.food }
+          break
+        case 'speeding_fine':
+          resources = { ...resources, cash: Math.max(0, resources.cash + FX.speeding_fine.cash) }
+          crew = applyBadEventVibeToCrew(crew)
+          break
+        case 'gas_station_deal': {
+          const fx = FX.gas_station_deal
+          resources = {
+            ...resources,
+            beer: resources.beer + fx.beer,
+            gas: resources.hasVehicle ? resources.gas + fx.gas : resources.gas,
+          }
+          break
+        }
+        case 'van_breakdown_minor': {
+          const fx = FX.van_breakdown_minor
+          resources = {
+            ...resources,
+            cash: Math.max(0, resources.cash + fx.cash),
+            gas: resources.hasVehicle ? Math.max(0, resources.gas + fx.gas) : resources.gas,
           }
           crew = applyBadEventVibeToCrew(crew)
           break
@@ -1509,7 +1537,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const clownJuiceBalloonChoice = useCallback((choice: ClownJuiceChoice) => {
     setState((s) => {
       if (
-        s.phase !== 'shakedown' ||
+        (s.phase !== 'shakedown' && s.phase !== 'post_show_shakedown') ||
         s.shakedownLotEvent?.id !== 'clown_juice_mafia' ||
         s.marketCopChase
       ) {
@@ -1790,7 +1818,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const runStats = patchRunStats(s.runStats, {
         venuesVisited: s.runStats.venuesVisited + 1,
         songsHeard: s.runStats.songsHeard + setlist.songs.length,
-        bandsSeen: s.runStats.bandsSeen + 1,
+        showsSeen: s.runStats.showsSeen + 1,
+        bandsSeen: s.runStats.bandsSeen === 0 ? 1 : s.runStats.bandsSeen,
       })
       const crew = ticketsOk ? applyShowVibeToCrew(crewAfterBets) : crewAfterBets
       return {
@@ -1880,7 +1909,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setState((s) => {
       if (!s.tour) return s
       const seed = s.rngSeed + 41
-      const rolled = rollPostShowShakedownEvent(seed)
+      const genre = (s.genre ?? DEFAULT_GENRE) as GenreId
+      const djBand = generateBand(seed + 99, genre).name
+      const rolled = rollPostShowShakedownEvent(seed, djBand)
       const resourcesBefore = { ...s.resources }
       let resources = { ...s.resources }
       if (rolled) {
@@ -1892,13 +1923,43 @@ export function GameProvider({ children }: { children: ReactNode }) {
         rolled && loot
           ? { resourcesBefore, resourcesAfter: resources }
           : undefined
+
+      // After-party DJ set counts as a show + unique band
+      let runStats = s.runStats
+      if (rolled?.id.startsWith('after_party')) {
+        runStats = patchRunStats(runStats, {
+          showsSeen: runStats.showsSeen + 1,
+          bandsSeen: runStats.bandsSeen + 1,
+        })
+      }
+
+      // Crew effects from after-party: health drain on all active, then wook flu if applicable
+      let crew = s.crew
+      let crewAlert = s.crewAlert
+      if (rolled?.healthDrain) {
+        const drain = rolled.healthDrain
+        crew = crew.map((m) =>
+          m.bailed ? m : { ...m, health: Math.max(0, m.health - drain) },
+        )
+      }
+      if (rolled?.crewEffect === 'wook_flu') {
+        const infected = infectRandomCrewWithWookFlu(crew, seed + 13)
+        crew = infected.crew
+        if (infected.infectedName) {
+          crewAlert = `${infected.infectedName} caught something at the after-party. Wook flu.`
+        }
+      }
+
       let next = applyMarket(
-        { ...s, resources, rngSeed: seed },
+        { ...s, crew, resources, rngSeed: seed },
         'post_show_shakedown',
         seed + 7,
       )
       return {
         ...next,
+        crew,
+        crewAlert,
+        runStats,
         phase: 'post_show_shakedown',
         postShowShakedownEvent: event,
         tourStory: appendStory(
@@ -2097,7 +2158,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setCrewMemberName,
       setCrewMemberSticker,
       setHomeCity,
-      setFavoriteBandHint,
+      setGenre,
       setBudget,
       crewConsume,
       travelAction,
@@ -2141,7 +2202,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setCrewMemberName,
       setCrewMemberSticker,
       setHomeCity,
-      setFavoriteBandHint,
+      setGenre,
       setBudget,
       crewConsume,
       travelAction,

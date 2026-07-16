@@ -1,0 +1,64 @@
+{
+  "genres": [
+    {
+      "id": "dead",
+      "label": "Grateful Dead jams",
+      "band": {
+        "intros": ["The", "Old", "Uncle", "Brother", ""],
+        "adjectives": ["Scarlet", "Sugar", "Tangled", "Rippling", "Dark", "Golden", "Cosmic", "Terrapin", "Barbed", "Shady", "Rambling", "Truckin"],
+        "nouns": ["Roses", "Riders", "Magnolias", "Mountains", "Gypsies", "Sailors", "Beacons", "Ghosts", "Wolves", "Biscuits", "Lightning", "Station"]
+      },
+      "songs": {
+        "openers": ["Dark", "Sugar", "Fire", "China", "Ripple", "Touch", "Stella", "Eyes", "Franklin", "Loser", "Brokedown", "Friend", "Bird Song", "Bertha"],
+        "middles": ["Star", "Cat", "Blue", "Magnolia", "Begonias", "River", "Grey", "Sky", "Rain", "Mountain", "Palace", "Moon"],
+        "connectors": ["of the", "on the", "in the", "over the", "by the", "at the", "under a", "through the"],
+        "closers": ["Morning", "Heaven", "Road", "Dream", "Blues", "Groove", "Light", "Wind", "Way", "Dawn", "Fields", "Night"]
+      }
+    },
+    {
+      "id": "phish",
+      "label": "Phish jams",
+      "band": {
+        "intros": ["The", "Big", "Fat", "Lazy", ""],
+        "adjectives": ["Bathtub", "Fuzzy", "Electric", "Fluffed", "Divided", "Stashed", "Bouncing", "Sloshed", "Antelope", "Twisted", "Mellow", "Guyute"],
+        "nouns": ["Gin", "Biscuits", "Hood", "Ghosts", "Jars", "Curtains", "Wagons", "Lizards", "Squirming", "Coils", "Dogs", "Lawn"]
+      },
+      "songs": {
+        "openers": ["Tweezer", "Tube", "Sample", "Ghost", "Stash", "Fluff", "Bathtub", "Divided", "Bouncing", "Harry", "Free", "Gumbo", "Piper", "Sand"],
+        "middles": ["Hood", "Gin", "Sky", "Curtain", "Coil", "Jam", "Tease", "Reprise", "Head", "Run", "Squirm", "Loop"],
+        "connectors": ["in a", "on a", "of the", "into the", "through a", "with a", "under the", "around the"],
+        "closers": ["Jar", "Melt", "Blaze", "Drift", "Float", "Rift", "Riff", "Groove", "Wave", "Surge", "Space", "Zone"]
+      }
+    },
+    {
+      "id": "goose",
+      "label": "Goose jams",
+      "band": {
+        "intros": ["The", "Big", "A", "Little", ""],
+        "adjectives": ["Turned", "Hot", "Arcadian", "Electric", "Butter", "Smoky", "Drifted", "Slow", "Strange", "Floating", "Hazy", "Velvet"],
+        "nouns": ["Clouds", "Tea", "Myst", "Elizabeth", "Hungersite", "Rum", "Smoke", "Heron", "Drift", "Arcadia", "Current", "Hollow"]
+      },
+      "songs": {
+        "openers": ["Turned", "Hot", "Into", "Arcadia", "So", "Elizabeth", "Hungersite", "Madhuvan", "Butter", "Your", "Drive", "Ley"],
+        "middles": ["Clouds", "Tea", "Direction", "Rum", "Ready", "Myst", "Line", "Road", "River", "City", "Smoke", "Current"],
+        "connectors": ["of the", "into the", "through the", "on the", "over a", "with the", "along the", "beneath the"],
+        "closers": ["Side", "Way", "Drift", "Flow", "Rise", "Glow", "Run", "Fields", "Echo", "Trail", "Hollow", "Open"]
+      }
+    },
+    {
+      "id": "mixed",
+      "label": "General jam vibes",
+      "band": {
+        "intros": ["The", "Big", "A", ""],
+        "adjectives": ["Cosmic", "Sticky", "Electric", "Velvet", "Fuzzy", "Astral", "Greasy", "Midnight", "Floating", "Crooked", "Tangled", "Shady"],
+        "nouns": ["Biscuits", "Lotus", "Nectar", "Wagons", "Mushrooms", "Riders", "Ghosts", "Gypsies", "Pointers", "Beacons", "Lightning", "Current"]
+      },
+      "songs": {
+        "openers": ["Dark", "Fire", "Electric", "Cosmic", "Floating", "Midnight", "Twisted", "Sugar", "Golden", "Fuzzy", "Rolling", "Deep"],
+        "middles": ["Star", "Mountain", "River", "Sky", "Moon", "Sun", "Rain", "Wind", "Cloud", "Road", "Dream", "Soul"],
+        "connectors": ["of the", "on the", "in the", "over the", "by the", "under the", "through the", "into the"],
+        "closers": ["Jam", "Blues", "Groove", "Rise", "Drift", "Flow", "Way", "Light", "Night", "Dawn", "Space", "Zone"]
+      }
+    }
+  ]
+}
