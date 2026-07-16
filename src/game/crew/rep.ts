@@ -16,6 +16,7 @@ export function emptyCareerStats(): CrewCareerStats {
     bandsSeen: 0,
     milesTraveled: 0,
     substancesConsumed: 0,
+    balloonsHuffed: 0,
     foodConsumed: 0,
     beerConsumed: 0,
     showsMissed: 0,

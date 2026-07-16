@@ -741,7 +741,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const names = generateCrewNames(s.crew.length, seed)
       return {
         ...s,
-        crew: s.crew.map((member, i) => ({ ...member, name: names[i]! })),
+        crew: s.crew.map((member, i) => ({
+          ...member,
+          name: names[i]!,
+          stickerId: defaultStickerId(seed + i * 37),
+        })),
         rngSeed: seed,
       }
     })
@@ -1558,12 +1562,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
         crewAfter: crew,
       }
 
+      const runStats = patchRunStats(s.runStats, { balloonsHuffed: s.runStats.balloonsHuffed + doses })
+
       if (rollBalloonCopChase(rngSeed + 5)) {
         return {
           ...s,
           resources,
           crew,
           rngSeed,
+          runStats,
           marketCopChase: {
             fine: BALANCE.markets.copChase.fine,
             proceeds: 0,
@@ -1578,6 +1585,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         resources,
         crew,
         rngSeed,
+        runStats,
         crewAlert: null,
         ...setOutcome(s,flavor, snap),
       }

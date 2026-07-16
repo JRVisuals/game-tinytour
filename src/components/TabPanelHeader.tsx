@@ -2,7 +2,7 @@ import { Paper, Stack, Text } from '@mantine/core'
 
 interface TabPanelHeaderProps {
   title: string
-  blurb: string
+  blurb?: string
 }
 
 export function TabPanelHeader({ title, blurb }: TabPanelHeaderProps) {
@@ -18,9 +18,11 @@ export function TabPanelHeader({ title, blurb }: TabPanelHeaderProps) {
         >
           {title}
         </Text>
-        <Text size="sm" c="gray.1" lh={1.45}>
-          {blurb}
-        </Text>
+        {blurb && (
+          <Text size="sm" c="gray.1" lh={1.45}>
+            {blurb}
+          </Text>
+        )}
       </Stack>
     </Paper>
   )

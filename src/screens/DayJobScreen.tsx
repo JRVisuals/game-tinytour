@@ -1,4 +1,5 @@
-import { Button, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
+import { Button, Group, SimpleGrid, Stack, Text } from '@mantine/core'
+import { TabPanelHeader } from '../components/TabPanelHeader'
 import { BALANCE } from '../game/config'
 import { useGame } from '../game/GameContext'
 import { STAT_LABELS } from '../game/types'
@@ -15,8 +16,7 @@ export function DayJobScreen() {
 
   return (
     <Stack>
-      <Title order={2}>Day job</Title>
-      <Text fw={500}>{recapTitle}</Text>
+      <TabPanelHeader title="Day job" blurb={recapTitle} />
       {recapSubtitle && <Text c="dimmed">{recapSubtitle}</Text>}
       <Text c="dimmed">
         The tour can wait. Nametags, time clock, burnt coffee. Your crew rep carries — cash

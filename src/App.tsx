@@ -1,11 +1,12 @@
-import { Badge, Box, Container, Group, Paper, Stack } from '@mantine/core'
+import { Badge, Container, Paper, Stack } from '@mantine/core'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AsciiHeaderLogo } from './components/AsciiHeaderLogo'
 import { PhaseRouter } from './components/PhaseRouter'
-import { ScreenFrame } from './components/ScreenFrame'
 import { ShuffleOnHomeButton } from './components/ShuffleOnHomeButton'
 import { StatusLine } from './components/StatusLine'
 import { TourTabBar, type PlayTabId } from './components/TourTabBar'
+import { CrewActionBar } from './components/CrewActionBar'
+import { StatsActionBar } from './components/StatsActionBar'
 import { CrewTab } from './components/tabs/CrewTab'
 import { HustleTab } from './components/tabs/HustleTab'
 import { JournalTab } from './components/tabs/JournalTab'
@@ -42,6 +43,8 @@ export default function App() {
   const { state } = useGame()
   const [playTab, setPlayTab] = useState<PlayTabId>('scene')
   const showPlayShell = !MENU_PHASES.has(state.phase)
+  const showCrewShell = state.phase === 'crew'
+  const showStatsShell = state.phase === 'stats'
   const hustleActive = hustleTabActive(state)
   const hustleEnabled = isHustleContext(state)
   const crewAlert = hasUrgentCrew(state) || !!state.crewAlert
@@ -95,30 +98,23 @@ export default function App() {
   }
 
   return (
-    <div className={`game-shell${showPlayShell ? ' game-shell--tabs' : ''}`}>
+    <div className={`game-shell${showPlayShell || showCrewShell || showStatsShell ? ' game-shell--tabs' : ''}`}>
       <header className="game-shell-header">
-        <Group
-          className="game-shell-header-inner"
-          h="100%"
-          px="md"
-          justify="space-between"
-          wrap="nowrap"
-          gap="xs"
-        >
-          <Box className="game-shell-header-logo">
+        <div className="game-shell-header-row">
+          <div className="game-shell-header-logo">
             <AsciiHeaderLogo />
-          </Box>
-          <Group className="game-shell-header-actions" gap={6} wrap="nowrap" style={{ minWidth: 0 }}>
+          </div>
+          <div className="game-shell-header-actions">
             <ShuffleOnHomeButton />
             <Badge size="sm" variant="light" className="phase-badge">
               {phaseLabel(state)}
             </Badge>
-          </Group>
-        </Group>
+          </div>
+        </div>
       </header>
 
       <main className="game-shell-main">
-        <Container size="sm" py="xs" px={0}>
+        <Container size="sm" py="sm" px={0}>
           {showPlayShell ? (
             <PlayTabProvider setPlayTab={setPlayTab}>
               <Stack gap="sm">
@@ -126,16 +122,8 @@ export default function App() {
                 {playContent}
               </Stack>
             </PlayTabProvider>
-          ) : state.phase === 'stats' ? (
-            <ScreenFrame>
-              <PhaseRouter />
-            </ScreenFrame>
           ) : (
-            <Paper withBorder p="lg" radius="md">
-              <ScreenFrame>
-                <PhaseRouter />
-              </ScreenFrame>
-            </Paper>
+            <PhaseRouter />
           )}
         </Container>
       </main>
@@ -149,6 +137,16 @@ export default function App() {
             hustleActive={hustleActive}
             hustleEnabled={hustleEnabled}
           />
+        </footer>
+      )}
+      {showCrewShell && (
+        <footer className="game-shell-footer">
+          <CrewActionBar />
+        </footer>
+      )}
+      {showStatsShell && (
+        <footer className="game-shell-footer">
+          <StatsActionBar />
         </footer>
       )}
 

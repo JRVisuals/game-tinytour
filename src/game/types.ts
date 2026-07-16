@@ -53,6 +53,7 @@ export interface CrewCareerStats {
   bandsSeen: number
   milesTraveled: number
   substancesConsumed: number
+  balloonsHuffed: number
   foodConsumed: number
   beerConsumed: number
   showsMissed: number
@@ -229,6 +230,7 @@ export interface RunStats {
   bandsSeen: number
   milesTraveled: number
   substancesConsumed: number
+  balloonsHuffed: number
   foodConsumed: number
   beerConsumed: number
   showsMissed: number
@@ -318,6 +320,7 @@ export const STAT_LABELS: Record<keyof RunStats, string> = {
   bandsSeen: 'Bands seen',
   milesTraveled: 'Miles traveled',
   substancesConsumed: 'Substances consumed',
+  balloonsHuffed: 'Balloons huffed',
   foodConsumed: 'Food consumed',
   beerConsumed: 'Beer consumed',
   showsMissed: 'Shows missed',

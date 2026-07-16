@@ -1,6 +1,5 @@
 import {
   Badge,
-  Button,
   Divider,
   Grid,
   Group,
@@ -8,38 +7,33 @@ import {
   SimpleGrid,
   Stack,
   Text,
-  Title,
 } from '@mantine/core'
 import { buildRunResources } from '../game/crew/economy'
 import { crewRepLabel } from '../game/crew/repTitles'
 import { stickerLabel } from '../game/crew/stickers'
 import { useGame } from '../game/GameContext'
-import { RESOURCE_LABELS } from '../game/resources'
+import { RESOURCE_EMOJI } from '../game/resources'
 import type { CrewCareerStats, Resources, RunStats, SavedCrew } from '../game/types'
 import { CrewSticker } from '../components/CrewSticker'
 import { RunStatsGrid } from '../components/RunStatsGrid'
+import { TabPanelHeader } from '../components/TabPanelHeader'
 
 const SUPPLY_KEYS: (keyof Resources)[] = ['food', 'beer', 'drugs', 'tickets', 'gas']
 
-function SuppliesGrid({
-  resources,
-  bank,
-  inRun,
-}: {
-  resources: Resources
-  bank: number
-  inRun: boolean
-}) {
+function SuppliesRow({ resources, inRun }: { resources: Resources; inRun: boolean }) {
   return (
-    <Stack gap="xs">
-      <Group gap="md">
-        <Text size="sm">
-          Bank: <strong>${bank}</strong>
+    <Stack gap={6}>
+      <Group gap="md" wrap="wrap">
+        <Text size="md" fw={700}>
+          {RESOURCE_EMOJI.cash} {resources.cash}
         </Text>
-        {inRun && (
-          <Text size="sm">
-            Cash on hand: <strong>${resources.cash}</strong>
+        {SUPPLY_KEYS.map((key) => (
+          <Text key={key} size="md" fw={500}>
+            {RESOURCE_EMOJI[key]} {String(resources[key])}
           </Text>
+        ))}
+        {resources.hasVehicle && (
+          <Text size="md" fw={500}>{RESOURCE_EMOJI.hasVehicle}</Text>
         )}
       </Group>
       {inRun && (
@@ -47,16 +41,6 @@ function SuppliesGrid({
           Supplies liquidate to bank when you go home or finish the tour.
         </Text>
       )}
-      <SimpleGrid cols={2} spacing="xs">
-        {SUPPLY_KEYS.map((key) => (
-          <Text key={key} size="sm">
-            {RESOURCE_LABELS[key]}: {resources[key]}
-          </Text>
-        ))}
-        <Text size="sm">
-          {RESOURCE_LABELS.hasVehicle}: {resources.hasVehicle ? 'Yes' : 'No'}
-        </Text>
-      </SimpleGrid>
     </Stack>
   )
 }
@@ -73,7 +57,7 @@ function CurrentCrewPanel({
   return (
     <Paper withBorder p="md" radius="md" h="100%">
       <Stack gap="sm">
-        <Title order={4}>Your Crew</Title>
+        <Text fw={600} size="sm" c="teal.3" tt="uppercase" style={{ letterSpacing: '0.06em' }}>Current crew</Text>
         <Stack gap="xs">
           {saved.members.map((m) => (
             <Group key={m.name} gap="sm" wrap="nowrap">
@@ -107,7 +91,7 @@ function CurrentCrewPanel({
 
         <Divider label={inRun ? 'On the road' : 'Next run kit'} labelPosition="left" />
 
-        <SuppliesGrid bank={saved.bank} resources={resources} inRun={inRun} />
+        <SuppliesRow resources={resources} inRun={inRun} />
       </Stack>
     </Paper>
   )
@@ -125,7 +109,7 @@ function CareerPanel({
   return (
     <Paper withBorder p="md" radius="md" h="100%">
       <Stack gap="sm">
-        <Title order={4}>Career record</Title>
+        <Text fw={600} size="sm" c="teal.3" tt="uppercase" style={{ letterSpacing: '0.06em' }}>Career record</Text>
         <Text size="sm">
           Personal best rep: <strong>{crewRepLabel(saved.bestRep)}</strong>
         </Text>
@@ -154,21 +138,20 @@ function CareerPanel({
 }
 
 export function StatsScreen() {
-  const { state, goToTitle } = useGame()
+  const { state } = useGame()
   const inRun = state.tour !== null
   const saved = state.savedCrew
   const career = saved?.career
   const nextRunResources = saved ? buildRunResources(saved, state.rngSeed + 17) : null
   const crewResources = inRun ? state.resources : nextRunResources!
 
+  const blurb = saved
+    ? `${crewRepLabel(saved.rep)} · Bank $${saved.bank}${inRun ? ' · On tour' : ''}`
+    : 'No crew saved yet.'
+
   return (
     <Stack gap="md">
-      <Group justify="space-between" align="flex-end">
-        <Title order={2}>Stats</Title>
-        <Button variant="default" onClick={goToTitle}>
-          Back to title
-        </Button>
-      </Group>
+      <TabPanelHeader title="Stats" blurb={blurb} />
 
       {!saved ? (
         <Paper withBorder p="md" radius="md">
@@ -182,7 +165,7 @@ export function StatsScreen() {
               {inRun && (
                 <Paper withBorder p="md" radius="md">
                   <Stack gap="sm">
-                    <Title order={4}>This run</Title>
+                    <Text fw={600} size="sm" c="teal.3" tt="uppercase" style={{ letterSpacing: '0.06em' }}>This run</Text>
                     <RunStatsGrid stats={state.runStats} />
                   </Stack>
                 </Paper>

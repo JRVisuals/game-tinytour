@@ -20,6 +20,10 @@ export function SceneCrewNudge({ inline }: SceneCrewNudgeProps) {
   if (!urgent) return null
 
   const chip = crewStatusChip(urgent)
+
+  // Wook flu: nothing actionable in Crew tab, skip the nudge
+  if (chip.id === 'wook_flu') return null
+
   const label = `${urgent.name} is ${chip.label} — Crew`
 
   if (inline) {

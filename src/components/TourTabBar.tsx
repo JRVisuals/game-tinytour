@@ -1,4 +1,4 @@
-import { Button, Group } from '@mantine/core'
+import { Button } from '@mantine/core'
 
 export type PlayTabId = 'scene' | 'hustle' | 'crew' | 'journal'
 
@@ -25,7 +25,7 @@ export function TourTabBar({
   hustleEnabled = true,
 }: TourTabBarProps) {
   return (
-    <Group grow gap={4} px="xs" py="xs" className="game-shell-tab-bar">
+    <div className="game-shell-tab-bar">
       {TABS.map((tab) => {
         const attention =
           (tab.id === 'crew' && crewAlert) || (tab.id === 'hustle' && hustleActive)
@@ -46,6 +46,6 @@ export function TourTabBar({
           </Button>
         )
       })}
-    </Group>
+    </div>
   )
 }
