@@ -51,6 +51,7 @@ export interface ResourcesBalance {
   vehicleCost: number
   vehicleGas: number
   hotelCrashCost: number
+  friendsCrashCost: number
 }
 
 export interface TravelBalance {

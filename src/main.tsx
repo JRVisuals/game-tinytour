@@ -1,4 +1,4 @@
-import { AppShell, Button, MantineProvider, Paper, createTheme } from '@mantine/core'
+import { Button, MantineProvider, Paper, createTheme } from '@mantine/core'
 import '@mantine/core/styles.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -35,20 +35,6 @@ const theme = createTheme({
         root: {
           backgroundColor: 'rgba(11, 15, 17, 0.82)',
           backdropFilter: 'blur(10px)',
-        },
-      },
-    }),
-    AppShell: AppShell.extend({
-      styles: {
-        root: {
-          backgroundColor: 'transparent',
-        },
-        main: {
-          backgroundColor: 'transparent',
-        },
-        header: {
-          backgroundColor: 'rgba(11, 15, 17, 0.88)',
-          backdropFilter: 'blur(8px)',
         },
       },
     }),

@@ -85,7 +85,7 @@ export function OutcomeToast() {
     >
       <Alert
         color={TONE_COLOR[tone]}
-        variant="filled"
+        variant="light"
         radius="md"
         p="md"
         className={tone === 'error' ? 'outcome-toast-alert outcome-toast-alert--error' : 'outcome-toast-alert'}

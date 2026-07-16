@@ -33,6 +33,7 @@ import {
   applyBathroomBagTasteToCrew,
   applyDrinkToMember,
   applyEatToMember,
+  applyFriendsCrashToCrew,
   applyHotelCrashToCrew,
   applyBadEventVibeToCrew,
   applyBurnGasCruiseToCrew,
@@ -69,6 +70,7 @@ import {
   runEndLine,
   shuffleHomeBlockedMessage,
   showRecapLine,
+  showRecapFlavor,
   soloEventResult,
   travelFeedback,
   wookFluDeathMessage,
@@ -79,7 +81,6 @@ import { resolvePulledOver } from './travel/pulledOverResolve'
 import { loadPersisted, savePersisted } from './persistence'
 import { createStartingResources } from './resources'
 import { emptyRunStats, patchRunStats, canShuffleHome } from './stats'
-import { maybeRollTravelEvent } from './travel/events'
 import {
   applyMissShowHustleEffects,
   rollMissShowHustleEvent,
@@ -100,10 +101,15 @@ import {
 } from './shakedown/clownJuice'
 import { applySpotFindOnVisit } from './location/spotFind'
 import { goToVenueGates, needsVenueGates } from './venueGates'
-import { generateTravelLegs, pushThroughCost } from './travel/legs'
+import { pushThroughCost } from './travel/legs'
+import {
+  beginTravelLegs,
+  rollLegArrivalEvent,
+} from './travel/arrival'
 import type {
   BetSlot,
   CrewMember,
+  ShowBetResult,
   GameState,
   LocationId,
   PhaseId,
@@ -176,6 +182,7 @@ interface GameContextValue {
   takeDayJobStipend: () => void
   adjustResources: (partial: Partial<Resources>) => void
   hotelCrash: () => void
+  friendsCrash: () => void
   clearLastOutcome: () => void
 }
 
@@ -228,6 +235,7 @@ function createInitialState(): GameState {
     turnsUntilShow: BALANCE.travel.turnsUntilShow,
     lastSetlist: null,
     postShowRecap: '',
+    lastShowBetResults: [],
     postShowShakedownEvent: null,
     shakedownLotEvent: null,
     spotFindEvent: null,
@@ -264,18 +272,6 @@ function persistCrew(savedCrew: SavedCrew | null) {
 function crewLabel(saved: SavedCrew | null, crew: CrewMember[]): string {
   if (saved?.members.length) return saved.members.map((m) => m.name).join(', ')
   return crew.map((c) => c.name).join(', ')
-}
-
-function buildTravel(origin: string, destination: string, seed: number) {
-  return {
-    origin,
-    destination,
-    legs: generateTravelLegs(seed, origin, destination),
-    currentLegIndex: 0,
-    pendingEvent: null,
-    atRoadside: false,
-    lastEventResult: null,
-  }
 }
 
 function applyMarket(
@@ -575,7 +571,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       resources,
       rngSeed: seed,
       tour,
-      travel: buildTravel(origin, stop.city, seed + 5),
       runStats: emptyRunStats(),
       runBetsWon: 0,
       tourStory: [
@@ -591,6 +586,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       turnsUntilShow: BALANCE.travel.turnsUntilShow,
       lastSetlist: null,
       postShowRecap: '',
+      lastShowBetResults: [],
       postShowShakedownEvent: null,
       shakedownLotEvent: null,
       spotFindEvent: null,
@@ -606,6 +602,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       lastOutcome: null,
       lastOutcomeTone: 'default',
     }
+    next = beginTravelLegs(next, origin, stop.city, seed + 5)
     next = applyMarket(next, 'shakedown', seed + 99)
     return {
       ...next,
@@ -995,15 +992,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
               }
             }
 
-            return {
+            next = {
               ...next,
               travel: {
                 ...s.travel,
                 currentLegIndex: newIndex,
-                pendingEvent: null,
                 atRoadside: false,
                 lastEventResult: message,
               },
+            }
+            return {
+              ...rollLegArrivalEvent(next, rngSeed + 13),
               ...setOutcome(s,message, {
                 resourcesBefore,
                 resourcesAfter: resources,
@@ -1235,21 +1234,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!leg) return s
 
       const rngSeed = s.rngSeed + 9
-      const event = maybeRollTravelEvent(rngSeed, s.tour
-        ? {
-            catalog: s.tour.catalog,
-            plannedSetlist: s.tour.stops[s.tour.currentStopIndex]?.plannedSetlist,
-            crew: s.crew,
-          }
-        : undefined)
-      if (event) {
-        return {
-          ...s,
-          rngSeed,
-          travel: { ...s.travel, pendingEvent: event, lastEventResult: null },
-        }
-      }
-
       const runStats = patchRunStats(s.runStats, {
         milesTraveled: s.runStats.milesTraveled + leg.miles,
       })
@@ -1261,7 +1245,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return arriveAtShakedownHub(next, rngSeed + 50)
       }
 
-      return {
+      next = {
         ...next,
         travel: {
           ...s.travel,
@@ -1271,6 +1255,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           lastEventResult: null,
         },
       }
+      return rollLegArrivalEvent(next, rngSeed + 11)
     })
   }, [afterCrewTick, endRun, maybeEndRunIfAllBailed])
 
@@ -1626,12 +1611,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (!stop) return s
     const prevCity = stopIndex === 0 ? s.homeCity : s.tour.stops[stopIndex - 1]!.city
     const seed = s.rngSeed + stopIndex * 31
-    return {
+    let next: GameState = {
       ...s,
       rngSeed: seed,
       phase: 'travel',
       activeSetlistBets: [],
-      travel: buildTravel(prevCity, stop.city, seed),
       tourStory: appendStory(
         s.tourStory,
         storyTravelStop(seed, stop.city, stop.venue),
@@ -1641,6 +1625,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       currentMarket: null,
       marketContext: null,
     }
+    return beginTravelLegs(next, prevCity, stop.city, seed)
   }, [])
 
   const goToVenueGatesAction = useCallback(() => {
@@ -1652,6 +1637,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (location === 'venue') {
         return goToVenueGates(s, applyMarket)
       }
+
+      // Free return to lot hub — no turn burn
+      if (location === 'shakedown' && s.currentLocation !== 'shakedown') {
+        const next: GameState = {
+          ...s,
+          phase: 'shakedown',
+          currentLocation: 'shakedown',
+          spotFindEvent: null,
+        }
+        return applyMarket(next, 'shakedown', s.rngSeed + 50)
+      }
+
       const atShakedown = s.phase === 'shakedown' && s.currentLocation === 'shakedown'
       const atLoc = s.phase === 'location' && s.currentLocation === location
       if (atShakedown && location === 'shakedown') return s
@@ -1721,24 +1718,36 @@ export function GameProvider({ children }: { children: ReactNode }) {
     let crew = s.crew.map((c) => ({ ...c }))
     let recapOut = recap
     let runBetsWon = s.runBetsWon
+    const betResults: ShowBetResult[] = []
     for (const bet of s.activeSetlistBets) {
       if (!attendShow || !setlist) {
-        recapOut += ` Bet “${bet.songTitle}” (${bet.slot}) void — wasn't inside to hear it.`
+        betResults.push({
+          songId: bet.songId,
+          songTitle: bet.songTitle,
+          slot: bet.slot,
+          outcome: 'void',
+          payout: 0,
+        })
         continue
       }
       const hit = resolveSetlistBet(bet, setlist)
       const pay = payoutForBet(bet, hit)
+      betResults.push({
+        songId: bet.songId,
+        songTitle: bet.songTitle,
+        slot: bet.slot,
+        outcome: hit ? 'hit' : 'miss',
+        payout: pay,
+      })
       if (hit) {
         resources = { ...resources, cash: resources.cash + pay }
         runBetsWon += 1
         crew = applyVibeDeltaToActiveCrew(crew, BET_WIN_VIBE)
-        recapOut += ` Bet “${bet.songTitle}” (${bet.slot}) HIT +$${pay}.`
       } else {
         crew = applyVibeDeltaToActiveCrew(crew, BET_LOSS_VIBE)
-        recapOut += ` Bet “${bet.songTitle}” (${bet.slot}) missed.`
       }
     }
-    return { resources, recapOut, runBetsWon, crew }
+    return { resources, recapOut, runBetsWon, crew, betResults }
   }
 
   const finishShow = useCallback(() => {
@@ -1756,7 +1765,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
       let recap = ticketsOk
         ? showRecapLine('made_it', s.rngSeed, { venue: stop.venue })
         : showRecapLine('chaos_gate', s.rngSeed, { venue: stop.venue })
-      const { resources, recapOut, runBetsWon, crew: crewAfterBets } = resolveBets(s, setlist, recap)
+      const flavor = showRecapFlavor(s.rngSeed + 11)
+      if (flavor) recap = `${recap} ${flavor}`
+      const { resources, recapOut, runBetsWon, crew: crewAfterBets, betResults } = resolveBets(
+        s,
+        setlist,
+        recap,
+      )
       let finalResources = resources
       if (ticketsOk) {
         finalResources = {
@@ -1776,6 +1791,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         resources: finalResources,
         lastSetlist: setlist,
         postShowRecap: recapOut,
+        lastShowBetResults: betResults,
         missShowHustleEvent: null,
         runStats,
         runBetsWon,
@@ -1796,11 +1812,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const seed = s.rngSeed + 37
       const hustle = rollMissShowHustleEvent(seed, s.crew)
       let recap = showRecapLine('missed', seed, { venue: stop?.venue ?? 'the show' })
+      const flavor = showRecapFlavor(seed + 19)
+      if (flavor) recap = `${recap} ${flavor}`
       const {
         resources: afterBets,
         recapOut,
         runBetsWon,
         crew: crewAfterBets,
+        betResults,
       } = resolveBets(s, null, recap, { attendShow: false })
       let resources = afterBets
       const resourcesBeforeHustle = { ...resources }
@@ -1824,6 +1843,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         resources,
         rngSeed: seed,
         postShowRecap: recapOut,
+        lastShowBetResults: betResults,
         runStats,
         runBetsWon,
         missShowHustleEvent: hustleEvent,
@@ -1933,6 +1953,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       startRunAfterCrewSave: false,
       lastSetlist: null,
       postShowRecap: '',
+      lastShowBetResults: [],
       postShowShakedownEvent: null,
       shakedownLotEvent: null,
       spotFindEvent: null,
@@ -1983,6 +2004,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const hotelCrash = useCallback(() => {
     setState((s) => {
       if (!s.tour || s.currentLocation !== 'hotel') return s
+      if (s.turnsUntilShow <= 0) return s
       const cost = BALANCE.resources.hotelCrashCost
       if (s.resources.cash < cost) return s
 
@@ -1993,11 +2015,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const rngSeed = s.rngSeed + 13
       const feedback = consumeFeedback('hotel_crash', 'Crew', rngSeed, { cost })
 
-      return finalizeCrewCare(
+      let next = finalizeCrewCare(
         {
           ...s,
           resources: resourcesAfter,
           rngSeed,
+          turnsUntilShow: Math.max(0, s.turnsUntilShow - 1),
         },
         crew,
         feedback,
@@ -2008,6 +2031,47 @@ export function GameProvider({ children }: { children: ReactNode }) {
           crewAfter: crew,
         },
       )
+      if (needsVenueGates(next)) {
+        next = goToVenueGates(next, applyMarket)
+      }
+      return next
+    })
+  }, [finalizeCrewCare])
+
+  const friendsCrash = useCallback(() => {
+    setState((s) => {
+      if (!s.tour || s.currentLocation !== 'friends_house') return s
+      if (s.turnsUntilShow <= 0) return s
+      const cost = BALANCE.resources.friendsCrashCost
+      if (s.resources.cash < cost) return s
+
+      const resourcesBefore = { ...s.resources }
+      const crewBefore = s.crew.map((c) => ({ ...c }))
+      const resourcesAfter = { ...s.resources, cash: s.resources.cash - cost }
+      const crew = applyFriendsCrashToCrew(s.crew.map((c) => ({ ...c })))
+      const rngSeed = s.rngSeed + 17
+      const feedback = consumeFeedback('friends_crash', 'Crew', rngSeed, { cost })
+
+      let next = finalizeCrewCare(
+        {
+          ...s,
+          resources: resourcesAfter,
+          rngSeed,
+          turnsUntilShow: Math.max(0, s.turnsUntilShow - 1),
+        },
+        crew,
+        feedback,
+        {
+          resourcesBefore,
+          resourcesAfter,
+          crewBefore,
+          crewAfter: crew,
+        },
+      )
+      if (needsVenueGates(next)) {
+        next = goToVenueGates(next, applyMarket)
+      }
+      return next
     })
   }, [finalizeCrewCare])
 
@@ -2053,6 +2117,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       takeDayJobStipend,
       adjustResources,
       hotelCrash,
+      friendsCrash,
       clearLastOutcome,
     }),
     [
@@ -2096,6 +2161,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       takeDayJobStipend,
       adjustResources,
       hotelCrash,
+      friendsCrash,
       clearLastOutcome,
     ],
   )

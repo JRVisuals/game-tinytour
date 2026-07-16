@@ -4,6 +4,8 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --game-header-h: calc(3.5rem + env(safe-area-inset-top, 0px));
+  --game-footer-h: calc(3.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 html {
@@ -17,10 +19,6 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   background-color: transparent !important;
-  position: relative;
-  overflow-x: hidden;
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
 }
 
 /* Fixed animated lot glow — sits behind the app (Mantine body bg was hiding this) */
@@ -140,11 +138,165 @@ body {
 }
 
 #root {
-  min-height: 100vh;
-  min-height: 100dvh;
   position: relative;
   z-index: 1;
+  min-height: 100dvh;
   background: transparent;
+}
+
+/* Permanent play chrome — shell pinned; only main scrolls */
+html.game-chrome-lock {
+  overflow: hidden;
+  height: 100%;
+}
+
+html.game-chrome-lock body {
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+html.game-chrome-lock #root {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.game-shell {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+}
+
+.game-shell-header {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  background-color: #0f1613;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 220;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.game-shell-header-inner {
+  height: 3.5rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.game-shell-header-logo {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.game-shell-header-actions {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 58%;
+}
+
+.phase-badge {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: clamp(3.5rem, 24vw, 6.5rem);
+}
+
+.game-shell-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  z-index: 1;
+  box-sizing: border-box;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.game-shell-main .mantine-Container-root {
+  width: 100%;
+  max-width: 100%;
+  padding-left: clamp(0.5rem, 3vw, 1rem);
+  padding-right: clamp(0.5rem, 3vw, 1rem);
+}
+
+.game-shell--tabs .game-shell-main {
+  padding-bottom: var(--game-footer-h);
+}
+
+.game-shell-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 3.5rem;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  background-color: #0f1613;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 220;
+  display: flex;
+  align-items: stretch;
+}
+
+.game-shell-footer .mantine-Group-root,
+.game-shell-tab-bar {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+.game-shell-tab-bar .mantine-Button-root {
+  min-height: 2.75rem;
+  min-width: 0;
+  padding-inline: clamp(0.2rem, 1.5vw, 0.5rem);
+  font-size: clamp(0.625rem, 2.6vw, 0.75rem);
+  letter-spacing: 0.02em;
+}
+
+.game-shell-tab-bar .mantine-Button-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.version-badge {
+  position: fixed;
+  right: max(12px, env(safe-area-inset-right, 0px));
+  color: #1b4332;
+  z-index: 220;
+  pointer-events: none;
+}
+
+.game-shell--tabs .version-badge {
+  bottom: calc(var(--game-footer-h) + 4px);
+}
+
+.game-shell:not(.game-shell--tabs) .version-badge {
+  bottom: max(8px, env(safe-area-inset-bottom, 0px));
 }
 
 /* Title + shell — keep content below mobile browser chrome */
@@ -153,19 +305,10 @@ body {
   min-height: 100dvh;
   padding-top: max(env(safe-area-inset-top, 0px), 1.25rem);
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 1rem);
+  padding-left: max(env(safe-area-inset-left, 0px), 0.75rem);
+  padding-right: max(env(safe-area-inset-right, 0px), 0.75rem);
 }
 
-.mantine-AppShell-header {
-  padding-top: env(safe-area-inset-top, 0px);
-  height: calc(var(--app-shell-header-height, 3.5rem) + env(safe-area-inset-top, 0px)) !important;
-}
-
-.mantine-AppShell-footer {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  height: calc(var(--app-shell-footer-height, 3.5rem) + env(safe-area-inset-bottom, 0px)) !important;
-}
-
-/* Monospace logo — center the block, preserve character alignment */
 .ascii-logo-scroll {
   overflow-x: auto;
   text-align: center;
@@ -187,19 +330,70 @@ body {
 .ascii-header-pre {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     monospace;
-  font-size: 5.5px;
+  font-size: 5px;
   line-height: 1.05;
   letter-spacing: 0;
   color: var(--mantine-color-teal-3);
   white-space: pre;
   margin: 0;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 @media (min-width: 400px) {
   .ascii-header-pre {
-    font-size: 6.5px;
+    font-size: 6px;
   }
+
+  .game-shell-header-actions {
+    max-width: 65%;
+  }
+
+  .phase-badge {
+    max-width: 7.5rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .game-shell-header-inner {
+    padding-inline: 0.5rem !important;
+  }
+
+  .ascii-header-pre {
+    font-size: 4px;
+    line-height: 1;
+  }
+
+  .shuffle-home-btn__long {
+    display: none;
+  }
+
+  .shuffle-home-btn__short {
+    display: inline;
+  }
+}
+
+@media (max-width: 480px) {
+  .status-line-top {
+    flex-wrap: wrap !important;
+    row-gap: 0.35rem;
+  }
+
+  .status-line-trail {
+    flex: 1 1 100%;
+    max-width: 100%;
+    justify-content: flex-end;
+  }
+
+  .tour-map-strip {
+    flex: 1 1 auto;
+    max-width: 100%;
+  }
+}
+
+.shuffle-home-btn__short {
+  display: none;
 }
 
 .tab-panel-header .mantine-Text-root:first-of-type {
@@ -222,24 +416,90 @@ body {
   border-color: rgba(140, 70, 180, 0.45);
 }
 
-.mantine-AppShell-header {
-  background-color: #0f1613 !important;
-  backdrop-filter: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.mantine-AppShell-footer {
-  background-color: #0f1613 !important;
-  backdrop-filter: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-}
-
 .play-chrome-status {
+  position: sticky;
+  top: 0;
+  z-index: 150;
   flex-shrink: 0;
 }
 
-.mantine-AppShell-footer .mantine-Group-root {
+.status-line-trail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 58%;
+}
+
+.tour-map-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.tour-map-strip__dots {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tour-map-strip__stop {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   flex-shrink: 0;
+}
+
+.tour-map-strip__hint {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tab nudge — glow pulse when hustle or crew needs you */
+.tab-bar-attention.mantine-Button-root {
+  animation: tab-attention-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes tab-attention-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 160, 60, 0.55),
+      0 0 8px rgba(255, 140, 40, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(255, 190, 90, 0.95),
+      0 0 18px rgba(255, 150, 50, 0.65);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-bar-attention.mantine-Button-root {
+    animation: none;
+    box-shadow:
+      0 0 0 2px rgba(255, 160, 60, 0.85),
+      0 0 10px rgba(255, 140, 40, 0.45);
+  }
 }
 
 /* Clearer click targets on the dark lot UI */
@@ -313,6 +573,17 @@ body {
   }
 }
 
+.mantine-Tooltip-tooltip {
+  background-color: rgba(11, 15, 17, 0.75) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--mantine-color-gray-1);
+}
+
+.mantine-Tooltip-arrow {
+  background-color: rgba(11, 15, 17, 0.75) !important;
+}
+
 .outcome-toast {
   position: fixed;
   top: 50%;
@@ -329,8 +600,9 @@ body {
 }
 
 .outcome-toast-alert.mantine-Alert-root {
-  background-color: #3a2f0a !important;
-  border: 1px solid #6b5520;
+  background-color: rgba(58, 47, 10, 0.75) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(107, 85, 32, 0.65);
   color: #e8c84a !important;
 }
 
@@ -339,8 +611,9 @@ body {
 }
 
 .outcome-toast-alert--error.mantine-Alert-root {
-  background-color: #3a120c !important;
-  border-color: #7a3020;
+  background-color: rgba(58, 18, 12, 0.75) !important;
+  backdrop-filter: blur(10px);
+  border-color: rgba(122, 48, 32, 0.65);
   color: #f5c4b8 !important;
 }
 

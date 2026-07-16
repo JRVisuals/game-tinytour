@@ -114,7 +114,7 @@ export function intelTipResult(
 }
 
 export function consumeFeedback(
-  item: 'eat' | 'drink' | 'substances' | 'rest' | 'hotel_crash',
+  item: 'eat' | 'drink' | 'substances' | 'rest' | 'hotel_crash' | 'friends_crash',
   name: string,
   seed: number,
   vars?: Record<string, string | number>,
@@ -126,6 +126,7 @@ export function consumeFeedback(
     substances: `${name} consumed substances.`,
     rest: 'Crew rested.',
     hotel_crash: 'Hotel crash — crew restored.',
+    friends_crash: 'Couch crash — partial rest.',
   }
   return pickText(pool, seed, fallbacks[item], { name, ...vars })
 }
@@ -149,6 +150,12 @@ export function showRecapLine(
 ): string {
   const pool = COPY.travelOutcomes.show[key]
   return pickText(pool, seed, '', vars)
+}
+
+export function showRecapFlavor(seed: number): string {
+  const pool = COPY.travelOutcomes.show.flavor
+  if (!pool?.length) return ''
+  return pickText(pool, seed, '')
 }
 
 export function runEndLine(key: 'shuffle' | 'all_bailed', seed: number): string {

@@ -16,7 +16,7 @@ Bottom tabs — **Scene · Hustle · Crew · Journal**
 
 | Tab | Contents |
 |-----|----------|
-| **Scene** | Art, phase actions, location nav, persistent scene beats (`SceneBeatAlert`) |
+| **Scene** | Art, phase actions, location nav, one persistent beat (`SceneBeatSlot`) |
 | **Hustle** | Markets, setlist bets, Clown Juice deals — enabled on lot or roadside pull-over only |
 | **Crew** | Compact accordion rows (sticker + status chip → expand for meters/care) |
 | **Journal** | Run stats (in tour) + tour story log |
@@ -73,20 +73,19 @@ Bottom tabs — **Scene · Hustle · Crew · Journal**
 
 - Status line density — current chrome is fine
 - Progressive market disclosure — not pursuing for now
+- **Single-beat Scene** — one `SceneBeatSlot` per screen (`beat.ts` priority); minimap foreshadow via `tourForeshadow` on `TourMapStrip`
 
 ### Up next (discuss then build)
 
-- **Phase-trimmed Scene UI** — fewer stacked alerts/cards per phase (OT-style one beat + verbs); talk through per-phase before coding
+- **Phase-trimmed Scene UI** — OT-style one line + 2–4 verbs per phase; talk through per-phase before coding
 
 ### Nice-to-have backlog
 
-- Single-alert rule on Scene (lot event + spot find + quiet lot still can stack)
 - Journal badge when new tour-log entry
 - Contextual collapsed crew action (`[Feed]` on HUNGRY row)
 - Vehicle stash mechanic (still stub text on shakedown)
 - Career stats snippet in Journal (title STATS menu keeps full grid)
 - ASCII header size tuning on small phones
-- Land `feature/crew-compact-ui` → main
 
 ## Glossary
 

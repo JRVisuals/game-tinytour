@@ -16,7 +16,7 @@ export function MarketPanel({
   prices,
   stock,
   flavor,
-  contextLabel,
+  contextLabel: _contextLabel,
   showTickets,
   showBalloons,
 }: MarketPanelProps) {
@@ -38,7 +38,7 @@ export function MarketPanel({
   return (
     <Paper withBorder p="sm" mt="sm">
       <Text fw={600} mb="xs">
-        Market — {contextLabel}
+        Market
       </Text>
       {flavor && (
         <Text size="xs" c="dimmed" mb="xs">

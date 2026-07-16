@@ -2,6 +2,7 @@ import { Badge, Group, Paper, Stack, Text } from '@mantine/core'
 import { TourMapStrip } from './TourMapStrip'
 import { RESOURCE_EMOJI } from '../game/resources'
 import { isLotTurnPhase, showtimeTurnsLabel } from '../game/showtime'
+import { tourForeshadow } from '../game/scene/foreshadow'
 import { useGame } from '../game/GameContext'
 
 const RESOURCE_KEYS = ['cash', 'food', 'beer', 'drugs', 'tickets', 'gas'] as const
@@ -13,11 +14,12 @@ export function StatusLine() {
   const stop = tour?.stops[tour.currentStopIndex]
   const { resources } = state
   const showTurns = isLotTurnPhase(state.phase)
+  const foreshadow = tourForeshadow(state)
 
   return (
     <Paper withBorder p="sm" className="solid-panel play-chrome-status" mb={0}>
       <Stack gap={6}>
-        <Group justify="space-between" align="center" wrap="nowrap" gap="sm">
+        <Group justify="space-between" align="center" wrap="nowrap" gap="sm" className="status-line-top">
           <Text
             size="md"
             fw={700}
@@ -33,7 +35,7 @@ export function StatusLine() {
               'On tour'
             )}
           </Text>
-          <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
+          <div className="status-line-trail">
             {showTurns && (
               <Badge
                 size="lg"
@@ -43,8 +45,10 @@ export function StatusLine() {
                 {showtimeTurnsLabel(state.turnsUntilShow)}
               </Badge>
             )}
-            {tour && tour.stops.length > 0 && <TourMapStrip tour={tour} />}
-          </Group>
+            {tour && tour.stops.length > 0 && (
+              <TourMapStrip tour={tour} hint={foreshadow} />
+            )}
+          </div>
         </Group>
         {showTurns && state.turnsUntilShow > 0 && (
           <Text size="xs" c="dimmed">

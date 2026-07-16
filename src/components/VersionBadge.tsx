@@ -6,12 +6,7 @@ export function VersionBadge() {
     <Text
       size="xs"
       fw={600}
-      style={{
-        position: 'fixed',
-        bottom: 'max(8px, env(safe-area-inset-bottom))',
-        right: 12,
-        color: '#1b4332',
-      }}
+      className="version-badge"
     >
       v{VERSION}
     </Text>

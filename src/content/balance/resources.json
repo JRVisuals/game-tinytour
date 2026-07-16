@@ -4,5 +4,6 @@
   "startingBeer": 2,
   "vehicleCost": 80,
   "vehicleGas": 8,
-  "hotelCrashCost": 40
+  "hotelCrashCost": 40,
+  "friendsCrashCost": 20
 }

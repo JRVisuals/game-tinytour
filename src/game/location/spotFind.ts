@@ -21,7 +21,7 @@ export interface SpotFindEvent {
 }
 
 export function rollSpotFindEvent(location: LocationId, seed: number): SpotFindEvent | null {
-  if (location !== 'park' && location !== 'shakedown') return null
+  if (location === 'venue') return null
   if (Math.abs(seed) % 100 >= S.chancePercent) return null
 
   const pool = templates.filter((e) => e.locations.includes(location))

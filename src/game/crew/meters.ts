@@ -551,6 +551,29 @@ export function applyHotelCrashToCrew<T extends CrewMeterFields & { wookFlu?: bo
   )
 }
 
+function healHalfwayToMax(value: number): number {
+  return Math.round((value + METER_MAX) / 2)
+}
+
+/** Couch crash — half hotel reset; wook flu stays */
+export function applyFriendsCrashToCrew<T extends CrewMeterFields & { wookFlu?: boolean }>(
+  crew: T[],
+): T[] {
+  return crew.map((m) =>
+    m.bailed
+      ? m
+      : {
+          ...m,
+          hunger: healHalfwayToMax(m.hunger),
+          thirst: healHalfwayToMax(m.thirst),
+          health: healHalfwayToMax(m.health),
+          vibe: healHalfwayToMax(m.vibe),
+          stoned: Math.round(m.stoned / 2),
+          roughTurns: 0,
+        },
+  )
+}
+
 export function applyBurnGasCruiseToCrew<T extends CrewMeterFields>(crew: T[]): T[] {
   const vibe = BALANCE.travel.burnGas.vibe
   return crew.map((m) =>

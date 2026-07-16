@@ -1,4 +1,5 @@
 import type { GameState } from '../../game/types'
+import { playLocationLabel } from '../scene/labels'
 import { isClownJuiceMafia } from '../../game/shakedown/events'
 
 const LOT_HUSTLE_PHASES = new Set<GameState['phase']>([
@@ -60,6 +61,11 @@ export function hustleTabActive(state: GameState): boolean {
     showSetlistBets(state) ||
     hasClownJuiceMafia(state)
   )
+}
+
+export function hustleLocationLabel(state: GameState): string | null {
+  if (!isHustleContext(state)) return null
+  return playLocationLabel(state)
 }
 
 export function hustleContextBlurb(state: GameState): string {
