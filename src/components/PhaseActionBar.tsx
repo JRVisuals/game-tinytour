@@ -91,14 +91,13 @@ export function PhaseActionBar({
         <Group px="sm" py={6} gap="xs" wrap="wrap">
           <Button
             color="blue"
-            className={canAct ? 'action-bar-btn' : undefined}
             disabled={!canAct}
             onClick={advanceTravelLeg}
           >
             Keep rolling
           </Button>
           {roadside && (
-            <Button size="sm" color="blue" variant="light" onClick={visitRoadside}>
+            <Button size="sm" color="blue" variant="light" className="action-bar-btn" onClick={visitRoadside}>
               Pull over — {ROADSIDE_LABELS[roadside]}
             </Button>
           )}
