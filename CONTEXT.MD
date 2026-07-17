@@ -125,7 +125,10 @@ Travel action tooltips / help text:
 
 - Journal badge when new tour-log entry
 - Contextual collapsed crew action (`[Feed]` on HUNGRY row)
-- Vehicle stash mechanic (still stub text on shakedown) — consider stashing balloons (heat/cop risk) or hard drugs (separate from substances, harsher dealing threshold) as stashable items; stashed items could bypass on-person check during pulled-over OR be catastrophic if vehicle searched
+- Vehicle stash mechanic (still stub text on shakedown):
+  - Stashable items: balloons (fragile — heat pops, cops notice tank/tubes), hard drugs (separate resource from substances, harsher dealing threshold)
+  - Pulled-over w/ vehicle: adds a "search the car?" branch — stashed items bypass on-person check but are catastrophic if found
+  - Secret compartment upgrade: one-time cost (e.g. $150) at a location (mechanic, truck stop) — reduces vehicle search find-chance significantly or negates it entirely; flag on SavedCrew/resources so it persists across runs; could be a shakedown or roadside action
 - Career stats snippet in Journal (title STATS menu keeps full grid)
 - ASCII header size tuning on small phones
 
