@@ -98,14 +98,14 @@ export function PhaseActionBar({
             Keep rolling
           </Button>
           {roadside && (
-            <Button size="sm" variant="light" onClick={visitRoadside}>
+            <Button size="sm" color="blue" variant="light" onClick={visitRoadside}>
               Pull over — {ROADSIDE_LABELS[roadside]}
             </Button>
           )}
-          <Button size="sm" variant="light" disabled={!canAct} onClick={() => travelAction('rest')}>
+          <Button size="sm" color="blue" variant="light" disabled={!canAct} onClick={() => travelAction('rest')}>
             Rest
           </Button>
-          <Button size="sm" variant="light" disabled={!canAct} onClick={() => travelAction('hitch')}>
+          <Button size="sm" color="blue" variant="light" disabled={!canAct} onClick={() => travelAction('hitch')}>
             Hitch
           </Button>
           <Button
