@@ -130,6 +130,17 @@
         "They saw through the story. Cuffs. Court date. Tour over.",
         "Lie failed. Badge won. HR is hiring."
       ],
+      "dealing_busted": [
+        "That's not personal use and everyone in the car knows it. Cuffs. Court date. Tour over.",
+        "Five bags and a scale energy. They didn't even need to ask. Tour over.",
+        "You looked like the supply chain. Hard to argue. Tour over.",
+        "Officer's seen this before. You've seen better days. Cuffs. Tour over."
+      ],
+      "dealing_drugs_gone": [
+        "That's not a personal stash. All of it confiscated. Massive fine. Lucky you're not in cuffs.",
+        "They counted. You lost count. All gone, plus a fine you'll feel for two stops.",
+        "Five-plus is not a vibe you can explain. Everything confiscated."
+      ],
       "lie_drugs_gone": [
         "The lie almost worked. They found the stash anyway. Fine + empty pockets.",
         "Almost talked your way out. Almost."

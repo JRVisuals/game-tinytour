@@ -121,8 +121,17 @@ export interface PulledOverBranch {
   fineBelow?: number
 }
 
+export interface DrugRiskTier {
+  minDrugs: number
+  maxDrugs?: number
+  rollMalus: number
+  label: string
+  alwaysDrugsGone?: boolean
+}
+
 export interface PulledOverBalance {
   rollMod: number
+  drugRiskTiers: DrugRiskTier[]
   wasted: { lie: PulledOverBranch; truth: PulledOverBranch }
   sober: { lie: PulledOverBranch; truth: PulledOverBranch }
 }
