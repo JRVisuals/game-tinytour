@@ -620,7 +620,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       next = {
         ...next,
-        travel: { ...s.travel, currentLegIndex: nextIndex, pendingEvent: null, atRoadside: false, lastEventResult: null },
+        travel: { ...s.travel, currentLegIndex: nextIndex, pendingEvent: null, atRoadside: false, lastEventResult: null, introFlavor: null },
       }
       return rollLegArrivalEvent(next, rngSeed + 11)
     })

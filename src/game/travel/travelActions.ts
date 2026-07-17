@@ -170,7 +170,7 @@ export function resolveTravelAction(s: GameState, action: TravelAction): GameSta
 
       next = {
         ...next,
-        travel: { ...s.travel, currentLegIndex: newIndex, atRoadside: false, lastEventResult: message },
+        travel: { ...s.travel, currentLegIndex: newIndex, atRoadside: false, lastEventResult: message, introFlavor: null },
       }
       return { ...rollLegArrivalEvent(next, rngSeed + 13), ...setOutcome(s, message, snap) }
     }
