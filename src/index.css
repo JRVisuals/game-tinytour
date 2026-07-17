@@ -468,6 +468,25 @@ html.game-chrome-lock #root {
   animation: title-start-pulse 2s ease-in-out infinite;
 }
 
+/* Action bar primary button — blue pulse, distinct from teal tab/title pulse */
+.action-bar-btn.mantine-Button-root {
+  animation: action-bar-pulse 2s ease-in-out infinite;
+}
+
+@keyframes action-bar-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(76, 145, 255, 0.45),
+      0 0 10px rgba(76, 145, 255, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(76, 145, 255, 0.85),
+      0 0 22px rgba(76, 145, 255, 0.45);
+  }
+}
+
 @keyframes tab-attention-pulse {
   0%,
   100% {
@@ -509,6 +528,13 @@ html.game-chrome-lock #root {
     box-shadow:
       0 0 0 2px rgba(32, 201, 151, 0.85),
       0 0 12px rgba(32, 201, 151, 0.4);
+  }
+
+  .action-bar-btn.mantine-Button-root {
+    animation: none;
+    box-shadow:
+      0 0 0 2px rgba(76, 145, 255, 0.85),
+      0 0 12px rgba(76, 145, 255, 0.4);
   }
 }
 

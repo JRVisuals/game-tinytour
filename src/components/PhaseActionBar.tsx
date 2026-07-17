@@ -47,8 +47,8 @@ export function PhaseActionBar({
         <Group px="sm" py={6} gap="xs">
           <Button
             size="sm"
-            color="teal"
-            className={venueOk ? 'title-start-btn' : undefined}
+            color="blue"
+            className={venueOk ? 'action-bar-btn' : undefined}
             disabled={!venueOk}
             onClick={() => { goToVenueGates(); onSwitchToScene() }}
           >
@@ -80,7 +80,7 @@ export function PhaseActionBar({
       return (
         <div className="phase-action-bar">
           <Group px="sm" py={6} gap="xs">
-            <Button size="sm" color="teal" onClick={leaveRoadside}>Back on the road</Button>
+            <Button size="sm" color="blue" onClick={leaveRoadside}>Back on the road</Button>
           </Group>
         </div>
       )
@@ -90,8 +90,8 @@ export function PhaseActionBar({
       <div className="phase-action-bar">
         <Group px="sm" py={6} gap="xs" wrap="wrap">
           <Button
-            color="teal"
-            className={canAct ? 'title-start-btn' : undefined}
+            color="blue"
+            className={canAct ? 'action-bar-btn' : undefined}
             disabled={!canAct}
             onClick={advanceTravelLeg}
           >
@@ -118,7 +118,7 @@ export function PhaseActionBar({
           </Button>
           {state.resources.hasVehicle && (
             <Button
-              size="sm" variant="light" color="teal"
+              size="sm" variant="light" color="blue"
               disabled={!canBurnGas}
               title={`Cruise up to 2 legs (~${BALANCE.travel.burnGas.gas} gas) — skips road events, sometimes scores a beer.`}
               onClick={() => travelAction('burn_gas')}
@@ -137,8 +137,8 @@ export function PhaseActionBar({
       <div className="phase-action-bar">
         <Group px="sm" py={6} gap="xs">
           <Button
-            color="teal"
-            className={venueOk ? 'title-start-btn' : undefined}
+            color="blue"
+            className={venueOk ? 'action-bar-btn' : undefined}
             disabled={!venueOk}
             onClick={goToVenueGates}
             title={!venueOk ? (gateMsg ?? undefined) : undefined}
@@ -156,8 +156,8 @@ export function PhaseActionBar({
       <div className="phase-action-bar">
         <Group px="sm" py={6} gap="xs">
           <Button
-            color="teal"
-            className={venueOk ? 'title-start-btn' : undefined}
+            color="blue"
+            className={venueOk ? 'action-bar-btn' : undefined}
             disabled={!venueOk || active.length === 0}
             onClick={enterShow}
           >
@@ -174,7 +174,7 @@ export function PhaseActionBar({
       <div className="phase-action-bar">
         <Group px="sm" py={6} gap="xs">
           {venueOk && hasTickets && (
-            <Button color="teal" className="title-start-btn" onClick={finishShow}>
+            <Button color="blue" className="action-bar-btn" onClick={finishShow}>
               Walk in with tickets
             </Button>
           )}
@@ -194,7 +194,7 @@ export function PhaseActionBar({
     return (
       <div className="phase-action-bar">
         <Group px="sm" py={6} gap="xs">
-          <Button color="teal" onClick={enterPostShowShakedown}>After-show shakedown</Button>
+          <Button color="blue" onClick={enterPostShowShakedown}>After-show shakedown</Button>
         </Group>
       </div>
     )
@@ -205,7 +205,7 @@ export function PhaseActionBar({
     return (
       <div className="phase-action-bar">
         <Group px="sm" py={6} gap="xs">
-          <Button color="teal" className="title-start-btn" onClick={prepNextLeg}>Hit the road</Button>
+          <Button color="blue" className="action-bar-btn" onClick={prepNextLeg}>Hit the road</Button>
         </Group>
       </div>
     )
