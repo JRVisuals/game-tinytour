@@ -272,6 +272,8 @@ export interface GameState {
   shakedownLotEvent: SceneLotEvent | null
   /** Rare cash find when visiting park or shakedown */
   spotFindEvent: SceneLotEvent | null
+  /** Action IDs used this location visit — cleared on location change */
+  usedLocationActions: string[]
   /** Lot hustle when you skip the show */
   missShowHustleEvent: SceneLotEvent | null
   rngSeed: number

@@ -166,7 +166,9 @@
         "id": "join_circle",
         "label": "Join the circle",
         "cost": {},
-        "effect": {}
+        "effect": { "beer": 1 },
+        "burnsTurn": true,
+        "once": true
       }
     ],
     "diner": [
@@ -174,15 +176,27 @@
         "id": "order_meal",
         "label": "Order a meal ($15)",
         "cost": { "cash": 15 },
-        "effect": { "food": 3 }
+        "effect": { "food": 3 },
+        "burnsTurn": true,
+        "once": true
       }
     ],
     "record_store": [
       {
         "id": "dig_bins",
-        "label": "Dig the bins",
-        "cost": {},
-        "effect": {}
+        "label": "Dig the bins ($5)",
+        "cost": { "cash": 5 },
+        "effect": { "cash": 10 },
+        "burnsTurn": true,
+        "once": true
+      },
+      {
+        "id": "celo",
+        "label": "Play celó ($10 ante)",
+        "cost": { "cash": 10 },
+        "effect": { "cash": 10 },
+        "burnsTurn": false,
+        "once": false
       }
     ]
   }

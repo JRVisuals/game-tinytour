@@ -87,17 +87,22 @@ export function LocationScreen() {
       {locationActions.length > 0 && (
         <Stack gap="xs">
           <Text fw={500} size="sm">Things to do</Text>
-          {locationActions.map((action) => (
-            <Button
-              key={action.id}
-              color="yellow"
-              variant="light"
-              disabled={!canAffordAction(action, state.resources)}
-              onClick={() => performLocationAction(action.id)}
-            >
-              {action.label}
-            </Button>
-          ))}
+          {locationActions.map((action) => {
+            const used = action.once && state.usedLocationActions.includes(action.id)
+            const disabled = used || !canAffordAction(action, state.resources)
+            return (
+              <Button
+                key={action.id}
+                color="yellow"
+                variant="light"
+                disabled={disabled}
+                onClick={() => performLocationAction(action.id)}
+                title={used ? 'Already done here' : undefined}
+              >
+                {action.label}{used ? ' ✓' : ''}
+              </Button>
+            )
+          })}
         </Stack>
       )}
       <LocationNav

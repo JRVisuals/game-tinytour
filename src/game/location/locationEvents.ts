@@ -16,6 +16,8 @@ interface LocationActionDef {
   label: string
   cost: Partial<Record<string, number>>
   effect: Partial<Record<string, number>>
+  burnsTurn: boolean
+  once: boolean
 }
 
 // Cast the JSON to a shape we can work with
@@ -38,6 +40,8 @@ export interface LocationAction {
   label: string
   cost: Partial<Record<keyof Resources, number>>
   effect: Partial<Record<keyof Resources, number>>
+  burnsTurn: boolean
+  once: boolean
 }
 
 // Keep backward-compat alias used by GameState field name
@@ -124,7 +128,29 @@ export function getLocationActions(location: LocationId): LocationAction[] {
     label: d.label,
     cost: d.cost as Partial<Record<keyof Resources, number>>,
     effect: d.effect as Partial<Record<keyof Resources, number>>,
+    burnsTurn: d.burnsTurn ?? true,
+    once: d.once ?? true,
   }))
+}
+
+export function applyLocationActionEffects(
+  resources: Resources,
+  action: LocationAction,
+): Resources {
+  let next = { ...resources }
+  // Deduct costs
+  for (const [key, amount] of Object.entries(action.cost) as [keyof Resources, number][]) {
+    if (key === 'hasVehicle' || typeof amount !== 'number') continue
+    const cur = next[key]
+    if (typeof cur === 'number') next = { ...next, [key]: Math.max(0, cur - amount) }
+  }
+  // Apply effects
+  for (const [key, delta] of Object.entries(action.effect) as [keyof Resources, number][]) {
+    if (key === 'hasVehicle' || typeof delta !== 'number') continue
+    const cur = next[key]
+    if (typeof cur === 'number') next = { ...next, [key]: Math.max(0, cur + delta) }
+  }
+  return next
 }
 
 export function canAffordAction(

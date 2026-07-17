@@ -104,6 +104,7 @@ import {
   applyLocationEventOnVisit,
   getLocationActions,
   canAffordAction,
+  applyLocationActionEffects,
   type LocationAction,
 } from './location/locationEvents'
 import { goToVenueGates, needsVenueGates } from './venueGates'
@@ -246,6 +247,7 @@ function createInitialState(): GameState {
     postShowShakedownEvent: null,
     shakedownLotEvent: null,
     spotFindEvent: null,
+    usedLocationActions: [],
     missShowHustleEvent: null,
     rngSeed: Date.now() % 100000,
     runStats: emptyRunStats(),
@@ -304,6 +306,7 @@ function arriveAtShakedownHub(
     marketCopChase: null,
     shakedownLotEvent: rolled,
     spotFindEvent: null,
+    usedLocationActions: [],
     resources,
     crewAlert: null,
   }
@@ -598,6 +601,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       postShowShakedownEvent: null,
       shakedownLotEvent: null,
       spotFindEvent: null,
+    usedLocationActions: [],
       missShowHustleEvent: null,
       runRecapMessage: '',
       dayJobStipend: null,
@@ -1687,6 +1691,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           phase: 'shakedown',
           currentLocation: 'shakedown',
           spotFindEvent: null,
+    usedLocationActions: [],
         }
         return applyMarket(next, 'shakedown', s.rngSeed + 50)
       }
@@ -1700,6 +1705,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ...s,
         currentLocation: location,
         spotFindEvent: null,
+    usedLocationActions: [],
         phase: (location === 'shakedown' ? 'shakedown' : 'location') as PhaseId,
         turnsUntilShow: Math.max(0, s.turnsUntilShow - 1),
         tourStory: appendStory(
@@ -1734,6 +1740,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         phase: 'shakedown',
         currentLocation: 'shakedown',
         spotFindEvent: null,
+    usedLocationActions: [],
       }
       return applyMarket(next, 'shakedown', s.rngSeed + 50)
     })
@@ -2001,6 +2008,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           postShowShakedownEvent: null,
           shakedownLotEvent: null,
           spotFindEvent: null,
+    usedLocationActions: [],
           missShowHustleEvent: null,
           currentMarket: null,
           currentMarketStock: null,
@@ -2032,6 +2040,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       postShowShakedownEvent: null,
       shakedownLotEvent: null,
       spotFindEvent: null,
+    usedLocationActions: [],
       missShowHustleEvent: null,
       runRecapMessage: '',
       dayJobStipend: null,
@@ -2059,44 +2068,57 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const actions = getLocationActions(s.currentLocation)
       const action: LocationAction | undefined = actions.find((a) => a.id === actionId)
       if (!action) return s
+      // Enforce once-per-visit
+      if (action.once && s.usedLocationActions.includes(actionId)) return s
       if (!canAffordAction(action, s.resources)) return s
 
-      // Apply cost
+      // dig_bins: 50% chance of $10–30 bonus, 50% flavor only (overrides JSON effect)
       let resources = { ...s.resources }
-      for (const [key, amount] of Object.entries(action.cost) as [keyof Resources, number][]) {
-        if (key === 'hasVehicle' || typeof amount !== 'number') continue
-        const cur = resources[key]
-        if (typeof cur === 'number') resources = { ...resources, [key]: Math.max(0, cur - amount) }
-      }
-
-      // dig_bins: 50% chance of $10–30 cash find, 50% flavor only
       if (actionId === 'dig_bins') {
+        // Deduct cost first
+        resources = applyLocationActionEffects(resources, { ...action, effect: {} })
         const lucky = Math.abs(s.rngSeed + 13) % 2 === 0
-        if (lucky) {
-          const amount = 10 + (Math.abs(s.rngSeed + 31) % 3) * 10
-          resources = { ...resources, cash: resources.cash + amount }
-          return {
-            ...s,
-            resources,
-            ...setOutcome(s, `Dug the bins — found $${amount} tucked in a sleeve`),
-          }
+        const bonus = lucky ? 10 + (Math.abs(s.rngSeed + 31) % 3) * 10 : 0
+        resources = { ...resources, cash: resources.cash + bonus }
+        const msg = lucky
+          ? `Dug the bins — found $${bonus} tucked in a sleeve`
+          : 'Dug the bins — nothing but good vibes'
+        return {
+          ...s,
+          resources,
+          usedLocationActions: action.once ? [...s.usedLocationActions, actionId] : s.usedLocationActions,
+          turnsUntilShow: action.burnsTurn ? Math.max(0, s.turnsUntilShow - 1) : s.turnsUntilShow,
+          ...setOutcome(s, msg),
         }
-        return { ...s, resources, ...setOutcome(s, 'Dug the bins — nothing but good vibes') }
       }
 
-      // Apply effect
-      for (const [key, amount] of Object.entries(action.effect) as [keyof Resources, number][]) {
-        if (key === 'hasVehicle' || typeof amount !== 'number') continue
-        const cur = resources[key]
-        if (typeof cur === 'number') resources = { ...resources, [key]: Math.max(0, cur + amount) }
+      // celo: 50% double, 50% lose ante
+      if (actionId === 'celo') {
+        const win = Math.abs(s.rngSeed + actionId.length + s.resources.cash) % 2 === 0
+        resources = applyLocationActionEffects(resources, { ...action, effect: win ? { cash: action.cost.cash ?? 10 } : {} })
+        const msg = win ? `Celó — winner! +$${action.cost.cash ?? 10}` : 'Celó — snake eyes. Lost the ante.'
+        return {
+          ...s,
+          resources,
+          usedLocationActions: action.once ? [...s.usedLocationActions, actionId] : s.usedLocationActions,
+          turnsUntilShow: action.burnsTurn ? Math.max(0, s.turnsUntilShow - 1) : s.turnsUntilShow,
+          ...setOutcome(s, msg),
+        }
       }
 
+      resources = applyLocationActionEffects(resources, action)
       const flavorMap: Partial<Record<string, string>> = {
-        join_circle: 'Joined the circle — good hang',
+        join_circle: 'Joined the circle — scored a beer',
         order_meal: 'Ordered a meal — +3 food',
       }
       const flavor = flavorMap[actionId] ?? action.label
-      return { ...s, resources, ...setOutcome(s, flavor) }
+      return {
+        ...s,
+        resources,
+        usedLocationActions: action.once ? [...s.usedLocationActions, actionId] : s.usedLocationActions,
+        turnsUntilShow: action.burnsTurn ? Math.max(0, s.turnsUntilShow - 1) : s.turnsUntilShow,
+        ...setOutcome(s, flavor),
+      }
     })
   }, [])
 
