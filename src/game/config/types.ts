@@ -14,6 +14,7 @@ export interface CrewMetersBalance {
   consumeDrugsVibe: number
   consumeDrugsStoned: number
   consumeDrugsHealth: number
+  consumeDrugsHunger: number
   showVibe: number
   betWinVibe: number
   betLossVibe: number

@@ -16,6 +16,7 @@ export const DRINK_HEALTH = C.drinkHealth
 export const CONSUME_DRUGS_VIBE = C.consumeDrugsVibe
 export const CONSUME_DRUGS_STONED = C.consumeDrugsStoned
 export const CONSUME_DRUGS_HEALTH = C.consumeDrugsHealth
+export const CONSUME_DRUGS_HUNGER = C.consumeDrugsHunger
 export const SHOW_VIBE = C.showVibe
 export const BET_WIN_VIBE = C.betWinVibe
 export const BET_LOSS_VIBE = C.betLossVibe
@@ -452,6 +453,7 @@ export function applySubstancesToMember<T extends CrewMeterFields>(m: T): T {
     vibe: adjustMeter(m.vibe, CONSUME_DRUGS_VIBE),
     stoned: adjustMeter(m.stoned, CONSUME_DRUGS_STONED),
     health: adjustMeter(m.health, CONSUME_DRUGS_HEALTH),
+    hunger: adjustMeter(m.hunger, CONSUME_DRUGS_HUNGER),
     roughTurns: 0,
   }
 }
