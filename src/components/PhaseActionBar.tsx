@@ -1,7 +1,8 @@
 import { Button, Group } from '@mantine/core'
 import { activeCrew, canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
-import { ROADSIDE_LABELS } from '../game/travel/legs'
+import { BALANCE } from '../game/config'
+import { ROADSIDE_LABELS, pushThroughCost } from '../game/travel/legs'
 import { isLotTurnPhase } from '../game/showtime'
 
 /**
@@ -18,6 +19,7 @@ export function PhaseActionBar({
   const {
     state,
     advanceTravelLeg,
+    travelAction,
     goToVenueGates,
     enterShow,
     missShow,
@@ -65,6 +67,14 @@ export function PhaseActionBar({
     const event = travel.pendingEvent
     const leg = travel.legs[travel.currentLegIndex]
     const roadside = leg?.roadside
+    const canAct = active.length > 0
+    const pushCost = !event && !travel.atRoadside ? pushThroughCost(travel, state.resources.hasVehicle) : null
+    const canPush = canAct && pushCost != null && pushCost.legs > 0
+      && state.resources.food >= pushCost.food
+      && (!state.resources.hasVehicle || state.resources.gas >= pushCost.gas)
+    const canBurnGas = canAct && state.resources.hasVehicle && state.resources.gas > 0
+      && !event && !travel.atRoadside && travel.currentLegIndex < travel.legs.length
+      && state.resources.gas >= BALANCE.travel.burnGas.gas
 
     if (travel.atRoadside) {
       return (
@@ -78,11 +88,11 @@ export function PhaseActionBar({
     if (event) return <div className="phase-action-bar phase-action-bar--empty" />
     return (
       <div className="phase-action-bar">
-        <Group px="sm" py={6} gap="xs">
+        <Group px="sm" py={6} gap="xs" wrap="wrap">
           <Button
             color="teal"
-            className={active.length > 0 ? 'title-start-btn' : undefined}
-            disabled={active.length === 0}
+            className={canAct ? 'title-start-btn' : undefined}
+            disabled={!canAct}
             onClick={advanceTravelLeg}
           >
             Keep rolling
@@ -90,6 +100,30 @@ export function PhaseActionBar({
           {roadside && (
             <Button size="sm" variant="light" onClick={visitRoadside}>
               Pull over — {ROADSIDE_LABELS[roadside]}
+            </Button>
+          )}
+          <Button size="sm" variant="light" disabled={!canAct} onClick={() => travelAction('rest')}>
+            Rest
+          </Button>
+          <Button size="sm" variant="light" disabled={!canAct} onClick={() => travelAction('hitch')}>
+            Hitch
+          </Button>
+          <Button
+            size="sm" variant="light" color="orange"
+            disabled={!canPush}
+            title={pushCost && pushCost.legs > 0 ? `Finish drive (${pushCost.legs} leg${pushCost.legs === 1 ? '' : 's'}, ~${pushCost.miles} mi) — costs ${pushCost.food} food${pushCost.gas > 0 ? `, ${pushCost.gas} gas` : ''}. Hard on crew.` : undefined}
+            onClick={() => travelAction('push_through')}
+          >
+            Push through
+          </Button>
+          {state.resources.hasVehicle && (
+            <Button
+              size="sm" variant="light" color="teal"
+              disabled={!canBurnGas}
+              title={`Cruise up to 2 legs (~${BALANCE.travel.burnGas.gas} gas) — skips road events, sometimes scores a beer.`}
+              onClick={() => travelAction('burn_gas')}
+            >
+              Burn gas
             </Button>
           )}
         </Group>

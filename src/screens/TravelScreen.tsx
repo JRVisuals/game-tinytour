@@ -1,20 +1,11 @@
 import { Alert, Button, Group, Stack, Text } from '@mantine/core'
 import { SceneCrewNudge } from '../components/SceneCrewNudge'
-import { BALANCE } from '../game/config'
 import { activeCrew } from '../game/crew/meters'
-import {
-  ROADSIDE_COPY,
-  ROADSIDE_LABELS,
-  pushThroughCost,
-} from '../game/travel/legs'
+import { ROADSIDE_COPY, ROADSIDE_LABELS } from '../game/travel/legs'
 import { useGame } from '../game/GameContext'
 
 export function TravelScreen() {
-  const {
-    state,
-    travelAction,
-    resolveTravelEvent,
-  } = useGame()
+  const { state, resolveTravelEvent } = useGame()
 
   const tour = state.tour
   const travel = state.travel
@@ -26,34 +17,9 @@ export function TravelScreen() {
 
   const leg = travel.legs[travel.currentLegIndex]
   const event = travel.pendingEvent
-  const activeCount = activeCrew(state.crew).length
-  const canAct = activeCount > 0
-  const pushCost =
-    travel && !travel.pendingEvent && !travel.atRoadside
-      ? pushThroughCost(travel, state.resources.hasVehicle)
-      : null
-  const canPush =
-    canAct &&
-    pushCost != null &&
-    pushCost.legs > 0 &&
-    state.resources.food >= pushCost.food &&
-    (!state.resources.hasVehicle || state.resources.gas >= pushCost.gas)
-  const canBurnGas =
-    canAct &&
-    state.resources.hasVehicle &&
-    state.resources.gas > 0 &&
-    !event &&
-    !travel.atRoadside &&
-    travel.currentLegIndex < travel.legs.length
+  const canAct = activeCrew(state.crew).length > 0
 
-  const pushTooltip = pushCost && pushCost.legs > 0
-    ? `Finish the drive (${pushCost.legs} leg${pushCost.legs === 1 ? '' : 's'}, ~${pushCost.miles} mi) — costs ${pushCost.food} food${pushCost.gas > 0 ? `, ${pushCost.gas} gas` : ''}. Hard on crew.`
-    : undefined
-  const burnGasTooltip = state.resources.hasVehicle
-    ? `Cruise up to 2 legs (~${BALANCE.travel.burnGas.gas} gas) — skips road events, sometimes scores a beer.`
-    : undefined
-
-  // At roadside
+  // At roadside — narrative only, actions are in PhaseActionBar
   if (travel.atRoadside && leg?.roadside && state.currentMarket && state.currentMarketStock) {
     return (
       <Stack>
@@ -72,17 +38,15 @@ export function TravelScreen() {
         <Text size="sm">{travel.introFlavor}</Text>
       )}
 
-      {/* Leg location name — sits above art via ScreenFrame child ordering */}
+      {/* Leg location name + flavor */}
       {leg && !event && !isIntro && (
-        <Text fw={600} size="md">{leg.label}</Text>
+        <>
+          <Text fw={600} size="md">{leg.label}</Text>
+          <Text size="sm">{leg.flavor} (~{leg.miles} mi)</Text>
+        </>
       )}
 
-      {/* Flavor text — primary narrative, full weight */}
-      {leg && !event && !isIntro && (
-        <Text size="sm">{leg.flavor} (~{leg.miles} mi)</Text>
-      )}
-
-      {/* Road event */}
+      {/* Road event card */}
       {event && (
         <Stack gap="xs" p="sm" style={{ border: '1px solid #444', borderRadius: 8 }}>
           <Text fw={600}>{event.title}</Text>
@@ -105,48 +69,12 @@ export function TravelScreen() {
         </Stack>
       )}
 
-      {/* Secondary road actions */}
-      {!event && (
-        <Stack gap="xs">
-          {!canAct && (
-            <Alert color="red" title="Tour over">
-              Everyone bailed. Shuffle on home from the header.
-            </Alert>
-          )}
-          <SceneCrewNudge inline />
-          <Text fw={500} size="sm">Road actions</Text>
-          <Group>
-            <Button size="sm" variant="light" onClick={() => travelAction('rest')} disabled={!canAct}>
-              Rest
-            </Button>
-            <Button size="sm" variant="light" onClick={() => travelAction('hitch')} disabled={!canAct}>
-              Hitch
-            </Button>
-            <Button
-              size="sm"
-              variant="light"
-              color="orange"
-              title={pushTooltip}
-              onClick={() => travelAction('push_through')}
-              disabled={!canPush}
-            >
-              Push through
-            </Button>
-            {state.resources.hasVehicle && (
-              <Button
-                size="sm"
-                variant="light"
-                color="teal"
-                title={burnGasTooltip}
-                onClick={() => travelAction('burn_gas')}
-                disabled={!canBurnGas}
-              >
-                Burn gas
-              </Button>
-            )}
-          </Group>
-        </Stack>
+      {!event && !canAct && (
+        <Alert color="red" title="Tour over">
+          Everyone bailed. Shuffle on home from the header.
+        </Alert>
       )}
+      {!event && <SceneCrewNudge inline />}
     </Stack>
   )
 }
