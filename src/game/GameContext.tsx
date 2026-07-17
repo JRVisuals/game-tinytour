@@ -7,53 +7,27 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { outcomeReport, formatResourceDeltas, type OutcomeSnapshot } from './outcome/report'
-import { payoutForBet, resolveSetlistBet } from './betting'
-import {
-  buildRunResources,
-  canStartTour,
-  dayJobStipend,
-  liquidateResources,
-} from './crew/economy'
-import { createNewSavedCrew, updateCrewRep } from './crew/rep'
+
+import { setOutcome } from './outcome/state'
+import { afterCrewTick, crewLabel, endRun, finalizeCrewCare, maybeEndRunIfAllBailed } from './run/helpers'
+import { arriveAtShakedownHub } from './shakedown/arrival'
+import { applyEventEffects } from './travel/eventEffects'
+import { resolveTravelAction, type TravelAction } from './travel/travelActions'
+import { resolveEnterShow, resolveFinishShow, resolveMissShow, resolveEnterPostShowShakedown } from './show/resolve'
+import { buildRunResources, canStartTour, dayJobStipend } from './crew/economy'
+import { createNewSavedCrew } from './crew/rep'
 import { rollMemberKit } from './crew/starterKit'
+import { appendStory, storyIntro, storyLocation, storyTravelStop } from './crew/tourStory'
 import {
-  appendStory,
-  storyEvent,
-  storyGoHome,
-  storyIntro,
-  storyLocation,
-  storyPostShow,
-  storyTourEnd,
-  storyTravelStop,
-} from './crew/tourStory'
-import {
-  activeCrew,
   allCrewBailed,
-  applyBathroomBagTasteToCrew,
   applyDrinkToMember,
   applyEatToMember,
   applyFriendsCrashToCrew,
   applyHotelCrashToCrew,
-  applyBadEventVibeToCrew,
-  applyBurnGasCruiseToCrew,
-  applyHitchVibe,
-  applyPushThroughToCrew,
-  applyRestToCrew,
   applyBalloonsToCrew,
   applyPunchToRandomCrew,
-  applyShowVibeToCrew,
   applySubstancesToMember,
-  applyVibeDeltaToActiveCrew,
-  BET_LOSS_VIBE,
-  BET_WIN_VIBE,
-  infectRandomCrewWithWookFlu,
-  applyPushThroughToWookFluMembers,
-  collectCrewWarnings,
   defaultMeters,
-  isWookFluDeath,
-  tickCrewMeters,
-  venueEntryBlockedMessage,
 } from './crew/meters'
 import { generateBand, generateCrewNames, generateTour } from './generators'
 import { DEFAULT_GENRE, type GenreId } from './generators/genre'
@@ -65,33 +39,13 @@ import { BALANCE } from './config'
 import { MAX_ACTIVE_BETS } from './betting'
 import {
   balloonBuyMessage,
-  bathroomFindResult,
   consumeFeedback,
-  pulledOverResult,
   runEndLine,
   shuffleHomeBlockedMessage,
-  showRecapLine,
-  showRecapFlavor,
-  soloEventResult,
-  travelFeedback,
-  wookFluDeathMessage,
-  wookFluResult,
 } from './travel/eventOutcomes'
-import { resolveIntelTrade, type IntelEventKey } from './travel/intelTips'
-import { resolvePulledOver } from './travel/pulledOverResolve'
 import { loadPersisted, savePersisted } from './persistence'
 import { createStartingResources } from './resources'
 import { emptyRunStats, patchRunStats, canShuffleHome } from './stats'
-import {
-  applyMissShowHustleEffects,
-  rollMissShowHustleEvent,
-} from './hustle/missShowEvents'
-import {
-  applyLotShakedownEventEffects,
-  applyShakedownEventEffects,
-  rollLotShakedownEvent,
-  rollPostShowShakedownEvent,
-} from './shakedown/events'
 import {
   canAttemptClownJuiceDeal,
   clownJuiceBuyMessage,
@@ -108,38 +62,18 @@ import {
   type LocationAction,
 } from './location/locationEvents'
 import { goToVenueGates, needsVenueGates } from './venueGates'
-import { pushThroughCost } from './travel/legs'
-import {
-  beginTravelLegs,
-  rollLegArrivalEvent,
-} from './travel/arrival'
+import { beginTravelLegs, rollLegArrivalEvent } from './travel/arrival'
 import type {
   BetSlot,
   CrewMember,
-  ShowBetResult,
   GameState,
   LocationId,
   PhaseId,
   Resources,
   SavedCrew,
   StarterTier,
-  OutcomeTone,
 } from './types'
 
-type RunOutcome = 'completed' | 'day_job' | 'shuffle'
-
-function setOutcome(
-  s: GameState,
-  flavor: string,
-  snap?: OutcomeSnapshot,
-  tone: OutcomeTone = 'default',
-): Pick<GameState, 'lastOutcome' | 'lastOutcomeTone' | 'lastOutcomeSeq'> {
-  return {
-    lastOutcome: snap ? outcomeReport(flavor, snap) : flavor,
-    lastOutcomeTone: tone,
-    lastOutcomeSeq: s.lastOutcomeSeq + 1,
-  }
-}
 
 type BetPhase = 'shakedown' | 'location' | 'show'
 
@@ -194,14 +128,7 @@ interface GameContextValue {
   performLocationAction: (actionId: string) => void
 }
 
-export type TravelAction =
-  | 'rest'
-  | 'hitch'
-  | 'push_through'
-  | 'burn_gas'
-  | 'roadside_food'
-  | 'roadside_beer'
-  | 'roadside_sell_drugs'
+export type { TravelAction }
 
 const GameContext = createContext<GameContextValue | null>(null)
 
@@ -278,10 +205,6 @@ function persistCrew(savedCrew: SavedCrew | null) {
   savePersisted({ savedCrew })
 }
 
-function crewLabel(saved: SavedCrew | null, crew: CrewMember[]): string {
-  if (saved?.members.length) return saved.members.map((m) => m.name).join(', ')
-  return crew.map((c) => c.name).join(', ')
-}
 
 function applyMarket(
   s: GameState,
@@ -291,37 +214,6 @@ function applyMarket(
   return ensureMarket(s, context, seed)
 }
 
-function arriveAtShakedownHub(
-  s: GameState,
-  seed: number,
-): GameState {
-  const rolled = rollLotShakedownEvent(seed + 7)
-  const resources = applyLotShakedownEventEffects(s.resources, rolled)
-  let next: GameState = {
-    ...s,
-    phase: 'shakedown',
-    currentLocation: 'shakedown',
-    turnsUntilShow: BALANCE.travel.turnsUntilShow,
-    travel: null,
-    marketCopChase: null,
-    shakedownLotEvent: rolled,
-    spotFindEvent: null,
-    usedLocationActions: [],
-    resources,
-    crewAlert: null,
-  }
-  next = applyMarket(next, 'shakedown', seed + 50)
-  if (rolled) {
-    next = {
-      ...next,
-      tourStory: appendStory(
-        next.tourStory,
-        storyEvent(seed, rolled.title, rolled.body),
-      ),
-    }
-  }
-  return applyLocationEventOnVisit(next, 'shakedown', seed + 19, next.tour?.band.name ?? '')
-}
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<GameState>(createInitialState)
@@ -335,136 +227,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setState((s) => (needsVenueGates(s) ? goToVenueGates(s, applyMarket) : s))
   }, [state.phase, state.currentLocation, state.turnsUntilShow, state.tour?.currentStopIndex])
 
-  const endRun = useCallback(
-    (s: GameState, outcome: RunOutcome, message: string): GameState => {
-      let savedCrew = s.savedCrew
-      let dayJobStipendOffer: number | null = null
-
-      if (savedCrew) {
-        if (outcome === 'day_job') {
-          savedCrew = updateCrewRep(
-            { ...savedCrew, hasVehicle: savedCrew.hasVehicle },
-            s.runStats,
-            s.runBetsWon,
-            0,
-            'day_job',
-            false,
-          )
-          dayJobStipendOffer = dayJobStipend(s.crew.length)
-        } else {
-          const bankAfter = liquidateResources(s.resources)
-          savedCrew = updateCrewRep(
-            {
-              ...savedCrew,
-              hasVehicle: s.resources.hasVehicle || savedCrew.hasVehicle,
-            },
-            s.runStats,
-            s.runBetsWon,
-            bankAfter,
-            outcome,
-            outcome === 'completed',
-          )
-        }
-      }
-
-      let tourStory = s.tourStory
-      if (outcome === 'shuffle') {
-        tourStory = appendStory(tourStory, storyGoHome(s.rngSeed))
-      } else if (outcome === 'completed' && s.tour) {
-        const stop = s.tour.stops[s.tour.stops.length - 1]
-        tourStory = appendStory(
-          tourStory,
-          storyTourEnd(s.rngSeed, {
-            city: stop?.city ?? 'the last town',
-            venue: stop?.venue ?? 'the final room',
-            band: s.tour.band.name,
-            crew: crewLabel(savedCrew, s.crew),
-          }),
-        )
-      }
-
-      return {
-        ...s,
-        savedCrew,
-        tourStory,
-        phase: outcome === 'day_job' ? 'day_job' : 'run_recap',
-        runRecapMessage: message,
-        dayJobStipend: dayJobStipendOffer,
-        tour: null,
-        travel: null,
-        currentMarket: null,
-        marketContext: null,
-        currentMarketStock: null,
-        marketFlavor: null,
-      }
-    },
-    [],
-  )
-
-  const afterCrewTick = useCallback(
-    (s: GameState, crew: CrewMember[], extraRecap = ''): GameState => {
-      const tickSeed = s.rngSeed + 7
-      const { crew: ticked, bailMessages, warnings, spreadMessages, neglectMessages } = tickCrewMeters(
-        crew,
-        tickSeed,
-      )
-      const alertParts = [...neglectMessages, ...spreadMessages, ...bailMessages, ...warnings]
-      let next: GameState = {
-        ...s,
-        crew: ticked,
-        rngSeed: tickSeed,
-        crewAlert: alertParts.length > 0 ? alertParts.join(' ') : null,
-      }
-      if (bailMessages.length) {
-        next = {
-          ...next,
-          postShowRecap: [next.postShowRecap, ...bailMessages].filter(Boolean).join(' '),
-        }
-      }
-      if (activeCrew(ticked).length === 0 && ticked.length > 0) {
-        if (isWookFluDeath(ticked)) {
-          return endRun(next, 'day_job', wookFluDeathMessage())
-        }
-        return endRun(
-          next,
-          'shuffle',
-          `${bailMessages.join(' ')}${extraRecap ? ` ${extraRecap}` : ''} Everyone shuffled on home.`,
-        )
-      }
-      return next
-    },
-    [endRun],
-  )
-
-  const maybeEndRunIfAllBailed = useCallback(
-    (s: GameState, message: string): GameState => {
-      if (!allCrewBailed(s.crew)) return s
-      if (isWookFluDeath(s.crew)) {
-        return endRun(s, 'day_job', wookFluDeathMessage())
-      }
-      return endRun(s, 'shuffle', message)
-    },
-    [endRun],
-  )
-
-  const finalizeCrewCare = useCallback(
-    (
-      s: GameState,
-      crew: CrewMember[],
-      flavor: string,
-      snap?: OutcomeSnapshot,
-    ): GameState => {
-      const warnings = collectCrewWarnings(crew)
-      const next: GameState = {
-        ...s,
-        crew,
-        crewAlert: warnings.length > 0 ? warnings.join(' ') : null,
-        ...setOutcome(s,flavor, snap),
-      }
-      return maybeEndRunIfAllBailed(next, next.crewAlert ?? 'Everyone shuffled on home.')
-    },
-    [maybeEndRunIfAllBailed],
-  )
 
   const consumeCrewItem = useCallback(
     (s: GameState, memberId: string, item: 'eat' | 'drink' | 'substances'): GameState => {
@@ -825,446 +587,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
     })
   }, [endRun])
 
-  const travelAction = useCallback(
-    (action: TravelAction) => {
-      setState((s) => {
-        if (!s.travel) return s
-        if (allCrewBailed(s.crew)) {
-          return maybeEndRunIfAllBailed(s, s.crewAlert ?? 'Everyone shuffled on home.')
-        }
+  const travelAction = useCallback((action: TravelAction) => {
+    setState((s) => resolveTravelAction(s, action))
+  }, [])
 
-        let resources = { ...s.resources }
-        let runStats = { ...s.runStats }
-        let crew = s.crew.map((c) => ({ ...c }))
-        const resourcesBefore = { ...s.resources }
-        const crewBefore = s.crew.map((c) => ({ ...c }))
-        let rngSeed = s.rngSeed + 1
-
-        const TA = BALANCE.travel
-        let actionFlavor = 'Road action'
-        switch (action) {
-          case 'rest':
-            crew = applyRestToCrew(crew)
-            return finalizeCrewCare(
-              { ...s, resources, runStats, crew, rngSeed },
-              crew,
-              consumeFeedback('rest', 'Crew', rngSeed),
-              {
-                resourcesBefore,
-                resourcesAfter: resources,
-                crewBefore,
-                crewAfter: crew,
-              },
-            )
-          case 'hitch':
-            runStats = patchRunStats(runStats, {
-              milesTraveled: runStats.milesTraveled + TA.hitch.miles,
-            })
-            resources = {
-              ...resources,
-              cash: Math.max(0, resources.cash + TA.hitch.cash),
-              beer:
-                resources.beer +
-                (rngSeed % 100 < TA.hitch.beerChancePercent ? 1 : 0),
-            }
-            crew = applyHitchVibe(crew)
-            actionFlavor = 'Hitch'
-            break
-          case 'push_through': {
-            if (s.travel.pendingEvent || s.travel.atRoadside) return s
-            const remaining = s.travel.legs.slice(s.travel.currentLegIndex)
-            if (remaining.length === 0) return s
-
-            const cost = pushThroughCost(s.travel, resources.hasVehicle)
-            if (resources.food < cost.food) {
-              return {
-                ...s,
-                ...setOutcome(s,
-                  travelFeedback('push_through_need_food', rngSeed, {
-                    food: cost.food,
-                    legs: cost.legs,
-                  }),
-                  undefined,
-                  'error',
-                ),
-                crewAlert: null,
-              }
-            }
-            if (resources.hasVehicle && resources.gas < cost.gas) {
-              return {
-                ...s,
-                ...setOutcome(s,
-                  travelFeedback('push_through_need_gas', rngSeed, {
-                    gas: cost.gas,
-                    legs: cost.legs,
-                  }),
-                  undefined,
-                  'error',
-                ),
-                crewAlert: null,
-              }
-            }
-
-            resources = {
-              ...resources,
-              food: resources.food - cost.food,
-              gas: resources.gas - cost.gas,
-            }
-            runStats = patchRunStats(runStats, { foodConsumed: runStats.foodConsumed + cost.food })
-
-            let next: GameState = { ...s, resources, runStats, crew, rngSeed }
-            for (const leg of remaining) {
-              runStats = patchRunStats(next.runStats, {
-                milesTraveled: next.runStats.milesTraveled + leg.miles,
-              })
-              crew = applyPushThroughToCrew(next.crew.map((c) => ({ ...c })))
-              next = afterCrewTick({ ...next, runStats, crew, rngSeed: next.rngSeed + 9 }, crew)
-              if (next.phase === 'run_recap' || allCrewBailed(next.crew)) {
-                return next
-              }
-              crew = next.crew
-              runStats = next.runStats
-              resources = next.resources
-            }
-
-            return {
-              ...arriveAtShakedownHub(
-                { ...next, resources, runStats, crew, rngSeed: next.rngSeed },
-                next.rngSeed + 50,
-              ),
-              crewAlert: null,
-              ...setOutcome(s,
-                travelFeedback('push_through_success', next.rngSeed, {
-                  legs: cost.legs,
-                  miles: cost.miles,
-                }),
-                {
-                  resourcesBefore,
-                  resourcesAfter: resources,
-                  crewBefore,
-                  crewAfter: crew,
-                },
-              ),
-            }
-          }
-          case 'burn_gas': {
-            if (s.travel.pendingEvent || s.travel.atRoadside) return s
-            if (!resources.hasVehicle || resources.gas <= 0) return s
-
-            const remaining = s.travel.legs.slice(s.travel.currentLegIndex)
-            if (remaining.length === 0) return s
-
-            const bg = TA.burnGas
-            if (resources.gas < bg.gas) return s
-
-            const legsToBurn = Math.min(bg.legsMax, remaining.length)
-            let milesBurned = 0
-            for (let i = 0; i < legsToBurn; i++) {
-              milesBurned += remaining[i]!.miles
-            }
-
-            resources = {
-              ...resources,
-              gas: resources.gas - bg.gas,
-              beer:
-                resources.beer +
-                (rngSeed % 100 < bg.beerChancePercent ? 1 : 0),
-            }
-            runStats = patchRunStats(runStats, {
-              milesTraveled: runStats.milesTraveled + milesBurned,
-            })
-            crew = applyBurnGasCruiseToCrew(crew)
-
-            const message = travelFeedback('burn_gas_success', rngSeed, {
-              legs: legsToBurn,
-              miles: milesBurned,
-            })
-            const newIndex = s.travel.currentLegIndex + legsToBurn
-            let next: GameState = {
-              ...s,
-              resources,
-              runStats,
-              crew,
-              rngSeed,
-              crewAlert: null,
-              tourStory: appendStory(
-                s.tourStory,
-                storyEvent(rngSeed, 'Cruise control', message),
-              ),
-            }
-
-            if (newIndex >= s.travel.legs.length) {
-              return {
-                ...arriveAtShakedownHub(
-                  { ...next, resources, runStats, crew, rngSeed },
-                  rngSeed + 50,
-                ),
-                ...setOutcome(s,message, {
-                  resourcesBefore,
-                  resourcesAfter: resources,
-                  crewBefore,
-                  crewAfter: crew,
-                }),
-              }
-            }
-
-            next = {
-              ...next,
-              travel: {
-                ...s.travel,
-                currentLegIndex: newIndex,
-                atRoadside: false,
-                lastEventResult: message,
-              },
-            }
-            return {
-              ...rollLegArrivalEvent(next, rngSeed + 13),
-              ...setOutcome(s,message, {
-                resourcesBefore,
-                resourcesAfter: resources,
-                crewBefore,
-                crewAfter: crew,
-              }),
-            }
-          }
-          case 'roadside_food': {
-            const rf = TA.roadsideFood
-            if (resources.cash < Math.abs(rf.cash)) return s
-            resources = {
-              ...resources,
-              cash: resources.cash + rf.cash,
-              food: resources.food + rf.food,
-            }
-            runStats = patchRunStats(runStats, { foodConsumed: runStats.foodConsumed + 1 })
-            actionFlavor = 'Roadside food'
-            break
-          }
-          case 'roadside_beer': {
-            const rb = TA.roadsideBeer
-            if (resources.cash < Math.abs(rb.cash)) return s
-            resources = {
-              ...resources,
-              cash: resources.cash + rb.cash,
-              beer: resources.beer + rb.beer,
-            }
-            runStats = patchRunStats(runStats, { beerConsumed: runStats.beerConsumed + 1 })
-            actionFlavor = 'Roadside beer'
-            break
-          }
-          case 'roadside_sell_drugs': {
-            const rd = TA.roadsideSellDrugs
-            if (resources.drugs <= 0) return s
-            resources = {
-              ...resources,
-              drugs: resources.drugs + rd.drugs,
-              cash: resources.cash + rd.cash,
-            }
-            actionFlavor = 'Roadside substance sale'
-            break
-          }
-        }
-
-        return afterCrewTick(
-          {
-            ...s,
-            resources,
-            runStats,
-            crew,
-            rngSeed,
-            crewAlert: null,
-            ...setOutcome(s,actionFlavor, {
-              resourcesBefore,
-              resourcesAfter: resources,
-              crewBefore,
-              crewAfter: crew,
-            }),
-          },
-          crew,
-        )
-      })
-    },
-    [afterCrewTick, endRun, finalizeCrewCare, maybeEndRunIfAllBailed],
-  )
-
-  const applyEventEffects = useCallback(
-    (s: GameState, event: NonNullable<GameState['travel']>['pendingEvent'], choiceId?: string) => {
+  const resolveTravelEvent = useCallback((choiceId?: string) => {
+    setState((s) => {
+      const event = s.travel?.pendingEvent
       if (!event) return s
-      const resourcesBefore = { ...s.resources }
-      const crewBefore = s.crew.map((c) => ({ ...c }))
-      let resources = { ...s.resources }
-      let runStats = { ...s.runStats }
-      let crew = s.crew.map((c) => ({ ...c }))
-      let rngSeed = s.rngSeed + 3
-      let activeSetlistBets = [...s.activeSetlistBets]
-      const FX = BALANCE.eventEffects
-      let resultMessage = soloEventResult(event.eventKey, rngSeed)
-
-      switch (event.eventKey) {
-        case 'miracle_ticket':
-          resources = { ...resources, tickets: resources.tickets + FX.miracle_ticket.tickets }
-          break
-        case 'flat_tire': {
-          const fx = FX.flat_tire
-          resources = {
-            ...resources,
-            cash: Math.max(0, resources.cash + fx.cash),
-            gas: resources.hasVehicle ? Math.max(0, resources.gas + fx.gas) : resources.gas,
-          }
-          crew = applyBadEventVibeToCrew(crew)
-          break
-        }
-        case 'robbed': {
-          const fx = FX.robbed
-          resources = {
-            ...resources,
-            cash: Math.max(0, resources.cash + fx.cash),
-            drugs: Math.max(0, resources.drugs + fx.drugs),
-          }
-          crew = applyBadEventVibeToCrew(crew)
-          break
-        }
-        case 'roadside_burger':
-          resources = { ...resources, food: resources.food + FX.roadside_burger.food }
-          break
-        case 'speeding_fine':
-          resources = { ...resources, cash: Math.max(0, resources.cash + FX.speeding_fine.cash) }
-          crew = applyBadEventVibeToCrew(crew)
-          break
-        case 'gas_station_deal': {
-          const fx = FX.gas_station_deal
-          resources = {
-            ...resources,
-            beer: resources.beer + fx.beer,
-            gas: resources.hasVehicle ? resources.gas + fx.gas : resources.gas,
-          }
-          break
-        }
-        case 'van_breakdown_minor': {
-          const fx = FX.van_breakdown_minor
-          resources = {
-            ...resources,
-            cash: Math.max(0, resources.cash + fx.cash),
-            gas: resources.hasVehicle ? Math.max(0, resources.gas + fx.gas) : resources.gas,
-          }
-          crew = applyBadEventVibeToCrew(crew)
-          break
-        }
-        case 'hitchhiker_intel':
-        case 'lot_rumor':
-        case 'encore_whisper': {
-          const tipSong = event.intelTipSongId
-            ? s.tour?.catalog.songs.find((x) => x.id === event.intelTipSongId)
-            : undefined
-          const resolved = resolveIntelTrade(
-            event.eventKey as IntelEventKey,
-            choiceId,
-            resources,
-            tipSong?.title,
-            event.intelSlot ?? 'opener',
-            rngSeed,
-          )
-          resources = resolved.resources
-          resultMessage = resolved.message
-          break
-        }
-        case 'wook_flu': {
-          const infected = infectRandomCrewWithWookFlu(crew, rngSeed)
-          crew = infected.crew
-          crew = applyBadEventVibeToCrew(crew)
-          if (choiceId === 'rest') {
-            crew = applyRestToCrew(crew)
-            resultMessage = wookFluResult('rest', rngSeed, {
-              name: infected.infectedName ?? 'the crew',
-              flare: infected.flare,
-            })
-          } else {
-            crew = applyPushThroughToWookFluMembers(crew)
-            resultMessage = wookFluResult('push', rngSeed, {
-              name: infected.infectedName ?? 'the crew',
-              flare: infected.flare,
-            })
-          }
-          break
-        }
-        case 'pulled_over': {
-          const resolved = resolvePulledOver(resources, crew, choiceId, rngSeed)
-          resources = resolved.resources
-          if (resolved.endRun) {
-            return endRun(
-              { ...s, resources, runStats, crew, rngSeed },
-              'day_job',
-              resolved.endRun.message,
-            )
-          }
-          resultMessage = pulledOverResult(
-            choiceId,
-            resolved.outcome,
-            resolved.wasted,
-            rngSeed,
-          )
-          if (resolved.outcome !== 'clean') {
-            crew = applyBadEventVibeToCrew(crew)
-          }
-          break
-        }
-        case 'bathroom_find':
-          if (choiceId === 'try_it') {
-            const bag = FX.bathroom_find.try_it
-            const laced = Math.abs(rngSeed) % 100 < bag.lacedChancePercent
-            if (laced) {
-              return endRun(
-                { ...s, resources, runStats, crew, rngSeed },
-                'day_job',
-                bathroomFindResult(choiceId, true, rngSeed),
-              )
-            }
-            resources = { ...resources, drugs: resources.drugs + bag.drugs }
-            crew = applyBathroomBagTasteToCrew(crew)
-            resultMessage = bathroomFindResult(choiceId, false, rngSeed)
-          } else {
-            resultMessage = bathroomFindResult('toss_it', false, rngSeed)
-          }
-          break
-      }
-
-      const reported = outcomeReport(resultMessage, {
-        resourcesBefore,
-        resourcesAfter: resources,
-        crewBefore,
-        crewAfter: crew,
-      })
-
-      return {
-        ...s,
-        resources,
-        runStats,
-        crew,
-        rngSeed,
-        activeSetlistBets,
-        ...setOutcome(s,reported),
-        tourStory: appendStory(
-          s.tourStory,
-          storyEvent(rngSeed, event.title, reported),
-        ),
-        travel: s.travel
-          ? { ...s.travel, pendingEvent: null, lastEventResult: reported }
-          : null,
-      }
-    },
-    [endRun],
-  )
-
-  const resolveTravelEvent = useCallback(
-    (choiceId?: string) => {
-      setState((s) => {
-        const event = s.travel?.pendingEvent
-        if (!event) return s
-        if (event.choices && !choiceId) return s
-        return applyEventEffects(s, event, choiceId)
-      })
-    },
-    [applyEventEffects],
-  )
+      if (event.choices && !choiceId) return s
+      return applyEventEffects(s, event, choiceId)
+    })
+  }, [])
 
   const advanceTravelLeg = useCallback(() => {
     setState((s) => {
@@ -1276,30 +610,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!leg) return s
 
       const rngSeed = s.rngSeed + 9
-      const runStats = patchRunStats(s.runStats, {
-        milesTraveled: s.runStats.milesTraveled + leg.miles,
-      })
-      let crew = s.crew.map((c) => ({ ...c }))
+      const runStats = patchRunStats(s.runStats, { milesTraveled: s.runStats.milesTraveled + leg.miles })
+      const crew = s.crew.map((c) => ({ ...c }))
       let next = afterCrewTick({ ...s, rngSeed, runStats, crew }, crew)
 
       const nextIndex = s.travel.currentLegIndex + 1
       if (nextIndex >= s.travel.legs.length) {
         return arriveAtShakedownHub(next, rngSeed + 50)
       }
-
       next = {
         ...next,
-        travel: {
-          ...s.travel,
-          currentLegIndex: nextIndex,
-          pendingEvent: null,
-          atRoadside: false,
-          lastEventResult: null,
-        },
+        travel: { ...s.travel, currentLegIndex: nextIndex, pendingEvent: null, atRoadside: false, lastEventResult: null },
       }
       return rollLegArrivalEvent(next, rngSeed + 11)
     })
-  }, [afterCrewTick, endRun, maybeEndRunIfAllBailed])
+  }, [])
 
   const visitRoadside = useCallback(() => {
     setState((s) => {
@@ -1746,247 +1071,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const enterShow = useCallback(() => {
-    setState((s) => {
-      const blocked = venueEntryBlockedMessage(s.crew)
-      if (blocked) {
-        return { ...s, crewAlert: blocked, ...setOutcome(s,blocked, undefined, 'error') }
-      }
-      return { ...s, phase: 'show', currentLocation: 'venue', crewAlert: null }
-    })
-  }, [])
-
-  const resolveBets = (
-    s: GameState,
-    setlist: GameState['lastSetlist'],
-    recap: string,
-    options?: { attendShow?: boolean },
-  ) => {
-    const attendShow = options?.attendShow ?? true
-    let resources = { ...s.resources }
-    let crew = s.crew.map((c) => ({ ...c }))
-    let recapOut = recap
-    let runBetsWon = s.runBetsWon
-    const betResults: ShowBetResult[] = []
-    for (const bet of s.activeSetlistBets) {
-      if (!attendShow || !setlist) {
-        betResults.push({
-          songId: bet.songId,
-          songTitle: bet.songTitle,
-          slot: bet.slot,
-          outcome: 'void',
-          payout: 0,
-        })
-        continue
-      }
-      const hit = resolveSetlistBet(bet, setlist)
-      const pay = payoutForBet(bet, hit)
-      betResults.push({
-        songId: bet.songId,
-        songTitle: bet.songTitle,
-        slot: bet.slot,
-        outcome: hit ? 'hit' : 'miss',
-        payout: pay,
-      })
-      if (hit) {
-        resources = { ...resources, cash: resources.cash + pay }
-        runBetsWon += 1
-        crew = applyVibeDeltaToActiveCrew(crew, BET_WIN_VIBE)
-      } else {
-        crew = applyVibeDeltaToActiveCrew(crew, BET_LOSS_VIBE)
-      }
-    }
-    return { resources, recapOut, runBetsWon, crew, betResults }
-  }
-
-  const finishShow = useCallback(() => {
-    setState((s) => {
-      if (!s.tour) return s
-      const blocked = venueEntryBlockedMessage(s.crew)
-      if (blocked) {
-        return { ...s, crewAlert: blocked, ...setOutcome(s,blocked, undefined, 'error') }
-      }
-      const stop = s.tour.stops[s.tour.currentStopIndex]
-      if (!stop) return s
-      const setlist = stop.plannedSetlist
-      const active = activeCrew(s.crew)
-      const ticketsOk = s.resources.tickets >= active.length
-      let recap = ticketsOk
-        ? showRecapLine('made_it', s.rngSeed, { venue: stop.venue })
-        : showRecapLine('sneak', s.rngSeed, { venue: stop.venue })
-      const flavor = showRecapFlavor(s.rngSeed + 11)
-      if (flavor) recap = `${recap} ${flavor}`
-      const { resources, recapOut, runBetsWon, crew: crewAfterBets, betResults } = resolveBets(
-        s,
-        setlist,
-        recap,
-      )
-      let finalResources = resources
-      if (ticketsOk) {
-        finalResources = {
-          ...finalResources,
-          tickets: Math.max(0, finalResources.tickets - active.length),
-        }
-      }
-      const runStats = patchRunStats(s.runStats, {
-        venuesVisited: s.runStats.venuesVisited + 1,
-        songsHeard: s.runStats.songsHeard + setlist.songs.length,
-        showsSeen: s.runStats.showsSeen + 1,
-        bandsSeen: s.runStats.bandsSeen === 0 ? 1 : s.runStats.bandsSeen,
-      })
-      const crew = ticketsOk ? applyShowVibeToCrew(crewAfterBets) : crewAfterBets
-      return {
-        ...s,
-        crew,
-        resources: finalResources,
-        lastSetlist: setlist,
-        postShowRecap: recapOut,
-        lastShowBetResults: betResults,
-        missShowHustleEvent: null,
-        runStats,
-        runBetsWon,
-        tourStory: appendStory(
-          s.tourStory,
-          storyPostShow(s.rngSeed, stop.venue, setlist.songs.length, false),
-        ),
-        activeSetlistBets: [],
-        phase: 'post_show',
-      }
-    })
-  }, [])
-
-  const missShow = useCallback(() => {
-    setState((s) => {
-      if (!s.tour) return s
-      const stop = s.tour.stops[s.tour.currentStopIndex]
-      const seed = s.rngSeed + 37
-      const hustle = rollMissShowHustleEvent(seed, s.crew)
-      let recap = showRecapLine('missed', seed, { venue: stop?.venue ?? 'the show' })
-      const flavor = showRecapFlavor(seed + 19)
-      if (flavor) recap = `${recap} ${flavor}`
-      const {
-        resources: afterBets,
-        recapOut,
-        runBetsWon,
-        crew: crewAfterBets,
-        betResults,
-      } = resolveBets(s, null, recap, { attendShow: false })
-      let resources = afterBets
-      const resourcesBeforeHustle = { ...resources }
-      if (hustle) {
-        resources = applyMissShowHustleEffects(resources, hustle.id)
-      }
-      const hustleLoot = hustle
-        ? formatResourceDeltas(resourcesBeforeHustle, resources)
-        : ''
-      const runStats = patchRunStats(s.runStats, { showsMissed: s.runStats.showsMissed + 1 })
-      const hustleEvent = hustle
-        ? { ...hustle, loot: hustleLoot || undefined }
-        : null
-      const hustleSnap: OutcomeSnapshot | undefined =
-        hustle && hustleLoot
-          ? { resourcesBefore: resourcesBeforeHustle, resourcesAfter: resources }
-          : undefined
-      return {
-        ...s,
-        crew: crewAfterBets,
-        resources,
-        rngSeed: seed,
-        postShowRecap: recapOut,
-        lastShowBetResults: betResults,
-        runStats,
-        runBetsWon,
-        missShowHustleEvent: hustleEvent,
-        postShowShakedownEvent: null,
-        tourStory: hustle
-          ? appendStory(
-              appendStory(
-                s.tourStory,
-                storyPostShow(seed, stop?.venue ?? 'the show', 0, true),
-              ),
-              storyEvent(seed + 3, hustle.title, hustle.body),
-            )
-          : appendStory(
-              s.tourStory,
-              storyPostShow(seed, stop?.venue ?? 'the show', 0, true),
-            ),
-        activeSetlistBets: [],
-        lastSetlist: null,
-        phase: 'post_show',
-        ...(hustleSnap ? setOutcome(s, hustle!.title, hustleSnap) : {}),
-      }
-    })
-  }, [])
-
-  const enterPostShowShakedown = useCallback(() => {
-    setState((s) => {
-      if (!s.tour) return s
-      const seed = s.rngSeed + 41
-      const genre = (s.genre ?? DEFAULT_GENRE) as GenreId
-      const djBand = generateBand(seed + 99, genre).name
-      const rolled = rollPostShowShakedownEvent(seed, djBand)
-      const resourcesBefore = { ...s.resources }
-      let resources = { ...s.resources }
-      if (rolled) {
-        resources = applyShakedownEventEffects(resources, rolled.id)
-      }
-      const loot = rolled ? formatResourceDeltas(resourcesBefore, resources) : ''
-      const event = rolled ? { ...rolled, loot: loot || undefined } : null
-      const snap: OutcomeSnapshot | undefined =
-        rolled && loot
-          ? { resourcesBefore, resourcesAfter: resources }
-          : undefined
-
-      // After-party DJ set counts as a show + unique band
-      let runStats = s.runStats
-      if (rolled?.id.startsWith('after_party')) {
-        runStats = patchRunStats(runStats, {
-          showsSeen: runStats.showsSeen + 1,
-          bandsSeen: runStats.bandsSeen + 1,
-        })
-      }
-
-      // Crew effects from after-party: health drain on all active, then wook flu if applicable
-      let crew = s.crew
-      let crewAlert = s.crewAlert
-      if (rolled?.healthDrain) {
-        const drain = rolled.healthDrain
-        crew = crew.map((m) =>
-          m.bailed ? m : { ...m, health: Math.max(0, m.health - drain) },
-        )
-      }
-      if (rolled?.crewEffect === 'wook_flu') {
-        const infected = infectRandomCrewWithWookFlu(crew, seed + 13)
-        crew = infected.crew
-        if (infected.infectedName) {
-          crewAlert = `${infected.infectedName} caught something at the after-party. Wook flu.`
-        }
-      }
-
-      let next = applyMarket(
-        { ...s, crew, resources, rngSeed: seed },
-        'post_show_shakedown',
-        seed + 7,
-      )
-      return {
-        ...next,
-        crew,
-        crewAlert,
-        runStats,
-        phase: 'post_show_shakedown',
-        postShowShakedownEvent: event,
-        tourStory: appendStory(
-          next.tourStory,
-          storyEvent(
-            seed,
-            rolled?.title ?? 'After-show shakedown',
-            rolled?.body ?? 'The lot exhales. Time to hustle before the highway.',
-          ),
-        ),
-        ...(snap ? setOutcome(s, rolled!.title, snap) : {}),
-      }
-    })
-  }, [])
+  const enterShow = useCallback(() => { setState(resolveEnterShow) }, [])
+  const finishShow = useCallback(() => { setState(resolveFinishShow) }, [])
+  const missShow = useCallback(() => { setState(resolveMissShow) }, [])
+  const enterPostShowShakedown = useCallback(() => { setState(resolveEnterPostShowShakedown) }, [])
 
   const prepNextLeg = useCallback(() => {
     setState((s) => {
