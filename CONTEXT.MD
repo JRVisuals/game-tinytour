@@ -113,6 +113,14 @@ Substances give vibe+stoned. Balloons (via CJM) give vibe up, health down. Only 
 
 - **Phase-trimmed Scene UI** — OT-style one line + 2–4 verbs per phase; talk through per-phase before coding
 
+### Instructions page copy (collected, not yet built)
+
+Travel action tooltips / help text:
+- **Rest** — take a breather; small crew meter restore
+- **Hitch** — thumb it; chance of a free leg, chance of drama
+- **Push through** — finish the drive in one go (remaining legs, ~X mi) — costs food + gas. Skips roadside events. Hard on crew.
+- **Burn gas** — cruise up to 2 legs (~1 gas) — skips road events, boosts vibe, sometimes scores a beer.
+
 ### Nice-to-have backlog
 
 - Journal badge when new tour-log entry

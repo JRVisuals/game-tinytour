@@ -46,6 +46,13 @@ export function TravelScreen() {
     !travel.atRoadside &&
     travel.currentLegIndex < travel.legs.length
 
+  const pushTooltip = pushCost && pushCost.legs > 0
+    ? `Finish the drive (${pushCost.legs} leg${pushCost.legs === 1 ? '' : 's'}, ~${pushCost.miles} mi) — costs ${pushCost.food} food${pushCost.gas > 0 ? `, ${pushCost.gas} gas` : ''}. Hard on crew.`
+    : undefined
+  const burnGasTooltip = state.resources.hasVehicle
+    ? `Cruise up to 2 legs (~${BALANCE.travel.burnGas.gas} gas) — skips road events, sometimes scores a beer.`
+    : undefined
+
   // At roadside
   if (travel.atRoadside && leg?.roadside && state.currentMarket && state.currentMarketStock) {
     return (
@@ -58,16 +65,14 @@ export function TravelScreen() {
 
   return (
     <Stack>
-      {/* Current leg flavor */}
+      {/* Leg location name — sits above art via ScreenFrame child ordering */}
       {leg && !event && (
-        <Stack gap={4}>
-          <Text fw={500}>
-            Leg {travel.currentLegIndex + 1} of {travel.legs.length}: {leg.label}
-          </Text>
-          <Text size="sm" c="dimmed">
-            {leg.flavor} (~{leg.miles} mi)
-          </Text>
-        </Stack>
+        <Text fw={600} size="md">{leg.label}</Text>
+      )}
+
+      {/* Flavor text — primary narrative, full weight */}
+      {leg && !event && (
+        <Text size="sm">{leg.flavor} (~{leg.miles} mi)</Text>
       )}
 
       {/* Road event */}
@@ -114,6 +119,7 @@ export function TravelScreen() {
               size="sm"
               variant="light"
               color="orange"
+              title={pushTooltip}
               onClick={() => travelAction('push_through')}
               disabled={!canPush}
             >
@@ -124,6 +130,7 @@ export function TravelScreen() {
                 size="sm"
                 variant="light"
                 color="teal"
+                title={burnGasTooltip}
                 onClick={() => travelAction('burn_gas')}
                 disabled={!canBurnGas}
               >
@@ -131,20 +138,6 @@ export function TravelScreen() {
               </Button>
             )}
           </Group>
-          {state.resources.hasVehicle && (
-            <Text size="xs" c="dimmed">
-              Burn gas: cruise up to 2 legs (~{BALANCE.travel.burnGas.gas} gas) — skips road
-              events, boosts vibe, sometimes scores a beer.
-            </Text>
-          )}
-          {pushCost && pushCost.legs > 0 && (
-            <Text size="xs" c="dimmed">
-              Push through: finish the drive ({pushCost.legs} leg{pushCost.legs === 1 ? '' : 's'}, ~
-              {pushCost.miles} mi) — costs {pushCost.food} food
-              {pushCost.gas > 0 ? `, ${pushCost.gas} gas` : ''}. Skips roadside events. Hard on
-              crew.
-            </Text>
-          )}
         </Stack>
       )}
     </Stack>
