@@ -113,6 +113,22 @@ Substances give vibe+stoned. Balloons (via CJM) give vibe up, health down. Only 
 
 - **Phase-trimmed Scene UI** — OT-style one line + 2–4 verbs per phase; talk through per-phase before coding
 
+### In-game button color system
+
+Rationalized across `PhaseActionBar`, `TourTabBar`, and all play-shell screens:
+
+| Color | Role | Examples |
+|-------|------|---------|
+| **Teal** (filled = current, subtle = nav) | Wayfinding — where you are, where you go | Tab bar active, location nav buttons, current location indicator |
+| **Blue** (filled = primary, light = secondary) | Actions — deliberate moves that advance the game | Keep rolling, Venue gates, Into the show, Buy items, Book room, Burn gas |
+| **Orange** (light) | Cost / risk / urgency — burns a resource, uncertain outcome, time pressure | Push through, Rest, Hitch, Sneak/scramble, crew alerts |
+| **Yellow** (light) | Location flavor actions — optional, situational, one at a time | Join the circle, Dig the bins, Play celó |
+| **Gray** (subtle) | Passive / neutral — opt-out or sell (receiving value) | Stay out & hustle, Sell items |
+| **Grape** | Nitrous — distinct from all other economies | Buy balloons (CJM or post-show) |
+| **Glow (`action-bar-btn`)** | "This moves the narrative forward right now" | Venue gates (when ready), Walk in with tickets, Hit the road, After-show shakedown |
+
+**Location action logic:** only one action is surfaced per visit, randomly selected from available (unused once-per-visit ones first, then repeatables). Clears on location change.
+
 ### Instructions page copy (collected, not yet built)
 
 Travel action tooltips / help text:

@@ -103,6 +103,7 @@ interface GameContextValue {
   advanceTravelLeg: () => void
   visitRoadside: () => void
   leaveRoadside: () => void
+  leaveRoadsideAndAdvance: () => void
   placeSetlistBet: (songId: string, songTitle: string, amount: number, slot: BetSlot) => void
   cancelSetlistBet: (songId: string) => void
   marketBuy: (item: 'food' | 'beer' | 'drugs' | 'tickets' | 'gas') => void
@@ -651,6 +652,41 @@ export function GameProvider({ children }: { children: ReactNode }) {
         marketContext: null,
         activeMarketKey: null,
       }
+    })
+  }, [])
+
+  // Leave roadside AND advance to the next leg in one click
+  const leaveRoadsideAndAdvance = useCallback(() => {
+    setState((s) => {
+      if (!s.travel || s.travel.pendingEvent) return s
+      if (allCrewBailed(s.crew)) {
+        return maybeEndRunIfAllBailed(s, s.crewAlert ?? 'Everyone shuffled on home.')
+      }
+      const leg = s.travel.legs[s.travel.currentLegIndex]
+      if (!leg) return s
+      // Clear roadside + market first
+      const cleared: typeof s = {
+        ...s,
+        travel: { ...s.travel, atRoadside: false },
+        currentMarket: null,
+        currentMarketStock: null,
+        marketFlavor: null,
+        marketContext: null,
+        activeMarketKey: null,
+      }
+      const rngSeed = cleared.rngSeed + 9
+      const runStats = patchRunStats(cleared.runStats, { milesTraveled: cleared.runStats.milesTraveled + leg.miles })
+      const crew = cleared.crew.map((c) => ({ ...c }))
+      let next = afterCrewTick({ ...cleared, rngSeed, runStats, crew }, crew)
+      const nextIndex = cleared.travel!.currentLegIndex + 1
+      if (nextIndex >= cleared.travel!.legs.length) {
+        return arriveAtShakedownHub(next, rngSeed + 50)
+      }
+      next = {
+        ...next,
+        travel: { ...cleared.travel!, currentLegIndex: nextIndex, pendingEvent: null, atRoadside: false, lastEventResult: null, introFlavor: null },
+      }
+      return rollLegArrivalEvent(next, rngSeed + 11)
     })
   }, [])
 
@@ -1328,6 +1364,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       advanceTravelLeg,
       visitRoadside,
       leaveRoadside,
+      leaveRoadsideAndAdvance,
       placeSetlistBet,
       cancelSetlistBet,
       marketBuy,
@@ -1372,6 +1409,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       resolveTravelEvent,
       advanceTravelLeg,
       visitRoadside,
+      leaveRoadsideAndAdvance,
       leaveRoadside,
       placeSetlistBet,
       cancelSetlistBet,

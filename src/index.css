@@ -174,6 +174,7 @@ html.game-chrome-lock #root {
   padding-right: env(safe-area-inset-right, 0px);
   background-color: #0f1613;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.55), 0 2px 6px 0 rgba(0, 0, 0, 0.35);
   z-index: 10;
 }
 
@@ -214,6 +215,7 @@ html.game-chrome-lock #root {
 }
 
 /* ── Scrollable content ── */
+/* 20px inset each side reinforces the depth illusion (header casts shadow over it) */
 .game-shell-main {
   flex: 1 1 auto;
   min-height: 0;
@@ -222,8 +224,8 @@ html.game-chrome-lock #root {
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
+  padding-left: calc(env(safe-area-inset-left, 0px) + 20px);
+  padding-right: calc(env(safe-area-inset-right, 0px) + 20px);
 }
 
 /* ── Tab bar footer ── */
@@ -250,6 +252,17 @@ html.game-chrome-lock #root {
 .phase-action-bar--empty {
   min-height: 0;
   border-top: none;
+}
+
+/* Below 700px: wrap action buttons to two lines instead of horizontal scroll */
+@media (max-width: 700px) {
+  .phase-action-bar .mantine-ScrollArea-root,
+  .phase-action-bar .mantine-ScrollArea-viewport {
+    overflow: visible !important;
+  }
+  .phase-action-bar .mantine-Group-root {
+    flex-wrap: wrap !important;
+  }
 }
 
 .game-shell-tab-bar {
@@ -406,6 +419,7 @@ html.game-chrome-lock #root {
   top: 0;
   z-index: 150;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.4), 0 1px 3px 0 rgba(0, 0, 0, 0.25);
 }
 
 .status-line-trail {

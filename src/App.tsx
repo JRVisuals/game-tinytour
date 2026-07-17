@@ -75,7 +75,7 @@ export default function App() {
   const playContent = useMemo(() => {
     switch (playTab) {
       case 'hustle':
-        return <HustleTab onBackToScene={() => setPlayTab('scene')} />
+        return <HustleTab />
       case 'crew':
         return <CrewTab onBackToScene={() => setPlayTab('scene')} />
       case 'journal':

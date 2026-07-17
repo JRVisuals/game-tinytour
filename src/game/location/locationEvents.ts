@@ -14,6 +14,7 @@ interface LocationEventTemplate {
 interface LocationActionDef {
   id: string
   label: string
+  flavorHint?: string
   cost: Partial<Record<string, number>>
   effect: Partial<Record<string, number>>
   burnsTurn: boolean
@@ -38,6 +39,7 @@ export interface LocationEvent {
 export interface LocationAction {
   id: string
   label: string
+  flavorHint?: string
   cost: Partial<Record<keyof Resources, number>>
   effect: Partial<Record<keyof Resources, number>>
   burnsTurn: boolean
@@ -126,11 +128,31 @@ export function getLocationActions(location: LocationId): LocationAction[] {
   return defs.map((d) => ({
     id: d.id,
     label: d.label,
+    flavorHint: d.flavorHint,
     cost: d.cost as Partial<Record<keyof Resources, number>>,
     effect: d.effect as Partial<Record<keyof Resources, number>>,
     burnsTurn: d.burnsTurn ?? true,
     once: d.once ?? true,
   }))
+}
+
+/**
+ * Pick one location action to surface per visit.
+ * Prefers once-per-visit actions not yet used; falls back to repeatables.
+ * Uses seed for determinism within a visit.
+ */
+export function pickLocationAction(
+  location: LocationId,
+  usedIds: string[],
+  seed: number,
+): LocationAction | null {
+  const all = getLocationActions(location)
+  if (all.length === 0) return null
+
+  const available = all.filter((a) => !(a.once && usedIds.includes(a.id)))
+  if (available.length === 0) return null
+
+  return available[Math.abs(seed) % available.length]!
 }
 
 export function applyLocationActionEffects(

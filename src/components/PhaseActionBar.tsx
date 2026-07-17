@@ -1,13 +1,17 @@
-import { Button, Group } from '@mantine/core'
+import { Button, Group, ScrollArea } from '@mantine/core'
 import { activeCrew, canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
 import { BALANCE } from '../game/config'
+import { canShowHustleMarket, marketShowTickets } from '../game/hustle/tab'
+import { pickLocationAction, canAffordAction } from '../game/location/locationEvents'
+import { LOT_DESTINATIONS } from '../game/marketCache'
 import { ROADSIDE_LABELS, pushThroughCost } from '../game/travel/legs'
 import { isLotTurnPhase } from '../game/showtime'
+import { RESOURCE_BALANCE } from '../game/resources'
 
 /**
  * Primary action buttons for the current phase — rendered above the tab bar.
- * On non-Scene tabs, shows the single most urgent action (or nothing).
+ * Context-aware: shows verbs relevant to the active tab + current phase.
  */
 export function PhaseActionBar({
   activeTab,
@@ -28,6 +32,14 @@ export function PhaseActionBar({
     prepNextLeg,
     visitRoadside,
     leaveRoadside,
+    marketBuy,
+    marketSell,
+    buyBalloons,
+    leaveRoadsideAndAdvance,
+    performLocationAction,
+    hotelCrash,
+    friendsCrash,
+    goToLocation,
   } = useGame()
 
   const phase = state.phase
@@ -37,7 +49,67 @@ export function PhaseActionBar({
   const active = activeCrew(state.crew)
   const hasTickets = state.resources.tickets >= active.length
 
-  // On non-scene tabs only show the most urgent venue action
+  // ── Hustle tab: market buy/sell buttons ──────────────────────────────────
+  if (activeTab === 'hustle' && canShowHustleMarket(state) && state.currentMarket && state.currentMarketStock) {
+    const { currentMarket: p, currentMarketStock: s, resources: r } = state
+    const chase = state.marketCopChase
+    const postShowBalloons = phase === 'post_show_shakedown'
+    const showBalloons = postShowBalloons
+    const balloonPrice = BALANCE.markets.balloons.price
+    const showTickets = marketShowTickets(state)
+
+    const outline = '0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1), -1px -1px 0 rgba(0,0,0,1)'
+    const D = <span style={{ color: 'var(--mantine-color-red-5)', textShadow: outline }}>▼</span>
+    const U = <span style={{ color: 'var(--mantine-color-green-5)', textShadow: outline }}>▲</span>
+
+    return (
+      <div className="phase-action-bar">
+        <ScrollArea scrollbarSize={4}>
+          <Group px="sm" py={6} gap="xs" wrap="nowrap">
+            {/* Quick exit — leave roadside and advance leg in one click */}
+            <Button size="xs" color="blue" onClick={leaveRoadsideAndAdvance}>
+              Keep rolling
+            </Button>
+            {showBalloons && (
+              <Button size="xs" color="grape" disabled={!!chase || r.cash < balloonPrice} onClick={() => buyBalloons()} title={`Buy balloons — $${balloonPrice}`}>
+                {D}🎈 ${balloonPrice}
+              </Button>
+            )}
+            <Button size="xs" disabled={!!chase || r.cash < p.foodBuy || s.food <= 0} onClick={() => marketBuy('food')} title={`Buy food — $${p.foodBuy}`}>
+              {D}🌮 ${p.foodBuy}
+            </Button>
+            <Button size="xs" variant="subtle" color="gray" disabled={!!chase || r.food <= 0} onClick={() => marketSell('food')} title={`Sell food — $${p.foodSell}`}>
+              {U}🌮 ${p.foodSell}
+            </Button>
+            <Button size="xs" disabled={!!chase || r.cash < p.beerBuy || s.beer <= 0} onClick={() => marketBuy('beer')} title={`Buy beer — $${p.beerBuy}`}>
+              {D}🍺 ${p.beerBuy}
+            </Button>
+            <Button size="xs" variant="subtle" color="gray" disabled={!!chase || r.beer <= 0} onClick={() => marketSell('beer')} title={`Sell beer — $${p.beerSell}`}>
+              {U}🍺 ${p.beerSell}
+            </Button>
+            <Button size="xs" disabled={!!chase || r.cash < p.drugsBuy || s.drugs <= 0} onClick={() => marketBuy('drugs')} title={`Buy substances — $${p.drugsBuy}`}>
+              {D}🍄 ${p.drugsBuy}
+            </Button>
+            <Button size="xs" variant="subtle" color="gray" disabled={!!chase || r.drugs <= 0} onClick={() => marketSell('drugs')} title={`Sell substances — $${p.drugsSell}`}>
+              {U}🍄 ${p.drugsSell}
+            </Button>
+            {showTickets && p.ticketBuy != null && (
+              <Button size="xs" disabled={!!chase || r.cash < p.ticketBuy || s.tickets <= 0} onClick={() => marketBuy('tickets')} title={`Buy ticket — $${p.ticketBuy}`}>
+                {D}🎟 ${p.ticketBuy}
+              </Button>
+            )}
+            {r.hasVehicle && p.gasBuy != null && s.gas > 0 && (
+              <Button size="xs" color="blue" disabled={!!chase || r.cash < p.gasBuy} onClick={() => marketBuy('gas')} title={`Buy gas — $${p.gasBuy}`}>
+                {D}⛽ ${p.gasBuy}
+              </Button>
+            )}
+          </Group>
+        </ScrollArea>
+      </div>
+    )
+  }
+
+  // ── Non-scene tabs: urgent venue nudge ───────────────────────────────────
   if (activeTab !== 'scene') {
     const showVenueNudge =
       isLotTurnPhase(phase) && state.turnsUntilShow <= 1 && phase !== 'show'
@@ -97,10 +169,10 @@ export function PhaseActionBar({
               Pulled over — {roadside ? ROADSIDE_LABELS[roadside] : 'roadside'}
             </Button>
           )}
-          <Button size="sm" color="blue" variant="light" disabled={!canAct} onClick={() => travelAction('rest')}>
+          <Button size="sm" color="orange" variant="light" disabled={!canAct} onClick={() => travelAction('rest')}>
             Rest
           </Button>
-          <Button size="sm" color="blue" variant="light" disabled={!canAct} onClick={() => travelAction('hitch')}>
+          <Button size="sm" color="orange" variant="light" disabled={!canAct} onClick={() => travelAction('hitch')}>
             Hitch
           </Button>
           <Button
@@ -126,39 +198,94 @@ export function PhaseActionBar({
     )
   }
 
-  // Shakedown + lot location
-  if (phase === 'shakedown' || (phase === 'location' && state.currentLocation !== 'venue')) {
+  // Shakedown + location phases — shared lot nav logic
+  if (phase === 'shakedown' || phase === 'location') {
+    const loc = state.currentLocation
+    const isVenue = loc === 'venue'
+    const noTurns = state.turnsUntilShow <= 0
+    const locationAction = (phase === 'location' && !isVenue)
+      ? pickLocationAction(loc, state.usedLocationActions, state.rngSeed)
+      : null
+    const canAffordHotel = state.resources.cash >= RESOURCE_BALANCE.hotelCrashCost
+    const canAffordFriends = state.resources.cash >= RESOURCE_BALANCE.friendsCrashCost
     return (
       <div className="phase-action-bar">
-        <Group px="sm" py={6} gap="xs">
-          <Button
-            color="blue"
-            className={venueOk ? 'action-bar-btn' : undefined}
-            disabled={!venueOk}
-            onClick={goToVenueGates}
-            title={!venueOk ? (gateMsg ?? undefined) : undefined}
-          >
-            {state.turnsUntilShow <= 0 ? 'Showtime — venue gates' : 'Venue gates'}
-          </Button>
-        </Group>
-      </div>
-    )
-  }
+        <ScrollArea scrollbarSize={4}>
+          <Group px="sm" py={6} gap="xs" wrap="nowrap">
+            {/* Nav destinations — shakedown first, then others; current loc styled as active tab */}
+            {[
+              ...LOT_DESTINATIONS.filter((d) => d.id === 'shakedown'),
+              ...LOT_DESTINATIONS.filter((d) => d.id !== 'shakedown' && d.id !== 'venue'),
+            ].map((d) => {
+              const isCurrent = d.id === loc
+              return (
+                <Button
+                  key={d.id}
+                  size="sm"
+                  variant={isCurrent ? 'filled' : 'subtle'}
+                  color={isCurrent ? 'teal' : 'gray'}
+                  disabled={!isCurrent && noTurns}
+                  style={isCurrent ? { cursor: 'default', pointerEvents: 'none' } : undefined}
+                  onClick={isCurrent ? undefined : () => goToLocation(d.id)}
+                >
+                  {d.label}
+                </Button>
+              )
+            })}
 
-  // Venue gates
-  if (phase === 'location' && state.currentLocation === 'venue') {
-    return (
-      <div className="phase-action-bar">
-        <Group px="sm" py={6} gap="xs">
-          <Button
-            color="blue"
-            className={venueOk ? 'action-bar-btn' : undefined}
-            disabled={!venueOk || active.length === 0}
-            onClick={enterShow}
-          >
-            Into the show
-          </Button>
-        </Group>
+            {/* One location action surfaced per visit */}
+            {locationAction && (() => {
+              const disabled = !canAffordAction(locationAction, state.resources)
+              return (
+                <Button
+                  key={locationAction.id}
+                  size="sm"
+                  color="yellow"
+                  variant="light"
+                  disabled={disabled}
+                  onClick={() => performLocationAction(locationAction.id)}
+                >
+                  {locationAction.label}
+                </Button>
+              )
+            })()}
+
+            {/* Hotel / friends crash */}
+            {loc === 'hotel' && (
+              <Button size="sm" color="blue" variant="light" disabled={noTurns || !canAffordHotel} onClick={hotelCrash}>
+                Book room ${RESOURCE_BALANCE.hotelCrashCost}
+              </Button>
+            )}
+            {loc === 'friends_house' && (
+              <Button size="sm" color="blue" variant="light" disabled={noTurns || !canAffordFriends} onClick={friendsCrash}>
+                Crash on couch ${RESOURCE_BALANCE.friendsCrashCost}
+              </Button>
+            )}
+
+            {/* Venue gates — only reachable from shakedown lot, always last */}
+            {isVenue && (
+              <Button
+                color="blue"
+                className={venueOk ? 'action-bar-btn' : undefined}
+                disabled={!venueOk || active.length === 0}
+                onClick={enterShow}
+              >
+                Into the show
+              </Button>
+            )}
+            {phase === 'shakedown' && (
+              <Button
+                color="blue"
+                className={venueOk ? 'action-bar-btn' : undefined}
+                disabled={!venueOk}
+                onClick={goToVenueGates}
+                title={!venueOk ? (gateMsg ?? undefined) : undefined}
+              >
+                {noTurns ? 'Showtime — venue gates' : 'Venue gates'}
+              </Button>
+            )}
+          </Group>
+        </ScrollArea>
       </div>
     )
   }
@@ -189,7 +316,7 @@ export function PhaseActionBar({
     return (
       <div className="phase-action-bar">
         <Group px="sm" py={6} gap="xs">
-          <Button color="blue" onClick={enterPostShowShakedown}>After-show shakedown</Button>
+          <Button color="blue" className="action-bar-btn" onClick={enterPostShowShakedown}>After-show shakedown</Button>
         </Group>
       </div>
     )

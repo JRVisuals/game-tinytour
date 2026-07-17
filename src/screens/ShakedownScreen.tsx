@@ -1,17 +1,13 @@
 import { Button, Group, Stack, Text } from '@mantine/core'
-import { LocationNav } from '../components/LocationNav'
 import { SceneBeatSlot } from '../components/SceneBeatSlot'
-import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
 import { RESOURCE_BALANCE } from '../game/resources'
 import { shakedownSceneBeat } from '../game/scene/beat'
 import { showtimeTurnsLabel } from '../game/showtime'
 
 export function ShakedownScreen() {
-  const { state, goToLocation, goToVenueGates, adjustResources } = useGame()
+  const { state, adjustResources } = useGame()
   const stop = state.tour?.stops[state.tour.currentStopIndex]
-  const venueOk = canEnterVenue(state.crew)
-  const gateMessage = venueEntryBlockedMessage(state.crew)
   const beat = shakedownSceneBeat(state)
 
   return (
@@ -30,9 +26,7 @@ export function ShakedownScreen() {
         <Text size="sm">Vehicle stash available (stub).</Text>
       ) : (
         <Group>
-          <Text size="sm" c="dimmed">
-            No ride yet.
-          </Text>
+          <Text size="sm" c="dimmed">No ride yet.</Text>
           <Button
             size="sm"
             variant="light"
@@ -48,17 +42,6 @@ export function ShakedownScreen() {
           </Button>
         </Group>
       )}
-      <LocationNav
-        current="shakedown"
-        turnsUntilShow={state.turnsUntilShow}
-        onGo={goToLocation}
-        primaryActions={[{
-          label: state.turnsUntilShow > 0 ? 'Venue gates' : 'Showtime — venue gates',
-          onClick: goToVenueGates,
-          disabled: !venueOk,
-          disabledReason: gateMessage ?? undefined,
-        }]}
-      />
     </Stack>
   )
 }

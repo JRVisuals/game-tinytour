@@ -165,6 +165,7 @@
       {
         "id": "join_circle",
         "label": "Join the circle",
+        "flavorHint": "Hacky sack circle's got an open spot and someone's already side-eyeing you to fill it.",
         "cost": {},
         "effect": { "beer": 1 },
         "burnsTurn": true,
@@ -175,6 +176,7 @@
       {
         "id": "order_meal",
         "label": "Order a meal ($15)",
+        "flavorHint": "Short stack special is still on the board. Your stomach has been petitioning for ten minutes.",
         "cost": { "cash": 15 },
         "effect": { "food": 3 },
         "burnsTurn": true,
@@ -185,6 +187,7 @@
       {
         "id": "dig_bins",
         "label": "Dig the bins ($5)",
+        "flavorHint": "Dollar bins haven't been touched today. Something good's probably buried in there waiting for you.",
         "cost": { "cash": 5 },
         "effect": { "cash": 10 },
         "burnsTurn": true,
@@ -193,6 +196,7 @@
       {
         "id": "celo",
         "label": "Play celó ($10 ante)",
+        "flavorHint": "Guy in the corner's running a celó game on a milk crate. Dice are out. Somebody's already up twenty.",
         "cost": { "cash": 10 },
         "effect": { "cash": 10 },
         "burnsTurn": false,
