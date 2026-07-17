@@ -46,6 +46,7 @@ export function StatusLine() {
           <Stack gap={4}>
             <Text size="xs" c="dimmed">
               {travel.origin} → {travel.destination} · Leg {travel.currentLegIndex + 1} of {travel.legs.length}
+              {(() => { const leg = travel.legs[travel.currentLegIndex]; return leg ? ` · ~${leg.miles} mi` : '' })()}
             </Text>
             {travelProgress !== null && (
               <Progress value={travelProgress} size="xs" color="teal" />
