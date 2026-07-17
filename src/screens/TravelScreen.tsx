@@ -19,12 +19,17 @@ export function TravelScreen() {
   const event = travel.pendingEvent
   const canAct = activeCrew(state.crew).length > 0
 
-  // At roadside — narrative only, actions are in PhaseActionBar
-  if (travel.atRoadside && leg?.roadside && state.currentMarket && state.currentMarketStock) {
+  // At roadside — narrative + hustle nudge
+  if (travel.atRoadside && leg?.roadside) {
     return (
       <Stack>
         <Text fw={600}>{ROADSIDE_LABELS[leg.roadside]}</Text>
-        <Text size="sm">{ROADSIDE_COPY[leg.roadside]}</Text>
+        <Text size="md">{ROADSIDE_COPY[leg.roadside]}</Text>
+        {state.currentMarket && (
+          <Text size="md" c="blue.4">
+            Vendors are set up — check the Hustle tab to buy and sell.
+          </Text>
+        )}
       </Stack>
     )
   }
