@@ -7,13 +7,15 @@ import { useGame } from '../game/GameContext'
 import { RESOURCE_BALANCE } from '../game/resources'
 import { showtimeTurnsLabel } from '../game/showtime'
 import { locationSceneBeat } from '../game/scene/beat'
+import { getLocationActions, canAffordAction } from '../game/location/locationEvents'
 
 export function LocationScreen() {
-  const { state, goToLocation, goToVenueGates, enterShow, hotelCrash, friendsCrash } = useGame()
+  const { state, goToLocation, goToVenueGates, enterShow, hotelCrash, friendsCrash, performLocationAction } = useGame()
   const loc = state.currentLocation
   const venueOk = canEnterVenue(state.crew)
   const gateMessage = venueEntryBlockedMessage(state.crew)
   const stop = state.tour?.stops[state.tour.currentStopIndex]
+  const locationActions = getLocationActions(loc)
 
   if (loc === 'shakedown') {
     return null
@@ -82,6 +84,22 @@ export function LocationScreen() {
           ? 'Each move burns a turn.'
           : 'Out of turns — head to venue gates or into the show.'}
       </Text>
+      {locationActions.length > 0 && (
+        <Stack gap="xs">
+          <Text fw={500} size="sm">Things to do</Text>
+          {locationActions.map((action) => (
+            <Button
+              key={action.id}
+              color="yellow"
+              variant="light"
+              disabled={!canAffordAction(action, state.resources)}
+              onClick={() => performLocationAction(action.id)}
+            >
+              {action.label}
+            </Button>
+          ))}
+        </Stack>
+      )}
       <LocationNav
         current={loc}
         turnsUntilShow={state.turnsUntilShow}

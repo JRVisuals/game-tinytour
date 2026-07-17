@@ -5,6 +5,7 @@ import { PhaseRouter } from './components/PhaseRouter'
 import { ShuffleOnHomeButton } from './components/ShuffleOnHomeButton'
 import { StatusLine } from './components/StatusLine'
 import { TourTabBar, type PlayTabId } from './components/TourTabBar'
+import { PhaseActionBar } from './components/PhaseActionBar'
 import { CrewActionBar } from './components/CrewActionBar'
 import { StatsActionBar } from './components/StatsActionBar'
 import { CrewTab } from './components/tabs/CrewTab'
@@ -130,6 +131,7 @@ export default function App() {
 
       {showPlayShell && (
         <footer className="game-shell-footer">
+          <PhaseActionBar activeTab={playTab} />
           <TourTabBar
             active={playTab}
             onChange={setPlayTab}

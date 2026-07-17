@@ -100,7 +100,12 @@ import {
   resolveClownJuiceDeal,
   type ClownJuiceChoice,
 } from './shakedown/clownJuice'
-import { applySpotFindOnVisit } from './location/spotFind'
+import {
+  applyLocationEventOnVisit,
+  getLocationActions,
+  canAffordAction,
+  type LocationAction,
+} from './location/locationEvents'
 import { goToVenueGates, needsVenueGates } from './venueGates'
 import { pushThroughCost } from './travel/legs'
 import {
@@ -185,6 +190,7 @@ interface GameContextValue {
   hotelCrash: () => void
   friendsCrash: () => void
   clearLastOutcome: () => void
+  performLocationAction: (actionId: string) => void
 }
 
 export type TravelAction =
@@ -311,7 +317,7 @@ function arriveAtShakedownHub(
       ),
     }
   }
-  return applySpotFindOnVisit(next, 'shakedown', seed + 19)
+  return applyLocationEventOnVisit(next, 'shakedown', seed + 19, next.tour?.band.name ?? '')
 }
 
 export function GameProvider({ children }: { children: ReactNode }) {
@@ -1706,7 +1712,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ),
       }
       next = applyMarket(next, location, s.rngSeed + location.length * 3)
-      next = applySpotFindOnVisit(next, location, s.rngSeed + location.length * 7)
+      next = applyLocationEventOnVisit(next, location, s.rngSeed + location.length * 7, next.tour?.band.name ?? '')
       next = afterCrewTick(next, next.crew)
       if (needsVenueGates(next)) {
         next = goToVenueGates(next, applyMarket)
@@ -2048,6 +2054,52 @@ export function GameProvider({ children }: { children: ReactNode }) {
     )
   }, [])
 
+  const performLocationAction = useCallback((actionId: string) => {
+    setState((s) => {
+      const actions = getLocationActions(s.currentLocation)
+      const action: LocationAction | undefined = actions.find((a) => a.id === actionId)
+      if (!action) return s
+      if (!canAffordAction(action, s.resources)) return s
+
+      // Apply cost
+      let resources = { ...s.resources }
+      for (const [key, amount] of Object.entries(action.cost) as [keyof Resources, number][]) {
+        if (key === 'hasVehicle' || typeof amount !== 'number') continue
+        const cur = resources[key]
+        if (typeof cur === 'number') resources = { ...resources, [key]: Math.max(0, cur - amount) }
+      }
+
+      // dig_bins: 50% chance of $10–30 cash find, 50% flavor only
+      if (actionId === 'dig_bins') {
+        const lucky = Math.abs(s.rngSeed + 13) % 2 === 0
+        if (lucky) {
+          const amount = 10 + (Math.abs(s.rngSeed + 31) % 3) * 10
+          resources = { ...resources, cash: resources.cash + amount }
+          return {
+            ...s,
+            resources,
+            ...setOutcome(s, `Dug the bins — found $${amount} tucked in a sleeve`),
+          }
+        }
+        return { ...s, resources, ...setOutcome(s, 'Dug the bins — nothing but good vibes') }
+      }
+
+      // Apply effect
+      for (const [key, amount] of Object.entries(action.effect) as [keyof Resources, number][]) {
+        if (key === 'hasVehicle' || typeof amount !== 'number') continue
+        const cur = resources[key]
+        if (typeof cur === 'number') resources = { ...resources, [key]: Math.max(0, cur + amount) }
+      }
+
+      const flavorMap: Partial<Record<string, string>> = {
+        join_circle: 'Joined the circle — good hang',
+        order_meal: 'Ordered a meal — +3 food',
+      }
+      const flavor = flavorMap[actionId] ?? action.label
+      return { ...s, resources, ...setOutcome(s, flavor) }
+    })
+  }, [])
+
   const takeDayJobStipend = useCallback(() => {
     setState((s) => {
       if (!s.dayJobStipend || !s.savedCrew) {
@@ -2188,6 +2240,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       hotelCrash,
       friendsCrash,
       clearLastOutcome,
+      performLocationAction,
     }),
     [
       state,
@@ -2232,6 +2285,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       hotelCrash,
       friendsCrash,
       clearLastOutcome,
+      performLocationAction,
     ],
   )
 

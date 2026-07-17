@@ -239,6 +239,19 @@ html.game-chrome-lock #root {
   z-index: 10;
 }
 
+/* ── Phase action row — sits above tab bar ── */
+.phase-action-bar {
+  background-color: #111815;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+}
+.phase-action-bar--empty {
+  min-height: 0;
+  border-top: none;
+}
+
 .game-shell-tab-bar {
   display: flex;
   width: 100%;
