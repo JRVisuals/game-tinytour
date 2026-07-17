@@ -76,15 +76,6 @@ export function PhaseActionBar({
       && !event && !travel.atRoadside && travel.currentLegIndex < travel.legs.length
       && state.resources.gas >= BALANCE.travel.burnGas.gas
 
-    if (travel.atRoadside) {
-      return (
-        <div className="phase-action-bar">
-          <Group px="sm" py={6} gap="xs">
-            <Button size="sm" color="blue" onClick={leaveRoadside}>Back on the road</Button>
-          </Group>
-        </div>
-      )
-    }
     if (event) return <div className="phase-action-bar phase-action-bar--empty" />
     return (
       <div className="phase-action-bar">
@@ -92,13 +83,18 @@ export function PhaseActionBar({
           <Button
             color="blue"
             disabled={!canAct}
-            onClick={advanceTravelLeg}
+            onClick={travel.atRoadside ? leaveRoadside : advanceTravelLeg}
           >
-            Keep rolling
+            {travel.atRoadside ? 'Back on the road' : 'Keep rolling'}
           </Button>
-          {roadside && (
+          {roadside && !travel.atRoadside && (
             <Button size="sm" color="blue" variant="light" className="action-bar-btn" onClick={visitRoadside}>
               Pull over — {ROADSIDE_LABELS[roadside]}
+            </Button>
+          )}
+          {travel.atRoadside && (
+            <Button size="sm" color="blue" variant="light" disabled>
+              Pulled over — {roadside ? ROADSIDE_LABELS[roadside] : 'roadside'}
             </Button>
           )}
           <Button size="sm" color="blue" variant="light" disabled={!canAct} onClick={() => travelAction('rest')}>
