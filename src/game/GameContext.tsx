@@ -1216,11 +1216,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // celo: 50% double, 50% lose ante
+      // celo: random ante $5-$50 (multiples of 5), 50% win, 50% lose
       if (actionId === 'celo') {
-        const win = Math.abs(s.rngSeed + actionId.length + s.resources.cash) % 2 === 0
-        resources = applyLocationActionEffects(resources, { ...action, effect: win ? { cash: action.cost.cash ?? 10 } : {} })
-        const msg = win ? `Celó — winner! +$${action.cost.cash ?? 10}` : 'Celó — snake eyes. Lost the ante.'
+        const seed = Math.abs(s.rngSeed + s.resources.cash + s.runStats.milesTraveled)
+        const ante = (1 + (seed % 10)) * 5  // 5, 10, 15 … 50
+        if (s.resources.cash < ante) return s  // can't afford this roll
+        const win = (seed + 7) % 2 === 0
+        resources = { ...resources, cash: resources.cash - ante }
+        if (win) resources = { ...resources, cash: resources.cash + ante * 2 }
+        const msg = win ? `Celó — winner! +$${ante}` : `Celó — snake eyes. Lost $${ante}.`
         return {
           ...s,
           resources,

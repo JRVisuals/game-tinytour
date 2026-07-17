@@ -708,3 +708,36 @@ html.game-chrome-lock #root {
     opacity: 0;
   }
 }
+
+/* ── Travel wipe — single diagonal bar, right-to-left, twice ── */
+.travel-wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  overflow: hidden;
+  animation: travel-wipe-anim 0.4s linear forwards;
+}
+
+/* The bar is a pseudo-element so the container can repeat the motion */
+.travel-wipe-bar {
+  position: absolute;
+  top: -20%;
+  height: 140%;
+  background: rgba(255, 255, 255, 0.22);
+  transform: skewX(-18deg);
+  right: -200px;
+}
+
+.travel-wipe-bar--1 { width: 180px; animation: travel-bar-slide 0.2s ease-in forwards; }
+.travel-wipe-bar--2 { width: 60px;  animation: travel-bar-slide 0.2s ease-in 0.2s forwards; }
+.travel-wipe-bar--3 { width: 36px;  animation: travel-bar-slide 0.16s ease-in 0.32s forwards; }
+
+@keyframes travel-bar-slide {
+  0%   { right: -80px;  opacity: 1; }
+  100% { right: calc(100% + 80px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .travel-wipe { display: none; }
+}

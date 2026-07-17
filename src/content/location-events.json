@@ -195,7 +195,7 @@
       },
       {
         "id": "celo",
-        "label": "Play celó ($10 ante)",
+        "label": "Play celó",
         "flavorHint": "Guy in the corner's running a celó game on a milk crate. Dice are out. Somebody's already up twenty.",
         "cost": { "cash": 10 },
         "effect": { "cash": 10 },

@@ -66,8 +66,8 @@ export function PhaseActionBar({
       <div className="phase-action-bar">
         <ScrollArea scrollbarSize={4}>
           <Group px="sm" py={6} gap="xs" wrap="nowrap">
-            {/* Quick exit — leave roadside and advance leg in one click */}
-            <Button size="xs" color="blue" onClick={leaveRoadsideAndAdvance}>
+            {/* Quick exit — leave roadside, advance leg, switch to scene */}
+            <Button size="xs" color="blue" onClick={() => { leaveRoadsideAndAdvance(); onSwitchToScene() }}>
               Keep rolling
             </Button>
             {showBalloons && (

@@ -43,6 +43,7 @@ function hasUrgentCrew(state: GameState): boolean {
 export default function App() {
   const { state } = useGame()
   const [playTab, setPlayTab] = useState<PlayTabId>('scene')
+  const [wiping, setWiping] = useState(false)
   const showPlayShell = !MENU_PHASES.has(state.phase)
   const showCrewShell = state.phase === 'crew'
   const showStatsShell = state.phase === 'stats'
@@ -50,6 +51,7 @@ export default function App() {
   const hustleEnabled = isHustleContext(state)
   const crewAlert = hasUrgentCrew(state) || !!state.crewAlert
   const wasAtRoadside = useRef(false)
+  const prevLegIndex = useRef<number | null>(null)
 
   useEffect(() => {
     if (playTab === 'hustle' && !hustleEnabled) setPlayTab('scene')
@@ -62,6 +64,17 @@ export default function App() {
     }
     wasAtRoadside.current = atRoadside
   }, [state.phase, state.travel?.atRoadside])
+
+  // Trigger wipe animation on leg advance
+  useEffect(() => {
+    const idx = state.travel?.currentLegIndex ?? null
+    if (idx !== null && prevLegIndex.current !== null && idx !== prevLegIndex.current) {
+      setWiping(true)
+      const t = setTimeout(() => setWiping(false), 500)
+      return () => clearTimeout(t)
+    }
+    prevLegIndex.current = idx
+  }, [state.travel?.currentLegIndex])
 
   useEffect(() => {
     if (state.phase === 'title') {
@@ -154,6 +167,13 @@ export default function App() {
 
       {showPlayShell && <OutcomeToast />}
       <VersionBadge />
+      {wiping && (
+        <div className="travel-wipe" aria-hidden>
+          <div className="travel-wipe-bar travel-wipe-bar--1" />
+          <div className="travel-wipe-bar travel-wipe-bar--2" />
+          <div className="travel-wipe-bar travel-wipe-bar--3" />
+        </div>
+      )}
     </div>
   )
 }
