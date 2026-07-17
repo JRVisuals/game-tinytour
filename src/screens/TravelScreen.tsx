@@ -43,6 +43,11 @@ export function TravelScreen() {
         <>
           <Text fw={600} size="md">{leg.label}</Text>
           <Text size="sm">{leg.flavor} (~{leg.miles} mi)</Text>
+          {leg.roadside && (
+            <Text size="sm" c="dimmed">
+              There's a {ROADSIDE_LABELS[leg.roadside].toLowerCase()} on this stretch if you want to pull over.
+            </Text>
+          )}
         </>
       )}
 
