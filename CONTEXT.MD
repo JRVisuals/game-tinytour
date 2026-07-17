@@ -125,7 +125,7 @@ Travel action tooltips / help text:
 
 - Journal badge when new tour-log entry
 - Contextual collapsed crew action (`[Feed]` on HUNGRY row)
-- Vehicle stash mechanic (still stub text on shakedown)
+- Vehicle stash mechanic (still stub text on shakedown) — consider stashing balloons (heat/cop risk) or hard drugs (separate from substances, harsher dealing threshold) as stashable items; stashed items could bypass on-person check during pulled-over OR be catastrophic if vehicle searched
 - Career stats snippet in Journal (title STATS menu keeps full grid)
 - ASCII header size tuning on small phones
 
