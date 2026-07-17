@@ -1,8 +1,14 @@
+import { COPY, pickText } from '../config'
 import type { GameState, TravelState } from '../types'
 import { maybeRollTravelEvent, type TravelEventContext } from './events'
 import { generateTravelLegs } from './legs'
 
-export function buildTravel(origin: string, destination: string, seed: number): TravelState {
+export function buildTravel(
+  origin: string,
+  destination: string,
+  seed: number,
+  introFlavor?: string,
+): TravelState {
   return {
     origin,
     destination,
@@ -11,7 +17,13 @@ export function buildTravel(origin: string, destination: string, seed: number): 
     pendingEvent: null,
     atRoadside: false,
     lastEventResult: null,
+    introFlavor: introFlavor ?? null,
   }
+}
+
+export function pickIntroFlavor(seed: number): string {
+  const pool = (COPY.travelLegs as { introFlavors?: string[] }).introFlavors ?? []
+  return pickText(pool, seed, 'Beers in the cooler. Van loaded. Let\'s go.')
 }
 
 export function travelEventContext(s: GameState): TravelEventContext | undefined {
@@ -38,13 +50,18 @@ export function rollLegArrivalEvent(s: GameState, seed: number): GameState {
   }
 }
 
-/** New travel segment — leg 0 + arrival roll */
+/** New travel segment — leg 0 + arrival roll. Pass introFlavor to skip the event on leg 0. */
 export function beginTravelLegs(
   s: GameState,
   origin: string,
   destination: string,
   seed: number,
+  introFlavor?: string,
 ): GameState {
-  const travel = buildTravel(origin, destination, seed)
+  const travel = buildTravel(origin, destination, seed, introFlavor)
+  if (introFlavor) {
+    // First leg of the run — show the departure flavor, no road event yet
+    return { ...s, travel }
+  }
   return rollLegArrivalEvent({ ...s, travel }, seed + 7)
 }

@@ -62,7 +62,7 @@ import {
   type LocationAction,
 } from './location/locationEvents'
 import { goToVenueGates, needsVenueGates } from './venueGates'
-import { beginTravelLegs, rollLegArrivalEvent } from './travel/arrival'
+import { beginTravelLegs, pickIntroFlavor, rollLegArrivalEvent } from './travel/arrival'
 import type {
   BetSlot,
   CrewMember,
@@ -376,7 +376,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       lastOutcome: null,
       lastOutcomeTone: 'default',
     }
-    next = beginTravelLegs(next, origin, stop.city, seed + 5)
+    next = beginTravelLegs(next, origin, stop.city, seed + 5, pickIntroFlavor(seed + 3))
     next = applyMarket(next, 'shakedown', seed + 99)
     return {
       ...next,

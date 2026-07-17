@@ -63,15 +63,22 @@ export function TravelScreen() {
     )
   }
 
+  const isIntro = !!travel.introFlavor && !event
+
   return (
     <Stack>
+      {/* Intro departure scene — first leg of the run */}
+      {isIntro && (
+        <Text size="sm">{travel.introFlavor}</Text>
+      )}
+
       {/* Leg location name — sits above art via ScreenFrame child ordering */}
-      {leg && !event && (
+      {leg && !event && !isIntro && (
         <Text fw={600} size="md">{leg.label}</Text>
       )}
 
       {/* Flavor text — primary narrative, full weight */}
-      {leg && !event && (
+      {leg && !event && !isIntro && (
         <Text size="sm">{leg.flavor} (~{leg.miles} mi)</Text>
       )}
 

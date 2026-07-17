@@ -204,6 +204,8 @@ export interface TravelState {
   atRoadside: boolean
   /** Shown on road panel after resolving an event */
   lastEventResult: string | null
+  /** Intro flavor shown on the very first leg of a run instead of an event */
+  introFlavor: string | null
 }
 
 export interface MarketStock {
