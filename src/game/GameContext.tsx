@@ -1813,7 +1813,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const ticketsOk = s.resources.tickets >= active.length
       let recap = ticketsOk
         ? showRecapLine('made_it', s.rngSeed, { venue: stop.venue })
-        : showRecapLine('chaos_gate', s.rngSeed, { venue: stop.venue })
+        : showRecapLine('sneak', s.rngSeed, { venue: stop.venue })
       const flavor = showRecapFlavor(s.rngSeed + 11)
       if (flavor) recap = `${recap} ${flavor}`
       const { resources, recapOut, runBetsWon, crew: crewAfterBets, betResults } = resolveBets(

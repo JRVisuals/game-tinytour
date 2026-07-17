@@ -144,7 +144,7 @@ export function travelFeedback(
 }
 
 export function showRecapLine(
-  key: 'made_it' | 'chaos_gate' | 'missed',
+  key: 'made_it' | 'chaos_gate' | 'sneak' | 'missed',
   seed: number,
   vars: Record<string, string | number>,
 ): string {

@@ -354,8 +354,15 @@
       "Chaos at the gate. Not everyone got in clean — the night still happened around you.",
       "Gate was a scene. You made it work anyway.",
       "Tickets messy. Show still happened around you.",
-      "Security had opinions at {venue}. You had tickets and patience.",
+      "Security had opinions at {venue}. You had paper and patience.",
       "Scalpers lied, wristbands didn't scan — somehow you're still inside {venue}."
+    ],
+    "sneak": [
+      "Security had opinions at {venue}, but just like assholes, everybody has one. You chopped it up then flashed an old stub. Those old boys had no idea. In is in.",
+      "No ticket, no problem. Badge of honor to just walk in like you own it — and you basically did.",
+      "Gate crasher energy. You floated past the door like you'd been coming here for years.",
+      "Wristband from two shows ago, confidence from somewhere else entirely. They waved you in.",
+      "Slipped through during the rush. Security was occupied with a guy in a fuzzy hat. Classic."
     ],
     "missed": [
       "Missed {venue} — sat out to hustle gas money and sanity.",
