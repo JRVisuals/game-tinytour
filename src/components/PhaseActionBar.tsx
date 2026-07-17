@@ -8,7 +8,13 @@ import { isLotTurnPhase } from '../game/showtime'
  * Primary action buttons for the current phase — rendered above the tab bar.
  * On non-Scene tabs, shows the single most urgent action (or nothing).
  */
-export function PhaseActionBar({ activeTab }: { activeTab: string }) {
+export function PhaseActionBar({
+  activeTab,
+  onSwitchToScene,
+}: {
+  activeTab: string
+  onSwitchToScene: () => void
+}) {
   const {
     state,
     advanceTravelLeg,
@@ -42,7 +48,7 @@ export function PhaseActionBar({ activeTab }: { activeTab: string }) {
             color="teal"
             className={venueOk ? 'title-start-btn' : undefined}
             disabled={!venueOk}
-            onClick={goToVenueGates}
+            onClick={() => { goToVenueGates(); onSwitchToScene() }}
           >
             {state.turnsUntilShow <= 0 ? 'Showtime — venue gates' : 'Venue gates'}
           </Button>

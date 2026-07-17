@@ -131,7 +131,7 @@ export default function App() {
 
       {showPlayShell && (
         <footer className="game-shell-footer">
-          <PhaseActionBar activeTab={playTab} />
+          <PhaseActionBar activeTab={playTab} onSwitchToScene={() => setPlayTab('scene')} />
           <TourTabBar
             active={playTab}
             onChange={setPlayTab}
