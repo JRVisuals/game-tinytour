@@ -18,7 +18,7 @@ import { generateBand } from '../generators'
 import { ensureMarket } from '../marketCache'
 import { formatResourceDeltas } from '../outcome/report'
 import { setOutcome } from '../outcome/state'
-import { endRun } from '../run/helpers'
+
 import { applyMissShowHustleEffects, rollMissShowHustleEvent } from '../hustle/missShowEvents'
 import {
   applyShakedownEventEffects,
@@ -208,13 +208,4 @@ export function resolveEnterPostShowShakedown(s: GameState): GameState {
     ),
     ...(snap ? setOutcome(s, rolled!.title, snap) : {}),
   }
-}
-
-export function resolveEndRun(s: GameState): GameState {
-  if (!s.tour) return { ...s, phase: 'title' }
-  const nextIndex = s.tour.currentStopIndex + 1
-  if (nextIndex >= s.tour.stops.length) {
-    return endRun(s, 'completed', 'Tour wrapped. You saw the band, burned miles, and lived to tell the lot about it.')
-  }
-  return null as unknown as GameState // caller handles startTravelToStop
 }

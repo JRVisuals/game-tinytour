@@ -277,7 +277,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         },
       )
     },
-    [endRun, finalizeCrewCare],
+    [],
   )
 
   const crewConsume = useCallback(
@@ -585,7 +585,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       return endRun(s, 'shuffle', runEndLine('shuffle', s.rngSeed))
     })
-  }, [endRun])
+  }, [])
 
   const travelAction = useCallback((action: TravelAction) => {
     setState((s) => resolveTravelAction(s, action))
@@ -1050,7 +1050,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       return next
     })
-  }, [afterCrewTick])
+  }, [])
 
   const returnToShakedown = useCallback(() => {
     setState((s) => {
@@ -1110,7 +1110,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         nextIndex,
       )
     })
-  }, [endRun, startTravelToStop])
+  }, [startTravelToStop])
 
   const finishRunRecap = useCallback(() => {
     setState((s) => ({
@@ -1267,7 +1267,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       return next
     })
-  }, [finalizeCrewCare])
+  }, [])
 
   const friendsCrash = useCallback(() => {
     setState((s) => {
@@ -1304,7 +1304,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       return next
     })
-  }, [finalizeCrewCare])
+  }, [])
 
   const value = useMemo(
     () => ({
