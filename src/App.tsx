@@ -57,7 +57,7 @@ export default function App() {
   const hustleEnabled = isHustleContext(state)
   const crewAlert = hasUrgentCrew(state) || !!state.crewAlert
   const anyWasted = wastedActiveCrew(state.crew).length > 0
-  const pulledOver = state.travel?.pendingEvent?.id === 'pulled_over'
+  const pulledOver = state.travel?.pendingEvent?.eventType === 'pulled_over'
   const wasAtRoadside = useRef(false)
   const prevLegIndex = useRef<number | null>(null)
   const prevPhase = useRef<string | null>(null)
