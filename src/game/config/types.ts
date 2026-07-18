@@ -5,6 +5,9 @@ export interface CrewMetersBalance {
   roughWarningMinTurns: number
   tickHunger: number
   tickThirst: number
+  tickStoned: number
+  wastedExtraThirst: number
+  stonedExtraHunger: number
   eatHunger: number
   eatStoned: number
   eatHealth: number
@@ -14,6 +17,7 @@ export interface CrewMetersBalance {
   consumeDrugsVibe: number
   consumeDrugsStoned: number
   consumeDrugsHealth: number
+  consumeDrugsHunger: number
   showVibe: number
   betWinVibe: number
   betLossVibe: number
@@ -121,8 +125,17 @@ export interface PulledOverBranch {
   fineBelow?: number
 }
 
+export interface DrugRiskTier {
+  minDrugs: number
+  maxDrugs?: number
+  rollMalus: number
+  label: string
+  alwaysDrugsGone?: boolean
+}
+
 export interface PulledOverBalance {
   rollMod: number
+  drugRiskTiers: DrugRiskTier[]
   wasted: { lie: PulledOverBranch; truth: PulledOverBranch }
   sober: { lie: PulledOverBranch; truth: PulledOverBranch }
 }

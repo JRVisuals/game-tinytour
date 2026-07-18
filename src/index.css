@@ -174,6 +174,7 @@ html.game-chrome-lock #root {
   padding-right: env(safe-area-inset-right, 0px);
   background-color: #0f1613;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.55), 0 2px 6px 0 rgba(0, 0, 0, 0.35);
   z-index: 10;
 }
 
@@ -214,6 +215,7 @@ html.game-chrome-lock #root {
 }
 
 /* ── Scrollable content ── */
+/* 20px inset each side reinforces the depth illusion (header casts shadow over it) */
 .game-shell-main {
   flex: 1 1 auto;
   min-height: 0;
@@ -222,8 +224,8 @@ html.game-chrome-lock #root {
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
+  padding-left: calc(env(safe-area-inset-left, 0px) + 20px);
+  padding-right: calc(env(safe-area-inset-right, 0px) + 20px);
 }
 
 /* ── Tab bar footer ── */
@@ -237,6 +239,30 @@ html.game-chrome-lock #root {
   background-color: #0f1613;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   z-index: 10;
+}
+
+/* ── Phase action row — sits above tab bar ── */
+.phase-action-bar {
+  background-color: #111815;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+}
+.phase-action-bar--empty {
+  min-height: 0;
+  border-top: none;
+}
+
+/* Below 700px: wrap action buttons to two lines instead of horizontal scroll */
+@media (max-width: 700px) {
+  .phase-action-bar .mantine-ScrollArea-root,
+  .phase-action-bar .mantine-ScrollArea-viewport {
+    overflow: visible !important;
+  }
+  .phase-action-bar .mantine-Group-root {
+    flex-wrap: wrap !important;
+  }
 }
 
 .game-shell-tab-bar {
@@ -289,6 +315,7 @@ html.game-chrome-lock #root {
 
 .ascii-logo-pre {
   display: inline-block;
+  position: relative;
   text-align: left;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     monospace;
@@ -297,6 +324,37 @@ html.game-chrome-lock #root {
   letter-spacing: 0;
   color: var(--mantine-color-teal-3);
   white-space: pre;
+}
+
+.ascii-logo-pre::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: color;
+  background: linear-gradient(
+    to right,
+    hsl(280, 70%, 55%),
+    hsl(220, 70%, 55%),
+    hsl(160, 70%, 50%),
+    hsl(100, 70%, 50%),
+    hsl(40,  75%, 52%),
+    hsl(0,   70%, 55%),
+    hsl(280, 70%, 55%),
+    hsl(220, 70%, 55%),
+    hsl(160, 70%, 50%)
+  );
+  background-size: 400% 100%;
+  animation: ascii-rainbow 3.5s linear infinite;
+}
+
+@keyframes ascii-rainbow {
+  from { background-position: 100% 0; }
+  to   { background-position:   0% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ascii-logo-pre::after { display: none; }
 }
 
 .ascii-header-pre {
@@ -382,6 +440,79 @@ html.game-chrome-lock #root {
   border-color: rgba(255, 255, 255, 0.16);
 }
 
+/* ── Ambient effect overlays — sit above content via mix-blend-mode ── */
+.fx-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  mix-blend-mode: color;
+}
+
+/* Wasted — 4 slow breaths, each 750ms (500 inhale / 250 exhale), one color per breath */
+.fx-overlay--wasted {
+  animation: fx-wasted 3s ease-in-out infinite;
+}
+
+@keyframes fx-wasted {
+  0%     { background-color: hsl(280, 70%, 40%); opacity: 0;    }
+  16.7%  { background-color: hsl(280, 70%, 40%); opacity: 0.62; }
+  25%    { background-color: hsl(200, 70%, 35%); opacity: 0;    }
+  41.7%  { background-color: hsl(200, 70%, 35%); opacity: 0.62; }
+  50%    { background-color: hsl(120, 70%, 32%); opacity: 0;    }
+  66.7%  { background-color: hsl(120, 70%, 32%); opacity: 0.62; }
+  75%    { background-color: hsl(40,  75%, 38%); opacity: 0;    }
+  91.7%  { background-color: hsl(40,  75%, 38%); opacity: 0.62; }
+  100%   { background-color: hsl(280, 70%, 40%); opacity: 0;    }
+}
+
+/* Vibe — 3 one-shot breaths through the rainbow, fades out (~2.25s) */
+.fx-overlay--vibe {
+  animation: fx-vibe 2.25s ease-in-out 1 forwards;
+}
+
+@keyframes fx-vibe {
+  0%     { background-color: hsl(280, 60%, 40%); opacity: 0;    }
+  22.2%  { background-color: hsl(280, 60%, 40%); opacity: 0.42; }
+  33.3%  { background-color: hsl(160, 60%, 35%); opacity: 0;    }
+  55.5%  { background-color: hsl(160, 60%, 35%); opacity: 0.38; }
+  66.6%  { background-color: hsl(40,  65%, 38%); opacity: 0;    }
+  88.8%  { background-color: hsl(40,  65%, 38%); opacity: 0.28; }
+  100%   { background-color: hsl(280, 60%, 40%); opacity: 0;    }
+}
+
+/* Police — intentional hard strobe, keep snappy */
+.fx-overlay--police {
+  animation: fx-police 0.7s steps(1) infinite;
+}
+
+@keyframes fx-police {
+  0%   { background-color: hsl(0,   90%, 40%); opacity: 0.7; }
+  50%  { background-color: hsl(220, 90%, 40%); opacity: 0.7; }
+  100% { background-color: hsl(0,   90%, 40%); opacity: 0.7; }
+}
+
+/* Balloon — 3 slow breaths into the dark (500ms inhale / 250ms exhale each) */
+.fx-overlay--balloon {
+  background-color: #000;
+  mix-blend-mode: multiply;
+  animation: fx-balloon 2.25s ease-in-out forwards;
+}
+
+@keyframes fx-balloon {
+  0%     { opacity: 0;    }
+  22.2%  { opacity: 0.88; }
+  33.3%  { opacity: 0;    }
+  55.5%  { opacity: 0.72; }
+  66.6%  { opacity: 0;    }
+  88.8%  { opacity: 0.45; }
+  100%   { opacity: 0;    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-overlay { display: none; }
+}
+
 .clown-juice-panel.mantine-Paper-root {
   background-color: #1a1028 !important;
   backdrop-filter: none;
@@ -393,6 +524,7 @@ html.game-chrome-lock #root {
   top: 0;
   z-index: 150;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.4), 0 1px 3px 0 rgba(0, 0, 0, 0.25);
 }
 
 .status-line-trail {
@@ -404,19 +536,54 @@ html.game-chrome-lock #root {
   max-width: 58%;
 }
 
+/* Two-column status layout */
+.status-line-columns {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
 .tour-map-strip {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 0 0 auto;
+  /* highway sign wrapper — keeps the sign right-aligned */
   max-width: 100%;
   padding: 4px 8px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.2);
   overflow: hidden;
+}
+
+/* Highway destination sign */
+.tour-map-strip__sign {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #005c1a;
+  border: 3px solid #fff;
+  outline: 2px solid #005c1a;
+  border-radius: 10px;
+  padding: 6px 12px 5px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.6);
+}
+
+.tour-map-strip__sign--venue {
+  animation: sign-rainbow 4s linear infinite;
+  outline-color: transparent;
+}
+
+@keyframes sign-rainbow {
+  0%   { background-color: hsl(280, 60%, 28%); }
+  16%  { background-color: hsl(200, 65%, 22%); }
+  33%  { background-color: hsl(120, 60%, 20%); }
+  50%  { background-color: hsl(40,  70%, 24%); }
+  66%  { background-color: hsl(0,   65%, 26%); }
+  83%  { background-color: hsl(330, 60%, 25%); }
+  100% { background-color: hsl(280, 60%, 28%); }
 }
 
 .tour-map-strip__dots {
@@ -438,12 +605,96 @@ html.game-chrome-lock #root {
   flex-shrink: 0;
 }
 
+.tour-map-strip__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  background: transparent;
+  flex-shrink: 0;
+}
+.tour-map-strip__dot--done {
+  background: rgba(255,255,255,0.55);
+  border-color: transparent;
+}
+.tour-map-strip__dot--here {
+  background: #ffe066;
+  border-color: #ffe066;
+  box-shadow: 0 0 4px rgba(255,224,102,0.8);
+}
+
+.tour-map-strip__dash {
+  display: inline-block;
+  width: 10px;
+  height: 1.5px;
+  background: rgba(255,255,255,0.3);
+  flex-shrink: 0;
+}
+
+.tour-map-strip__show-label {
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tour-map-strip__leg-text {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.6rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
 .tour-map-strip__hint {
-  width: 100%;
-  min-width: 0;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* Fat one-way sign arrow */
+.tour-map-strip__venue-name {
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-align: center;
+  max-width: 100px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.2;
+}
+
+.tour-map-strip__arrow {
+  display: flex;
+  align-items: center;
+  margin-top: 1px;
+}
+.tour-map-strip__arrow::before {
+  content: '';
+  display: block;
+  width: 22px;
+  height: 7px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 1px 0 0 1px;
+}
+.tour-map-strip__arrow::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-left: 11px solid rgba(255,255,255,0.85);
 }
 
 /* Tab nudge — glow pulse when hustle or crew needs you */
@@ -453,6 +704,25 @@ html.game-chrome-lock #root {
 
 .title-start-btn.mantine-Button-root {
   animation: title-start-pulse 2s ease-in-out infinite;
+}
+
+/* Action bar primary button — blue pulse, distinct from teal tab/title pulse */
+.action-bar-btn.mantine-Button-root {
+  animation: action-bar-pulse 2s ease-in-out infinite;
+}
+
+@keyframes action-bar-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(76, 145, 255, 0.45),
+      0 0 10px rgba(76, 145, 255, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(76, 145, 255, 0.85),
+      0 0 22px rgba(76, 145, 255, 0.45);
+  }
 }
 
 @keyframes tab-attention-pulse {
@@ -496,6 +766,13 @@ html.game-chrome-lock #root {
     box-shadow:
       0 0 0 2px rgba(32, 201, 151, 0.85),
       0 0 12px rgba(32, 201, 151, 0.4);
+  }
+
+  .action-bar-btn.mantine-Button-root {
+    animation: none;
+    box-shadow:
+      0 0 0 2px rgba(76, 145, 255, 0.85),
+      0 0 12px rgba(76, 145, 255, 0.4);
   }
 }
 
@@ -654,4 +931,42 @@ html.game-chrome-lock #root {
   .outcome-toast--out {
     opacity: 0;
   }
+}
+
+/* ── Travel progress bar — animated fill, matches wipe timing ── */
+.travel-progress .mantine-Progress-section {
+  transition: width 0.2s ease-in;
+}
+
+/* ── Travel wipe — single diagonal bar, right-to-left, twice ── */
+.travel-wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  overflow: hidden;
+  animation: travel-wipe-anim 0.4s linear forwards;
+}
+
+/* The bar is a pseudo-element so the container can repeat the motion */
+.travel-wipe-bar {
+  position: absolute;
+  top: -20%;
+  height: 140%;
+  background: rgba(255, 255, 255, 0.22);
+  transform: skewX(-18deg);
+  right: -200px;
+}
+
+.travel-wipe-bar--1 { width: 180px; animation: travel-bar-slide 0.2s ease-in forwards; }
+.travel-wipe-bar--2 { width: 60px;  animation: travel-bar-slide 0.2s ease-in 0.2s forwards; }
+.travel-wipe-bar--3 { width: 36px;  animation: travel-bar-slide 0.16s ease-in 0.32s forwards; }
+
+@keyframes travel-bar-slide {
+  0%   { right: -80px;  opacity: 1; }
+  100% { right: calc(100% + 80px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .travel-wipe { display: none; }
 }

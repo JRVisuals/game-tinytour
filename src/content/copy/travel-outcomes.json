@@ -130,6 +130,17 @@
         "They saw through the story. Cuffs. Court date. Tour over.",
         "Lie failed. Badge won. HR is hiring."
       ],
+      "dealing_busted": [
+        "That's not personal use and everyone in the car knows it. Cuffs. Court date. Tour over.",
+        "Five bags and a scale energy. They didn't even need to ask. Tour over.",
+        "You looked like the supply chain. Hard to argue. Tour over.",
+        "Officer's seen this before. You've seen better days. Cuffs. Tour over."
+      ],
+      "dealing_drugs_gone": [
+        "That's not a personal stash. All of it confiscated. Massive fine. Lucky you're not in cuffs.",
+        "They counted. You lost count. All gone, plus a fine you'll feel for two stops.",
+        "Five-plus is not a vibe you can explain. Everything confiscated."
+      ],
       "lie_drugs_gone": [
         "The lie almost worked. They found the stash anyway. Fine + empty pockets.",
         "Almost talked your way out. Almost."
@@ -354,8 +365,15 @@
       "Chaos at the gate. Not everyone got in clean — the night still happened around you.",
       "Gate was a scene. You made it work anyway.",
       "Tickets messy. Show still happened around you.",
-      "Security had opinions at {venue}. You had tickets and patience.",
+      "Security had opinions at {venue}. You had paper and patience.",
       "Scalpers lied, wristbands didn't scan — somehow you're still inside {venue}."
+    ],
+    "sneak": [
+      "Security had opinions at {venue}, but just like assholes, everybody has one. You chopped it up then flashed an old stub. Those old boys had no idea. In is in.",
+      "No ticket, no problem. Badge of honor to just walk in like you own it — and you basically did.",
+      "Gate crasher energy. You floated past the door like you'd been coming here for years.",
+      "Wristband from two shows ago, confidence from somewhere else entirely. They waved you in.",
+      "Slipped through during the rush. Security was occupied with a guy in a fuzzy hat. Classic."
     ],
     "missed": [
       "Missed {venue} — sat out to hustle gas money and sanity.",

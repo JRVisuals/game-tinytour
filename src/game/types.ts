@@ -10,6 +10,7 @@ export type PhaseId =
   | 'post_show'
   | 'post_show_shakedown'
   | 'run_recap'
+  | 'pre_day_job'
   | 'day_job'
 
 export type LocationId =
@@ -204,6 +205,8 @@ export interface TravelState {
   atRoadside: boolean
   /** Shown on road panel after resolving an event */
   lastEventResult: string | null
+  /** Intro flavor shown on the very first leg of a run instead of an event */
+  introFlavor: string | null
 }
 
 export interface MarketStock {
@@ -272,6 +275,8 @@ export interface GameState {
   shakedownLotEvent: SceneLotEvent | null
   /** Rare cash find when visiting park or shakedown */
   spotFindEvent: SceneLotEvent | null
+  /** Action IDs used this location visit — cleared on location change */
+  usedLocationActions: string[]
   /** Lot hustle when you skip the show */
   missShowHustleEvent: SceneLotEvent | null
   rngSeed: number
@@ -285,6 +290,8 @@ export interface GameState {
   starterTier: StarterTier | null
   startRunAfterCrewSave: boolean
   runRecapMessage: string
+  /** Narrative shown on the pre_day_job screen before landing on day job */
+  dayJobReason: string | null
   /** Offered after day job — $50 × crew size */
   dayJobStipend: number | null
   activeSetlistBets: SetlistBet[]
@@ -319,6 +326,7 @@ export const PHASE_LABELS: Record<PhaseId, string> = {
   post_show: 'Post-show',
   post_show_shakedown: 'After-show shakedown',
   run_recap: 'Run recap',
+  pre_day_job: 'Day job',
   day_job: 'Day job',
 }
 

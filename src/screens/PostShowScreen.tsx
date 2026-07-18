@@ -1,10 +1,10 @@
-import { Button, Stack, Text } from '@mantine/core'
+import { Stack, Text } from '@mantine/core'
 import { SceneBeatSlot } from '../components/SceneBeatSlot'
 import { SetlistRecap } from '../components/SetlistRecap'
 import { useGame } from '../game/GameContext'
 
 export function PostShowScreen() {
-  const { state, enterPostShowShakedown } = useGame()
+  const { state } = useGame()
   const stop = state.tour?.stops[state.tour.currentStopIndex]
   const band = state.tour?.band.name
   const missed = !state.lastSetlist
@@ -43,7 +43,6 @@ export function PostShowScreen() {
       <Text size="sm" c="dimmed">
         Shakedown again — hustle before the next travel leg.
       </Text>
-      <Button onClick={enterPostShowShakedown}>After-show shakedown</Button>
     </Stack>
   )
 }

@@ -1,15 +1,10 @@
 import { Paper, Stack } from '@mantine/core'
-import { BackToSceneButton } from '../BackToSceneButton'
 import { RunStatsGrid } from '../RunStatsGrid'
 import { TabPanelHeader } from '../TabPanelHeader'
 import { TourStoryPanel } from '../TourStoryPanel'
 import { useGame } from '../../game/GameContext'
 
-interface JournalTabProps {
-  onBackToScene: () => void
-}
-
-export function JournalTab({ onBackToScene }: JournalTabProps) {
+export function JournalTab() {
   const { state } = useGame()
   const inRun = state.tour != null
 
@@ -33,8 +28,6 @@ export function JournalTab({ onBackToScene }: JournalTabProps) {
           </Paper>
         </>
       )}
-
-      <BackToSceneButton onBackToScene={onBackToScene} />
     </Stack>
   )
 }

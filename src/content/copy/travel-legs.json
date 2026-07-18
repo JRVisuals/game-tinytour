@@ -9,14 +9,38 @@
     "Lot-adjacent back road",
     "Sunrise service road"
   ],
+  "introFlavors": [
+    "Beers go in the cooler. Cooler goes in the back. Somebody argues about whose amp is whose.",
+    "Two trips to load the van. Third trip for the thing you forgot. Fourth trip because somebody else forgot.",
+    "Last gas in town before the highway. Fill it up, grab a bad coffee, and don't look back.",
+    "Map pulled up. Playlist queued. Someone already asleep before the first on-ramp.",
+    "The house key goes under the mat. The van groans when you start it. Tour starts now.",
+    "Ice in the cooler, beer on the ice, snacks in the seat pocket. Routine.",
+    "One last bathroom stop. One last check of the setlist rumors. The road doesn't wait.",
+    "Somebody's got the aux. Somebody else already has opinions about it. Merge onto the highway.",
+    "Gas light was already on when you got in. Classic. First stop handles it.",
+    "Everything fits if you don't think about it too hard. It always fits."
+  ],
   "legFlavors": [
     "Dawn breaks over a Waffle House sign. Coffee smells like salvation.",
     "A van with too many stickers passes you doing exactly the speed limit.",
     "The radio finds a staticy live archive tape for thirty seconds.",
     "Road construction narrows everything to one nervous lane.",
     "You count seventeen tour stickers on a guardrail.",
-    "Heat shimmer on asphalt. The next exit promises a grocery store.",
-    "Rain on the windshield. Wipers on the one setting that never quite works."
+    "Heat shimmer on asphalt. A billboard promises a grocery store two exits back.",
+    "Rain on the windshield. Wipers on the one setting that never quite works.",
+    "Billboard: JESUS SAVES. Someone's drawn a bass clef next to it in marker.",
+    "Billboard: WORLD'S LARGEST BALL OF TWINE — 14 MILES. You keep driving.",
+    "Billboard: ACCIDENT ATTORNEY — 1-800-HIT-HARD. Three of them in a row.",
+    "Billboard: INTEGRITY AUTO. The letters have been rearranged to say ROAST THINGY.",
+    "A digital billboard cycles through: FIREWORKS, FIREWORKS, GENTLEMEN'S CLUB, FIREWORKS.",
+    "Billboard: GOD BLESS AMERICA and directly below it, BARE KNUCKLE BOXING THIS SAT.",
+    "Billboard: VISIT THE MYSTERY HOLE. No other information. No exit listed.",
+    "Somebody taped a handwritten BEWARE sign to a telephone pole. It offers no further details.",
+    "Mile marker 69. Someone always puts a sticker on it. Today is no different.",
+    "A hand-painted sign in a field reads: EGGS $2 HONK. Nobody honks.",
+    "Billboard: DEBT? DIVORCE? DEAD END? Call Pastor Mike.",
+    "Peeling billboard for a movie that came out in 2009. Still confident about it."
   ],
   "roadside": {
     "truck_stop": {

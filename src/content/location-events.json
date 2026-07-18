@@ -1,25 +1,207 @@
 {
-  "events": [
+  "universal": [
     {
-      "id": "found_twenty_spot",
-      "title": "Found a $20 spot!",
-      "body": "Crushed can, folded bill, same energy — twenty bucks just sitting there in the lot.",
-      "locations": ["park", "shakedown"],
-      "effects": { "cash": 20 }
+      "id": "dropped_sticker",
+      "title": "Found a cool sticker",
+      "body": "Lying on the ground, corner barely scuffed. Someone's loss is your gain.",
+      "weight": 1,
+      "effects": {}
     },
     {
-      "id": "hotel_loose_cash",
-      "title": "Loose cash in the nightstand",
-      "body": "Last guest left a rumpled ten and a prayer card. Finders keepers in this economy.",
-      "locations": ["hotel"],
-      "effects": { "cash": 10 }
+      "id": "overheard_chatter",
+      "title": "Lot chatter",
+      "body": "Two people near you are deep in debate about tonight's opener. You listen in.",
+      "weight": 1,
+      "effects": {}
     },
     {
-      "id": "friends_stash_beer",
-      "title": "Friend's fridge came through",
-      "body": "Someone's roommate stocked up. Two cold ones with your name on them.",
-      "locations": ["friends_house"],
-      "effects": { "beer": 2 }
+      "id": "lot_lighter",
+      "title": "Found a lighter",
+      "body": "A bright green Bic, half full. Somebody's gonna be missing that.",
+      "weight": 1,
+      "effects": {}
+    },
+    {
+      "id": "wook_trade_offer",
+      "title": "Wook trade offer",
+      "body": "A wook sidles up with something in a bandana. 'No cash, just vibes — wanna trade?' You politely decline.",
+      "weight": 1,
+      "effects": {}
+    },
+    {
+      "id": "found_crumpled_five",
+      "title": "Found $5 in a pocket",
+      "body": "Old jacket, old pocket, old five. Still spends.",
+      "weight": 2,
+      "effects": { "cash": 5 }
+    },
+    {
+      "id": "good_energy",
+      "title": "Good energy in the spot",
+      "body": "Can't explain it. The vibe here is just right. You linger a minute.",
+      "weight": 1,
+      "effects": {}
     }
-  ]
+  ],
+  "specific": {
+    "park": [
+      {
+        "id": "park_hacky_invite",
+        "title": "Hacky sack circle",
+        "body": "The circle opens up and waves you in. You hang for a few kicks.",
+        "weight": 2,
+        "effects": {}
+      },
+      {
+        "id": "park_grilled_cheese",
+        "title": "Grilled cheese out of a cooler",
+        "body": "Guy's running a whole operation from the back of a Honda Civic. Two bucks, two slices.",
+        "weight": 2,
+        "effects": { "food": 2 }
+      },
+      {
+        "id": "park_sketchy_trade",
+        "title": "Sketchy offer",
+        "body": "Some guy slides up quiet. 'You look like you could use this.' Hard to say no.",
+        "weight": 1,
+        "effects": { "drugs": 1, "cash": -10 }
+      }
+    ],
+    "diner": [
+      {
+        "id": "diner_overheard",
+        "title": "Waitress heard something",
+        "body": "She leans in while refilling coffee — 'heard someone at the counter talking about tonight's show.' Good signs.",
+        "weight": 2,
+        "effects": {}
+      },
+      {
+        "id": "diner_noisy_table",
+        "title": "Rowdy table",
+        "body": "The booth next to you is extremely loud the whole time. You finish your coffee faster than planned.",
+        "weight": 1,
+        "effects": {}
+      },
+      {
+        "id": "diner_special",
+        "title": "Short stack special",
+        "body": "Still on the board, still $8. You order without hesitation.",
+        "weight": 2,
+        "effects": { "food": 2, "cash": -8 }
+      }
+    ],
+    "record_store": [
+      {
+        "id": "record_store_bootleg",
+        "title": "Bootleg find",
+        "body": "A live {bandName} recording, no label, handwritten dates on the sleeve. Someone loved this band.",
+        "weight": 2,
+        "effects": {}
+      },
+      {
+        "id": "record_store_clerk",
+        "title": "The clerk knows everything",
+        "body": "You ask about the show tonight. Twenty minutes later you know the full history of the venue and three bands you've never heard of.",
+        "weight": 2,
+        "effects": {}
+      },
+      {
+        "id": "record_store_ticket",
+        "title": "Ticket in the stacks",
+        "body": "Tucked inside a stack of {bandName} records — a loose ticket. Not gonna question it.",
+        "weight": 1,
+        "effects": { "tickets": 1 }
+      }
+    ],
+    "hotel": [
+      {
+        "id": "hotel_loose_cash",
+        "title": "Loose cash in the nightstand",
+        "body": "Last guest left a rumpled ten and a prayer card. Finders keepers in this economy.",
+        "weight": 2,
+        "effects": { "cash": 10 }
+      },
+      {
+        "id": "hotel_maid_extras",
+        "title": "Maid left extras",
+        "body": "Extra granola bar, two bottles of water, and a can from the cart. You'll take it.",
+        "weight": 2,
+        "effects": { "food": 1, "beer": 1 }
+      },
+      {
+        "id": "hotel_noisy_neighbors",
+        "title": "Noisy neighbors",
+        "body": "Party going until 3am next door. Thin walls, thin patience.",
+        "weight": 1,
+        "effects": {}
+      }
+    ],
+    "friends_house": [
+      {
+        "id": "friends_stash_beer",
+        "title": "Friend's fridge came through",
+        "body": "Someone's roommate stocked up. Two cold ones with your name on them.",
+        "weight": 2,
+        "effects": { "beer": 2 }
+      },
+      {
+        "id": "friends_jam_session",
+        "title": "Impromptu jam session",
+        "body": "Someone broke out a guitar. Next thing you know an hour's gone by.",
+        "weight": 2,
+        "effects": {}
+      },
+      {
+        "id": "friends_ate_your_food",
+        "title": "Someone got into your snacks",
+        "body": "You left your bag in the kitchen. Rookie mistake. Half your food's gone.",
+        "weight": 1,
+        "effects": { "food": -1 }
+      }
+    ]
+  },
+  "actions": {
+    "park": [
+      {
+        "id": "join_circle",
+        "label": "Join the circle",
+        "flavorHint": "Hacky sack circle's got an open spot and someone's already side-eyeing you to fill it.",
+        "cost": {},
+        "effect": { "beer": 1 },
+        "burnsTurn": true,
+        "once": true
+      }
+    ],
+    "diner": [
+      {
+        "id": "order_meal",
+        "label": "Order a meal ($10/head)",
+        "flavorHint": "Short stack special is still on the board. Your stomach has been petitioning for ten minutes.",
+        "cost": {},
+        "effect": {},
+        "burnsTurn": true,
+        "once": true
+      }
+    ],
+    "record_store": [
+      {
+        "id": "dig_bins",
+        "label": "Dig the bins ($5)",
+        "flavorHint": "Dollar bins haven't been touched today. Something good's probably buried in there waiting for you.",
+        "cost": { "cash": 5 },
+        "effect": { "cash": 10 },
+        "burnsTurn": true,
+        "once": true
+      },
+      {
+        "id": "celo",
+        "label": "Play celó",
+        "flavorHint": "Guy in the corner's running a celó game on a milk crate. Dice are out. Somebody's already up twenty.",
+        "cost": { "cash": 10 },
+        "effect": { "cash": 10 },
+        "burnsTurn": false,
+        "once": false
+      }
+    ]
+  }
 }

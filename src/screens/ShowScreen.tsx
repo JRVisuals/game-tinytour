@@ -1,9 +1,9 @@
-import { Alert, Button, Group, Stack, Text } from '@mantine/core'
+import { Alert, Stack, Text } from '@mantine/core'
 import { activeCrew, canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
 
 export function ShowScreen() {
-  const { state, finishShow, missShow } = useGame()
+  const { state } = useGame()
   const stop = state.tour?.stops[state.tour.currentStopIndex]
   const active = activeCrew(state.crew)
   const ticketsNeeded = active.length
@@ -31,26 +31,8 @@ export function ShowScreen() {
           Short on tickets. Sneak, scramble, or miss the show and hustle the next leg.
         </Text>
       ) : null}
-      <Group>
-        <Button
-          onClick={finishShow}
-          disabled={!hasTickets || ticketsNeeded === 0 || !venueOk}
-        >
-          Walk in with tickets
-        </Button>
-        {!hasTickets && venueOk && (
-          <Button color="red" variant="light" onClick={finishShow}>
-            Sneak / scramble
-          </Button>
-        )}
-        <Button variant="default" onClick={missShow}>
-          Stay out & hustle
-        </Button>
-      </Group>
       {ticketsNeeded === 0 && (
-        <Text size="sm" c="red">
-          No active crew left at the gate.
-        </Text>
+        <Text size="sm" c="red">No active crew left at the gate.</Text>
       )}
     </Stack>
   )

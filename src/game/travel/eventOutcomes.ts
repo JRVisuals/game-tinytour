@@ -45,14 +45,22 @@ export function pulledOverResult(
   outcome: PulledOutcome,
   wasted = false,
   seed = 0,
+  dealing = false,
 ): string {
   const branch = wasted
     ? COPY.travelOutcomes.pulled_over.wasted
     : COPY.travelOutcomes.pulled_over.sober
-  const key = pulledOverPoolKey(choiceId, outcome)
-  const pool = branch[key]
+  // Route dealing-tier outcomes to richer copy pools when available
+  let key = pulledOverPoolKey(choiceId, outcome)
+  if (dealing && !wasted) {
+    if (outcome === 'busted') key = 'dealing_busted'
+    else if (outcome === 'drugs_gone') key = 'dealing_drugs_gone'
+  }
+  const pool = (branch as Record<string, string[]>)[key]
   const fallbacks: Record<string, string> = {
     busted: 'Cuffs. Court date. Tour over.',
+    dealing_busted: 'That\'s not personal use. Cuffs. Tour over.',
+    dealing_drugs_gone: 'Everything confiscated. Massive fine.',
     lie_drugs_gone: 'Stash gone. Fines paid.',
     lie_fine: 'Wallet lighter.',
     lie_clean: 'You lived. Barely.',
@@ -144,7 +152,7 @@ export function travelFeedback(
 }
 
 export function showRecapLine(
-  key: 'made_it' | 'chaos_gate' | 'missed',
+  key: 'made_it' | 'chaos_gate' | 'sneak' | 'missed',
   seed: number,
   vars: Record<string, string | number>,
 ): string {

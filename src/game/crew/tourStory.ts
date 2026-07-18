@@ -72,3 +72,7 @@ export function storyTourEnd(
 export function storyGoHome(seed: number): string {
   return pickText(COPY.tourStory.go_home, seed, 'Shuffled on home.')
 }
+
+export function storyDayJob(reason: string): string {
+  return `Tour cut short. ${reason}`
+}

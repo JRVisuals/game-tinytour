@@ -1,5 +1,10 @@
 {
   "rollMod": 10,
+  "drugRiskTiers": [
+    { "minDrugs": 1, "maxDrugs": 2, "rollMalus": 0, "label": "personal" },
+    { "minDrugs": 3, "maxDrugs": 4, "rollMalus": 2, "label": "suspicious" },
+    { "minDrugs": 5, "rollMalus": 5, "label": "dealing", "alwaysDrugsGone": true }
+  ],
   "wasted": {
     "lie": {
       "bustBelow": 7,

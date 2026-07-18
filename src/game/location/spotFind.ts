@@ -1,4 +1,3 @@
-import locationEventsJson from '../../content/location-events.json'
 import { BALANCE } from '../config'
 import type { GameState, LocationId, Resources } from '../types'
 import { appendStory, storyEvent } from '../crew/tourStory'
@@ -11,7 +10,7 @@ interface SpotFindTemplate {
   effects: Partial<Record<keyof Resources, number>>
 }
 
-const templates = locationEventsJson.events as SpotFindTemplate[]
+const templates: SpotFindTemplate[] = []
 const S = BALANCE.shakedown.spotFind
 
 export interface SpotFindEvent {

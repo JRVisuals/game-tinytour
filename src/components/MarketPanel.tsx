@@ -1,4 +1,4 @@
-import { Alert, Button, Group, Paper, Stack, Text } from '@mantine/core'
+import { Alert, Button, Group, Paper, Stack, Table, Text } from '@mantine/core'
 import { BALANCE, COPY, pickText } from '../game/config'
 import { useGame } from '../game/GameContext'
 import type { MarketPrices, MarketStock } from '../game/types'
@@ -10,6 +10,8 @@ interface MarketPanelProps {
   contextLabel: string
   showTickets?: boolean
   showBalloons?: boolean
+  /** When true, show prices/stock info only — buy/sell buttons live in PhaseActionBar */
+  displayOnly?: boolean
 }
 
 export function MarketPanel({
@@ -19,6 +21,7 @@ export function MarketPanel({
   contextLabel: _contextLabel,
   showTickets,
   showBalloons,
+  displayOnly = false,
 }: MarketPanelProps) {
   const { state, marketBuy, marketSell, buyBalloons, resolveMarketCopChase } = useGame()
   const chase = state.marketCopChase
@@ -34,6 +37,71 @@ export function MarketPanel({
           : 'Undercovers saw the handoff.',
       )
     : null
+
+  // Display-only: price/stock table — buy/sell buttons live in PhaseActionBar
+  if (displayOnly) {
+    type Row = { icon: string; label: string; buy: string; sell: string; stock: string }
+    const rows: Row[] = [
+      { icon: '🌮', label: 'Food',       buy: `$${prices.foodBuy}`,  sell: `$${prices.foodSell}`,  stock: `${stock.food} left` },
+      { icon: '🍺', label: 'Beer',       buy: `$${prices.beerBuy}`,  sell: `$${prices.beerSell}`,  stock: `${stock.beer} left` },
+      { icon: '🍄', label: 'Substances', buy: `$${prices.drugsBuy}`, sell: `$${prices.drugsSell}`, stock: `${stock.drugs} left` },
+    ]
+    if (showTickets && prices.ticketBuy != null) {
+      rows.push({ icon: '🎟', label: 'Ticket', buy: `$${prices.ticketBuy}`, sell: '—', stock: `${stock.tickets} left` })
+    }
+    if (state.resources.hasVehicle && prices.gasBuy != null && stock.gas > 0) {
+      rows.push({ icon: '⛽', label: 'Gas', buy: `$${prices.gasBuy}`, sell: '—', stock: `${stock.gas} left` })
+    }
+    if (showBalloons) {
+      rows.push({ icon: '🎈', label: 'Balloons', buy: `$${balloonPrice}`, sell: '—', stock: '∞' })
+    }
+
+    return (
+      <Paper withBorder p="sm">
+        <Stack gap="xs">
+          {flavor && <Text size="xs" c="dimmed">{flavor}</Text>}
+          {chase && (
+            <Alert color="red" title="Cops!" mb={4}>
+              <Text size="sm" mb="xs">
+                {chase.reason === 'balloons'
+                  ? `${chasePrompt} Balloons already hit. Pay $${chase.fine} or run?`
+                  : `${chasePrompt} Sale went through (+$${chase.proceeds}). Pay $${chase.fine} or run?`}
+              </Text>
+              <Group gap="xs">
+                <Button size="xs" onClick={() => resolveMarketCopChase('stay')}>
+                  Stay — pay ${chase.fine}
+                </Button>
+                <Button size="xs" variant="light" color="orange" onClick={() => resolveMarketCopChase('run')}>
+                  Run
+                </Button>
+              </Group>
+            </Alert>
+          )}
+          <Table fz="xs" verticalSpacing={2} withRowBorders={false}>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th style={{ color: 'var(--mantine-color-dimmed)' }}></Table.Th>
+                <Table.Th><span style={{ color: 'var(--mantine-color-red-5)', textShadow: '0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1), -1px -1px 0 rgba(0,0,0,1)' }}>▼</span> <span style={{ color: 'var(--mantine-color-dimmed)' }}>Buy</span></Table.Th>
+                <Table.Th><span style={{ color: 'var(--mantine-color-green-5)', textShadow: '0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1), -1px -1px 0 rgba(0,0,0,1)' }}>▲</span> <span style={{ color: 'var(--mantine-color-dimmed)' }}>Sell</span></Table.Th>
+                <Table.Th style={{ color: 'var(--mantine-color-dimmed)' }}>Stock</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {rows.map((r, i) => (
+                <Table.Tr key={r.label} style={{ background: i % 2 === 1 ? 'rgba(255,255,255,0.04)' : undefined }}>
+                  <Table.Td>{r.icon} {r.label}</Table.Td>
+                  <Table.Td>{r.buy}</Table.Td>
+                  <Table.Td c="dimmed">{r.sell}</Table.Td>
+                  <Table.Td c="dimmed">{r.stock}</Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+          <Text size="xs" c="dimmed" fs="italic">Use buttons below to buy or sell.</Text>
+        </Stack>
+      </Paper>
+    )
+  }
 
   return (
     <Paper withBorder p="sm" mt="sm">

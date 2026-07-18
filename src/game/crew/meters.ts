@@ -7,6 +7,9 @@ export const ROUGH_THRESHOLD = C.roughThreshold
 export const BAIL_ROUGH_THRESHOLD = C.bailRoughThreshold
 export const TICK_HUNGER = C.tickHunger
 export const TICK_THIRST = C.tickThirst
+export const TICK_STONED = C.tickStoned
+export const WASTED_EXTRA_THIRST = C.wastedExtraThirst
+export const STONED_EXTRA_HUNGER = C.stonedExtraHunger
 export const EAT_HUNGER = C.eatHunger
 export const EAT_STONED = C.eatStoned
 export const EAT_HEALTH = C.eatHealth
@@ -16,6 +19,7 @@ export const DRINK_HEALTH = C.drinkHealth
 export const CONSUME_DRUGS_VIBE = C.consumeDrugsVibe
 export const CONSUME_DRUGS_STONED = C.consumeDrugsStoned
 export const CONSUME_DRUGS_HEALTH = C.consumeDrugsHealth
+export const CONSUME_DRUGS_HUNGER = C.consumeDrugsHunger
 export const SHOW_VIBE = C.showVibe
 export const BET_WIN_VIBE = C.betWinVibe
 export const BET_LOSS_VIBE = C.betLossVibe
@@ -347,10 +351,13 @@ export function tickCrewMeters<
   const tickSeed = rngSeed ?? 0
   const next = working.map((m, i) => {
     if (m.bailed) return m
+    const isWasted = m.stoned >= STONED_WASTED_THRESHOLD
+    const isStoned = m.stoned > 0
     let member = {
       ...m,
-      hunger: adjustMeter(m.hunger, -TICK_HUNGER),
-      thirst: adjustMeter(m.thirst, -TICK_THIRST),
+      hunger: adjustMeter(m.hunger, -(TICK_HUNGER + (isStoned ? STONED_EXTRA_HUNGER : 0))),
+      thirst: adjustMeter(m.thirst, -(TICK_THIRST + (isWasted ? WASTED_EXTRA_THIRST : 0))),
+      stoned: adjustMeter(m.stoned, TICK_STONED),
     }
     const { health, hits } = applyNeglectHealthDrain(member)
     member = { ...member, health }
@@ -452,6 +459,7 @@ export function applySubstancesToMember<T extends CrewMeterFields>(m: T): T {
     vibe: adjustMeter(m.vibe, CONSUME_DRUGS_VIBE),
     stoned: adjustMeter(m.stoned, CONSUME_DRUGS_STONED),
     health: adjustMeter(m.health, CONSUME_DRUGS_HEALTH),
+    hunger: adjustMeter(m.hunger, CONSUME_DRUGS_HUNGER),
     roughTurns: 0,
   }
 }

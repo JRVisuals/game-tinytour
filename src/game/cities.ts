@@ -43,5 +43,5 @@ export function estimateMiles(origin: string, destination: string): number {
 export function legCountForDistance(miles: number, seed: number): number {
   const base = miles < 200 ? 1 : miles < 350 ? 2 : miles < 550 ? 3 : 4
   const jitter = (Math.abs(seed) % 100) < 25 ? 1 : 0
-  return Math.min(4, Math.max(1, base + jitter - (seed % 3 === 0 && base > 1 ? 1 : 0)))
+  return Math.min(4, Math.max(2, base + jitter - (seed % 3 === 0 && base > 1 ? 1 : 0)))
 }

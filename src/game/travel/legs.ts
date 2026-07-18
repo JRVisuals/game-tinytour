@@ -24,7 +24,7 @@ export function generateTravelLegs(
       id: `leg-${seed}-${i}`,
       label: pick(T.legLabels, seed + i * 7),
       miles: milesPerLeg + (Math.abs(seed + i * 13) % 40),
-      flavor: `${pick(T.legFlavors, seed + i * 11)} (${origin} → ${destination})`,
+      flavor: pick(T.legFlavors, seed + i * 11),
       roadside: hasRoadside
         ? (pick(Object.keys(T.roadside), seed + i * 17) as RoadsideType)
         : null,
