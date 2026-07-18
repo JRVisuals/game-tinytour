@@ -70,6 +70,23 @@ export function resolveEnterShow(s: GameState): GameState {
   return { ...s, phase: 'show', currentLocation: 'venue', crewAlert: null }
 }
 
+const SNEAK_SHUT_OUT_CHANCE = 35      // % chance of being turned away
+const SNEAK_BUST_BASE_CHANCE = 15      // % base chance of drug search if shut out
+const SNEAK_BUST_PER_DRUG = 8         // additional % per drug unit carried
+
+const SHUT_OUT_LINES = [
+  'Security clocked you at the gate. Not tonight.',
+  'Too sketchy — door guy shook his head and pointed you back to the lot.',
+  'Almost made it. A flashlight and a stern look sent you back.',
+  'They weren\'t letting anyone through without a wristband. You tried.',
+]
+
+const BUST_LINES = [
+  'Security patted you down at the gate. Found the stash. Pay up or run.',
+  'Didn\'t make it past the metal detector. They found something. Pay up or run.',
+  'The door guy called over a cop. Pockets were full. Pay up or run.',
+]
+
 export function resolveFinishShow(s: GameState): GameState {
   if (!s.tour) return s
   const blocked = venueEntryBlockedMessage(s.crew)
@@ -82,6 +99,29 @@ export function resolveFinishShow(s: GameState): GameState {
   const setlist = stop.plannedSetlist
   const active = activeCrew(s.crew)
   const ticketsOk = s.resources.tickets >= active.length
+
+  // Sneak attempt risk rolls
+  if (!ticketsOk) {
+    const seed = Math.abs(s.rngSeed + stop.venue.length * 7)
+    const shutOutRoll = seed % 100
+    if (shutOutRoll < SNEAK_SHUT_OUT_CHANCE) {
+      // Shut out — check for drug bust
+      const drugs = s.resources.drugs ?? 0
+      const bustChance = SNEAK_BUST_BASE_CHANCE + drugs * SNEAK_BUST_PER_DRUG
+      const bustRoll = (seed >> 3) % 100
+      if (drugs > 0 && bustRoll < bustChance) {
+        const msg = BUST_LINES[(seed >> 5) % BUST_LINES.length]!
+        return {
+          ...s,
+          marketCopChase: { fine: 45, proceeds: 0, reason: 'drug_sell' },
+          ...setOutcome(s, msg, undefined, 'error'),
+        }
+      }
+      const shutMsg = SHUT_OUT_LINES[(seed >> 2) % SHUT_OUT_LINES.length]!
+      return resolveMissShow({ ...s, rngSeed: seed }, shutMsg)
+    }
+  }
+
   let recap = ticketsOk
     ? showRecapLine('made_it', s.rngSeed, { venue: stop.venue })
     : showRecapLine('sneak', s.rngSeed, { venue: stop.venue })
@@ -118,12 +158,12 @@ export function resolveFinishShow(s: GameState): GameState {
   }
 }
 
-export function resolveMissShow(s: GameState): GameState {
+export function resolveMissShow(s: GameState, overrideRecap?: string): GameState {
   if (!s.tour) return s
   const stop = s.tour.stops[s.tour.currentStopIndex]
   const seed = s.rngSeed + 37
   const hustle = rollMissShowHustleEvent(seed, s.crew)
-  let recap = showRecapLine('missed', seed, { venue: stop?.venue ?? 'the show' })
+  let recap = overrideRecap ?? showRecapLine('missed', seed, { venue: stop?.venue ?? 'the show' })
   const flavor = showRecapFlavor(seed + 19)
   if (flavor) recap = `${recap} ${flavor}`
 
