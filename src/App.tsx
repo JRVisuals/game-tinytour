@@ -147,7 +147,7 @@ export default function App() {
   }
 
   return (
-    <div className={`game-shell${showPlayShell || showCrewShell || showStatsShell || showRecapShell ? ' game-shell--tabs' : ''}`}>
+    <div className={`game-shell${showPlayShell || showCrewShell || showStatsShell || showRecapShell ? ' game-shell--tabs' : ''}${anyWasted ? ' game-shell--wasted' : ''}`}>
       <header className="game-shell-header">
         <div className="game-shell-header-row">
           <div className="game-shell-header-logo">
