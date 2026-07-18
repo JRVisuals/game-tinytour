@@ -241,8 +241,8 @@ export function PhaseActionBar({
               )
             })}
 
-            {/* One location action surfaced per visit */}
-            {locationAction && (() => {
+            {/* One location action surfaced per visit — balloon encounters render inline, not here */}
+            {locationAction && locationAction.id !== 'buy_balloons' && (() => {
               const disabled = !canAffordAction(locationAction, state.resources)
               let label = locationAction.label
               if (locationAction.id === 'celo') {
