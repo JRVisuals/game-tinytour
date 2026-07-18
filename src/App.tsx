@@ -46,7 +46,7 @@ export default function App() {
   const [playTab, setPlayTab] = useState<PlayTabId>('scene')
   const [wipeType, setWipeType] = useState<'full' | 'light' | null>(null)
   const [balloonFlash, setBalloonFlash] = useState(false)
-  const [showVibe, setShowVibe] = useState(false)
+  const showVibe = state.phase === 'post_show_shakedown'
   const prevBalloons = useRef<number | null>(null)
   const wipeTypeRef = useRef<'full' | 'light' | null>(null)
   const showPlayShell = !MENU_PHASES.has(state.phase)
@@ -62,8 +62,6 @@ export default function App() {
   const prevLegIndex = useRef<number | null>(null)
   const prevPhase = useRef<string | null>(null)
   const prevLocation = useRef<string | null>(null)
-  const prevPhaseForVibe = useRef<string | null>(null)
-
   function triggerWipe(type: 'full' | 'light') {
     if (type === 'light' && wipeTypeRef.current === 'full') return
     wipeTypeRef.current = type
@@ -101,14 +99,6 @@ export default function App() {
     prevBalloons.current = n
   }, [state.runStats.balloonsHuffed])
 
-  // Vibe flash on show → post_show_shakedown (own ref to avoid sharing with wipe effect)
-  useEffect(() => {
-    if (state.phase === 'post_show_shakedown' && prevPhaseForVibe.current === 'show') {
-      setShowVibe(true)
-      setTimeout(() => setShowVibe(false), 2200)
-    }
-    prevPhaseForVibe.current = state.phase
-  }, [state.phase])
 
   // Light wipe on phase or location change
   useEffect(() => {

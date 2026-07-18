@@ -466,19 +466,18 @@ html.game-chrome-lock #root {
   100%   { background-color: hsl(280, 70%, 40%); opacity: 0;    }
 }
 
-/* Vibe — 3 one-shot breaths through the rainbow, fades out (~2.25s) */
+/* Vibe — slow rainbow pulse while in post-show shakedown */
 .fx-overlay--vibe {
-  animation: fx-vibe 2.25s ease-in-out 1 forwards;
+  mix-blend-mode: screen;
+  animation: fx-vibe 4s ease-in-out infinite;
 }
 
 @keyframes fx-vibe {
-  0%     { background-color: hsl(280, 60%, 40%); opacity: 0;    }
-  22.2%  { background-color: hsl(280, 60%, 40%); opacity: 0.42; }
-  33.3%  { background-color: hsl(160, 60%, 35%); opacity: 0;    }
-  55.5%  { background-color: hsl(160, 60%, 35%); opacity: 0.38; }
-  66.6%  { background-color: hsl(40,  65%, 38%); opacity: 0;    }
-  88.8%  { background-color: hsl(40,  65%, 38%); opacity: 0.28; }
-  100%   { background-color: hsl(280, 60%, 40%); opacity: 0;    }
+  0%     { background-color: hsl(280, 80%, 30%); opacity: 0.55; }
+  25%    { background-color: hsl(160, 80%, 28%); opacity: 0.50; }
+  50%    { background-color: hsl(40,  85%, 32%); opacity: 0.55; }
+  75%    { background-color: hsl(200, 80%, 30%); opacity: 0.50; }
+  100%   { background-color: hsl(280, 80%, 30%); opacity: 0.55; }
 }
 
 /* Police — intentional hard strobe, keep snappy */
