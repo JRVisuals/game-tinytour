@@ -146,6 +146,13 @@ Travel action tooltips / help text:
 
 ### Nice-to-have backlog
 
+- **Wook relationship system** — "Wook trade offer" currently always declines. Ideas:
+  - Make it a narrative choice (accept/decline) with two outcomes
+  - Persistent wook relationship flag on run state — decisions across encounters within a run affect future interactions
+  - Possible payoffs: discounted substances, free ticket hookup, surprise gift after the show ("the wook you traded with earlier finds you after the last song and hands you a bag")
+  - Could weight the wook event to appear more often if you've traded before
+  - Needs design pass before building — complexity lives in the relationship state and how many encounters we seed per run
+
 - Journal badge when new tour-log entry
 - Contextual collapsed crew action (`[Feed]` on HUNGRY row)
 - Vehicle stash mechanic (still stub text on shakedown):
