@@ -1221,6 +1221,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // buy_balloons: location action — same effect as post-show balloon buy, no cop chase
+      if (actionId === 'buy_balloons') {
+        const price = BALANCE.markets.balloons.price
+        if (s.resources.cash < price) return s
+        const rngSeed = s.rngSeed + 31
+        const crew = applyBalloonsToCrew(s.crew)
+        const runStats = patchRunStats(s.runStats, { balloonsHuffed: s.runStats.balloonsHuffed + 1 })
+        resources = { ...resources, cash: resources.cash - price }
+        const flavor = balloonBuyMessage(rngSeed)
+        return {
+          ...s,
+          resources,
+          crew,
+          rngSeed,
+          runStats,
+          usedLocationActions: [...s.usedLocationActions, actionId],
+          turnsUntilShow: action.burnsTurn ? Math.max(0, s.turnsUntilShow - 1) : s.turnsUntilShow,
+          ...setOutcome(s, flavor),
+        }
+      }
+
       // celo: random ante $5-$50 (multiples of 5), 50% win, 50% lose
       if (actionId === 'celo') {
         const seed = Math.abs(s.rngSeed + s.resources.cash + s.runStats.milesTraveled)

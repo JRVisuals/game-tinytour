@@ -113,6 +113,15 @@ Substances give vibe+stoned. Balloons (via CJM) give vibe up, health down. Only 
 
 - **Phase-trimmed Scene UI** — OT-style one line + 2–4 verbs per phase; talk through per-phase before coding
 
+### Next session priorities
+
+- **Balloons as market commodity** — currently removed from market UI (was in post-show shakedown market). Future: add as a proper buy/sell commodity with limited stock, higher prices at venue gate, scarce elsewhere. Ties into the gas-selling NPC arc below.
+- **Gas selling → CJM extortion arc** — if you sell gas at multiple stops across a run, by the end of the tour the Clown Juice Mafia finds out and demands a cut: 30% of your cash. The more stops you sold at, the more likely/certain the shakedown. Needs: `runStats.gasSold` counter (or per-stop tracking), end-of-run or post-show trigger checking threshold, CJM lot event variant for the shakedown. Fun slow-burn NPC consequence.
+- **Balloons at post_show_shakedown** — balloon buy is now a location action at `park`, `hotel`, `friends_house`. Still need to wire it for `post_show_shakedown` (that's a phase not a LocationId so the location action system doesn't reach it — needs a dedicated lot event or inline action). Also noted: balloons as a buy/sell market commodity for a future pass.
+- **Market gameplay review** — buying low / selling high across locations should feel fun and strategic. Location profiles now in place (truck stop cheap gas+drugs, diner cheap food+beer, supermarket food+beer, farmers market food, venue scarce+expensive drugs, cheap tickets). Review: are spreads wide enough to make arbitrage rewarding? Is there enough stock to make it worth planning routes around?
+- **Narratives** — want to talk through copy, story beats, and tone across phases
+- **Bug hunt + UI polish** — final alignment pass before phone testing; check all phases on small screens
+
 ### In-game button color system
 
 Rationalized across `PhaseActionBar`, `TourTabBar`, and all play-shell screens:
@@ -138,6 +147,13 @@ Travel action tooltips / help text:
 - **Burn gas** — cruise up to 2 legs (~1 gas) — skips road events, boosts vibe, sometimes scores a beer.
 
 ### Nice-to-have backlog
+
+- **Wook relationship system** — "Wook trade offer" currently always declines. Ideas:
+  - Make it a narrative choice (accept/decline) with two outcomes
+  - Persistent wook relationship flag on run state — decisions across encounters within a run affect future interactions
+  - Possible payoffs: discounted substances, free ticket hookup, surprise gift after the show ("the wook you traded with earlier finds you after the last song and hands you a bag")
+  - Could weight the wook event to appear more often if you've traded before
+  - Needs design pass before building — complexity lives in the relationship state and how many encounters we seed per run
 
 - Journal badge when new tour-log entry
 - Contextual collapsed crew action (`[Feed]` on HUNGRY row)

@@ -37,16 +37,16 @@
     "foodSell": 12,
     "beerBuy": 14,
     "beerSell": 11,
-    "drugsBuy": 38,
-    "drugsSell": 30,
-    "ticketBuy": 30,
+    "drugsBuy": 48,
+    "drugsSell": 36,
+    "ticketBuy": 38,
     "stock": {
       "food": 3,
       "beer": 6,
-      "drugs": 2,
-      "tickets": 5
+      "drugs": 1,
+      "tickets": 8
     },
-    "flavor": "Gate prices — tourist trap buys, desperate-fan sell prices. Flip your stash before doors."
+    "flavor": "Gate prices — scalper rates on tickets, substances are scarce. Flip your stash before doors."
   },
   "drugSellCopChancePercent": 14,
   "balloons": {

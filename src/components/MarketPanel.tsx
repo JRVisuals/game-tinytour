@@ -9,7 +9,6 @@ interface MarketPanelProps {
   flavor?: string | null
   contextLabel: string
   showTickets?: boolean
-  showBalloons?: boolean
   /** When true, show prices/stock info only — buy/sell buttons live in PhaseActionBar */
   displayOnly?: boolean
 }
@@ -20,12 +19,10 @@ export function MarketPanel({
   flavor,
   contextLabel: _contextLabel,
   showTickets,
-  showBalloons,
   displayOnly = false,
 }: MarketPanelProps) {
-  const { state, marketBuy, marketSell, buyBalloons, resolveMarketCopChase } = useGame()
+  const { state, marketBuy, marketSell, resolveMarketCopChase } = useGame()
   const chase = state.marketCopChase
-  const balloonPrice = BALANCE.markets.balloons.price
   const chasePrompt = chase
     ? pickText(
         chase.reason === 'balloons'
@@ -51,9 +48,6 @@ export function MarketPanel({
     }
     if (state.resources.hasVehicle && prices.gasBuy != null && stock.gas > 0) {
       rows.push({ icon: '⛽', label: 'Gas', buy: `$${prices.gasBuy}`, sell: '—', stock: `${stock.gas} left` })
-    }
-    if (showBalloons) {
-      rows.push({ icon: '🎈', label: 'Balloons', buy: `$${balloonPrice}`, sell: '—', stock: '∞' })
     }
 
     return (
@@ -136,16 +130,6 @@ export function MarketPanel({
       )}
 
       <Stack gap="xs">
-        {showBalloons && (
-          <Button
-            size="xs"
-            color="grape"
-            onClick={() => buyBalloons()}
-            disabled={!!chase || state.resources.cash < balloonPrice}
-          >
-            Balloons ${balloonPrice} — vibe up, health down
-          </Button>
-        )}
         <Group gap="xs">
           <Button
             size="xs"

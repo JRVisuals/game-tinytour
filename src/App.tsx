@@ -46,7 +46,7 @@ export default function App() {
   const [playTab, setPlayTab] = useState<PlayTabId>('scene')
   const [wipeType, setWipeType] = useState<'full' | 'light' | null>(null)
   const [balloonFlash, setBalloonFlash] = useState(false)
-  const [showVibe, setShowVibe] = useState(false)
+  const showVibe = state.phase === 'post_show'
   const prevBalloons = useRef<number | null>(null)
   const wipeTypeRef = useRef<'full' | 'light' | null>(null)
   const showPlayShell = !MENU_PHASES.has(state.phase)
@@ -57,13 +57,11 @@ export default function App() {
   const hustleEnabled = isHustleContext(state)
   const crewAlert = hasUrgentCrew(state) || !!state.crewAlert
   const anyWasted = wastedActiveCrew(state.crew).length > 0
-  const pulledOver = state.travel?.pendingEvent?.id === 'pulled_over'
+  const pulledOver = state.travel?.pendingEvent?.eventType === 'pulled_over'
   const wasAtRoadside = useRef(false)
   const prevLegIndex = useRef<number | null>(null)
   const prevPhase = useRef<string | null>(null)
   const prevLocation = useRef<string | null>(null)
-  const prevPhaseForVibe = useRef<string | null>(null)
-
   function triggerWipe(type: 'full' | 'light') {
     if (type === 'light' && wipeTypeRef.current === 'full') return
     wipeTypeRef.current = type
@@ -96,19 +94,11 @@ export default function App() {
     const n = state.runStats.balloonsHuffed
     if (prevBalloons.current !== null && n > prevBalloons.current) {
       setBalloonFlash(true)
-      setTimeout(() => setBalloonFlash(false), 2250)
+      setTimeout(() => setBalloonFlash(false), 3400)
     }
     prevBalloons.current = n
   }, [state.runStats.balloonsHuffed])
 
-  // Vibe flash on show → post_show_shakedown (own ref to avoid sharing with wipe effect)
-  useEffect(() => {
-    if (state.phase === 'post_show_shakedown' && prevPhaseForVibe.current === 'show') {
-      setShowVibe(true)
-      setTimeout(() => setShowVibe(false), 2200)
-    }
-    prevPhaseForVibe.current = state.phase
-  }, [state.phase])
 
   // Light wipe on phase or location change
   useEffect(() => {
@@ -157,7 +147,7 @@ export default function App() {
   }
 
   return (
-    <div className={`game-shell${showPlayShell || showCrewShell || showStatsShell || showRecapShell ? ' game-shell--tabs' : ''}`}>
+    <div className={`game-shell${showPlayShell || showCrewShell || showStatsShell || showRecapShell ? ' game-shell--tabs' : ''}${anyWasted ? ' game-shell--wasted' : ''}`}>
       <header className="game-shell-header">
         <div className="game-shell-header-row">
           <div className="game-shell-header-logo">

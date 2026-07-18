@@ -34,7 +34,6 @@ export function PhaseActionBar({
     leaveRoadside,
     marketBuy,
     marketSell,
-    buyBalloons,
     leaveRoadsideAndAdvance,
     performLocationAction,
     hotelCrash,
@@ -53,11 +52,8 @@ export function PhaseActionBar({
   if (activeTab === 'hustle' && canShowHustleMarket(state) && state.currentMarket && state.currentMarketStock) {
     const { currentMarket: p, currentMarketStock: s, resources: r } = state
     const chase = state.marketCopChase
-    const postShowBalloons = phase === 'post_show_shakedown'
-    const showBalloons = postShowBalloons
     const atRoadside = isAtRoadsideHustle(state)
     const isPreShowLot = phase === 'shakedown' || phase === 'location'
-    const balloonPrice = BALANCE.markets.balloons.price
     const showTickets = marketShowTickets(state)
 
     const outline = '0 0 2px rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1), -1px -1px 0 rgba(0,0,0,1)'
@@ -78,11 +74,6 @@ export function PhaseActionBar({
                 Keep rolling
               </Button>
             ) : null}
-            {showBalloons && (
-              <Button size="xs" color="grape" disabled={!!chase || r.cash < balloonPrice} onClick={() => buyBalloons()} title={`Buy balloons — $${balloonPrice}`}>
-                {D}🎈 ${balloonPrice}
-              </Button>
-            )}
             <Button size="xs" disabled={!!chase || r.cash < p.foodBuy || s.food <= 0} onClick={() => marketBuy('food')} title={`Buy food — $${p.foodBuy}`}>
               {D}🌮 ${p.foodBuy}
             </Button>
@@ -241,8 +232,8 @@ export function PhaseActionBar({
               )
             })}
 
-            {/* One location action surfaced per visit */}
-            {locationAction && (() => {
+            {/* One location action surfaced per visit — balloon encounters render inline, not here */}
+            {locationAction && locationAction.id !== 'buy_balloons' && (() => {
               const disabled = !canAffordAction(locationAction, state.resources)
               let label = locationAction.label
               if (locationAction.id === 'celo') {

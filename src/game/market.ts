@@ -99,6 +99,121 @@ export function rollMarket(seed: number, context: MarketContext): MarketSnapshot
     }
   }
 
+  if (context === 'truck_stop') {
+    const TIER = M.tiers
+    const drugsBuy = jitter(TIER.drugsBuy!.low, h + 5)
+    const S = M.stock
+    const snapped = applyGas(
+      context,
+      h,
+      {
+        foodBuy: jitter(TIER.foodBuy!.mid, h + 1),
+        foodSell: sellFromBuy(jitter(TIER.foodBuy!.mid, h + 1), 'mid', h + 2),
+        beerBuy: jitter(TIER.beerBuy!.mid, h + 3),
+        beerSell: sellFromBuy(jitter(TIER.beerBuy!.mid, h + 3), 'mid', h + 4),
+        drugsBuy,
+        drugsSell: sellFromBuy(drugsBuy, 'high', h + 6),
+        ticketBuy: jitter(TIER.ticketBuy!.high, h + 7),
+      },
+      {
+        food: S.foodBase + (h % S.foodMod),
+        beer: S.beerBase + ((h >> S.beerShift) % S.beerMod),
+        drugs: S.drugsBase + ((h >> S.drugsShift) % S.drugsMod) + 2,
+        tickets: 0,
+      },
+    )
+    // gas stock boosted at truck stops
+    return {
+      prices: snapped.prices,
+      stock: { ...snapped.stock, gas: Math.max(snapped.stock.gas, snapped.stock.gas + 2) },
+      flavor: 'Truck stop — cheap gas and substances, lot-head pricing on everything else.',
+    }
+  }
+
+  if (context === 'rest_area') {
+    const TIER = M.tiers
+    const drugsBuy = jitter(TIER.drugsBuy!.low, h + 5)
+    const S = M.stock
+    const snapped = applyGas(
+      context,
+      h,
+      {
+        foodBuy: jitter(TIER.foodBuy!.mid, h + 1),
+        foodSell: sellFromBuy(jitter(TIER.foodBuy!.mid, h + 1), 'low', h + 2),
+        beerBuy: jitter(TIER.beerBuy!.mid, h + 3),
+        beerSell: sellFromBuy(jitter(TIER.beerBuy!.mid, h + 3), 'low', h + 4),
+        drugsBuy,
+        drugsSell: sellFromBuy(drugsBuy, 'mid', h + 6),
+        ticketBuy: jitter(TIER.ticketBuy!.high, h + 7),
+      },
+      {
+        food: S.foodBase + (h % S.foodMod),
+        beer: S.beerBase + ((h >> S.beerShift) % S.beerMod) - 1,
+        drugs: S.drugsBase + ((h >> S.drugsShift) % S.drugsMod) + 1,
+        tickets: 0,
+      },
+    )
+    return {
+      ...snapped,
+      flavor: 'Rest area — gas and substances from the right people. Slim pickings otherwise.',
+    }
+  }
+
+  if (context === 'diner') {
+    const TIER = M.tiers
+    const foodBuy = jitter(TIER.foodBuy!.low, h + 1)
+    const beerBuy = jitter(TIER.beerBuy!.low, h + 3)
+    const S = M.stock
+    return {
+      prices: {
+        foodBuy,
+        foodSell: sellFromBuy(foodBuy, 'high', h + 2),
+        beerBuy,
+        beerSell: sellFromBuy(beerBuy, 'high', h + 4),
+        drugsBuy: jitter(TIER.drugsBuy!.high, h + 5),
+        drugsSell: sellFromBuy(jitter(TIER.drugsBuy!.high, h + 5), 'low', h + 6),
+        ticketBuy: jitter(TIER.ticketBuy!.high, h + 7),
+      },
+      stock: {
+        food: S.foodBase + (h % S.foodMod) + 3,
+        beer: S.beerBase + ((h >> S.beerShift) % S.beerMod) + 2,
+        drugs: Math.max(0, S.drugsBase + ((h >> S.drugsShift) % S.drugsMod) - 1),
+        tickets: 0,
+        gas: 0,
+      },
+      flavor: "Diner — stacked plates, cold tallboys. Don't ask about anything harder.",
+    }
+  }
+
+  if (context === 'farmers_market') {
+    const TIER = M.tiers
+    const foodBuy = jitter(TIER.foodBuy!.low, h + 1)
+    const S = M.stock
+    const snapped = applyGas(
+      context,
+      h,
+      {
+        foodBuy,
+        foodSell: sellFromBuy(foodBuy, 'high', h + 2),
+        beerBuy: jitter(TIER.beerBuy!.mid, h + 3),
+        beerSell: sellFromBuy(jitter(TIER.beerBuy!.mid, h + 3), 'mid', h + 4),
+        drugsBuy: jitter(TIER.drugsBuy!.mid, h + 5),
+        drugsSell: sellFromBuy(jitter(TIER.drugsBuy!.mid, h + 5), 'mid', h + 6),
+        ticketBuy: jitter(TIER.ticketBuy!.high, h + 7),
+      },
+      {
+        food: S.foodBase + (h % S.foodMod) + 3,
+        beer: S.beerBase + ((h >> S.beerShift) % S.beerMod),
+        drugs: S.drugsBase + ((h >> S.drugsShift) % S.drugsMod),
+        tickets: 0,
+      },
+    )
+    return {
+      ...snapped,
+      flavor: "Farmers market — fresh and cheap. The gas situation's surprisingly fine.",
+    }
+  }
+
   if (context === 'supermarket') {
     const TIER = M.tiers
     const foodBuy = jitter(TIER.foodBuy!.low, h + 1)

@@ -466,19 +466,18 @@ html.game-chrome-lock #root {
   100%   { background-color: hsl(280, 70%, 40%); opacity: 0;    }
 }
 
-/* Vibe — 3 one-shot breaths through the rainbow, fades out (~2.25s) */
+/* Vibe — slow rainbow pulse on post-show recap */
 .fx-overlay--vibe {
-  animation: fx-vibe 2.25s ease-in-out 1 forwards;
+  mix-blend-mode: color;
+  animation: fx-vibe 6s ease-in-out infinite;
 }
 
 @keyframes fx-vibe {
-  0%     { background-color: hsl(280, 60%, 40%); opacity: 0;    }
-  22.2%  { background-color: hsl(280, 60%, 40%); opacity: 0.42; }
-  33.3%  { background-color: hsl(160, 60%, 35%); opacity: 0;    }
-  55.5%  { background-color: hsl(160, 60%, 35%); opacity: 0.38; }
-  66.6%  { background-color: hsl(40,  65%, 38%); opacity: 0;    }
-  88.8%  { background-color: hsl(40,  65%, 38%); opacity: 0.28; }
-  100%   { background-color: hsl(280, 60%, 40%); opacity: 0;    }
+  0%     { background-color: hsl(280, 70%, 50%); opacity: 0.45; }
+  25%    { background-color: hsl(160, 70%, 45%); opacity: 0.40; }
+  50%    { background-color: hsl(40,  75%, 48%); opacity: 0.45; }
+  75%    { background-color: hsl(200, 70%, 45%); opacity: 0.40; }
+  100%   { background-color: hsl(280, 70%, 50%); opacity: 0.45; }
 }
 
 /* Police — intentional hard strobe, keep snappy */
@@ -496,7 +495,7 @@ html.game-chrome-lock #root {
 .fx-overlay--balloon {
   background-color: #000;
   mix-blend-mode: multiply;
-  animation: fx-balloon 2.25s ease-in-out forwards;
+  animation: fx-balloon 3.4s ease-in-out forwards;
 }
 
 @keyframes fx-balloon {
@@ -511,6 +510,40 @@ html.game-chrome-lock #root {
 
 @media (prefers-reduced-motion: reduce) {
   .fx-overlay { display: none; }
+}
+
+/* ── Wasted UI flicker — ghostly random-feeling element flicker ── */
+@keyframes wasted-flicker {
+  0%,  82%          { opacity: 1;    filter: none; }
+  83%               { opacity: 0.25; filter: blur(0.5px) brightness(1.4); }
+  84%               { opacity: 1;    filter: none; }
+  87%               { opacity: 0.4;  filter: blur(0.3px); }
+  88%               { opacity: 1;    filter: none; }
+  100%              { opacity: 1;    filter: none; }
+}
+
+.game-shell--wasted .mantine-Button-root:nth-child(3n+1),
+.game-shell--wasted .mantine-Text-root:nth-child(4n+2),
+.game-shell--wasted .mantine-Paper-root:nth-child(5n+1) {
+  animation: wasted-flicker 7s ease-in-out infinite;
+  animation-delay: 0s;
+}
+.game-shell--wasted .mantine-Button-root:nth-child(3n+2),
+.game-shell--wasted .mantine-Text-root:nth-child(4n+3),
+.game-shell--wasted .mantine-Badge-root:nth-child(2n) {
+  animation: wasted-flicker 9s ease-in-out infinite;
+  animation-delay: -3.1s;
+}
+.game-shell--wasted .mantine-Button-root:nth-child(3n),
+.game-shell--wasted .mantine-Text-root:nth-child(4n),
+.game-shell--wasted .mantine-Paper-root:nth-child(5n+3) {
+  animation: wasted-flicker 11s ease-in-out infinite;
+  animation-delay: -6.4s;
+}
+.game-shell--wasted .mantine-Text-root:nth-child(4n+1),
+.game-shell--wasted .mantine-Badge-root:nth-child(3n+1) {
+  animation: wasted-flicker 8s ease-in-out infinite;
+  animation-delay: -1.7s;
 }
 
 .clown-juice-panel.mantine-Paper-root {
