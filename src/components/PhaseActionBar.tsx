@@ -2,7 +2,7 @@ import { Button, Group, ScrollArea } from '@mantine/core'
 import { activeCrew, canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
 import { BALANCE } from '../game/config'
-import { canShowHustleMarket, marketShowTickets } from '../game/hustle/tab'
+import { canShowHustleMarket, marketShowTickets, isAtRoadsideHustle } from '../game/hustle/tab'
 import { pickLocationAction, canAffordAction } from '../game/location/locationEvents'
 import { LOT_DESTINATIONS } from '../game/marketCache'
 import { ROADSIDE_LABELS, pushThroughCost } from '../game/travel/legs'
@@ -55,6 +55,8 @@ export function PhaseActionBar({
     const chase = state.marketCopChase
     const postShowBalloons = phase === 'post_show_shakedown'
     const showBalloons = postShowBalloons
+    const atRoadside = isAtRoadsideHustle(state)
+    const isPreShowLot = phase === 'shakedown' || phase === 'location'
     const balloonPrice = BALANCE.markets.balloons.price
     const showTickets = marketShowTickets(state)
 
@@ -66,10 +68,16 @@ export function PhaseActionBar({
       <div className="phase-action-bar">
         <ScrollArea scrollbarSize={4}>
           <Group px="sm" py={6} gap="xs" wrap="nowrap">
-            {/* Quick exit — leave roadside, advance leg, switch to scene */}
-            <Button size="xs" color="blue" onClick={() => { leaveRoadsideAndAdvance(); onSwitchToScene() }}>
-              Keep rolling
-            </Button>
+            {/* Quick exit — context-aware: venue gates on lot, keep rolling on road */}
+            {isPreShowLot ? (
+              <Button size="xs" color="blue" onClick={() => { goToVenueGates(); onSwitchToScene() }}>
+                Venue Gates
+              </Button>
+            ) : atRoadside ? (
+              <Button size="xs" color="blue" onClick={() => { leaveRoadsideAndAdvance(); onSwitchToScene() }}>
+                Keep rolling
+              </Button>
+            ) : null}
             {showBalloons && (
               <Button size="xs" color="grape" disabled={!!chase || r.cash < balloonPrice} onClick={() => buyBalloons()} title={`Buy balloons — $${balloonPrice}`}>
                 {D}🎈 ${balloonPrice}
@@ -236,6 +244,12 @@ export function PhaseActionBar({
             {/* One location action surfaced per visit */}
             {locationAction && (() => {
               const disabled = !canAffordAction(locationAction, state.resources)
+              let label = locationAction.label
+              if (locationAction.id === 'celo') {
+                const seed = Math.abs(state.rngSeed + state.resources.cash + state.runStats.milesTraveled)
+                const ante = (1 + (seed % 10)) * 5
+                label = `Play celó ($${ante} ante)`
+              }
               return (
                 <Button
                   key={locationAction.id}
@@ -245,7 +259,7 @@ export function PhaseActionBar({
                   disabled={disabled}
                   onClick={() => performLocationAction(locationAction.id)}
                 >
-                  {locationAction.label}
+                  {label}
                 </Button>
               )
             })()}
@@ -279,7 +293,6 @@ export function PhaseActionBar({
                 className={venueOk ? 'action-bar-btn' : undefined}
                 disabled={!venueOk}
                 onClick={goToVenueGates}
-                title={!venueOk ? (gateMsg ?? undefined) : undefined}
               >
                 {noTurns ? 'Showtime — venue gates' : 'Venue gates'}
               </Button>

@@ -1,5 +1,6 @@
 import { Button, Group, Stack, Text } from '@mantine/core'
 import { SceneBeatSlot } from '../components/SceneBeatSlot'
+import { canEnterVenue, venueEntryBlockedMessage } from '../game/crew/meters'
 import { useGame } from '../game/GameContext'
 import { RESOURCE_BALANCE } from '../game/resources'
 import { shakedownSceneBeat } from '../game/scene/beat'
@@ -9,6 +10,8 @@ export function ShakedownScreen() {
   const { state, adjustResources } = useGame()
   const stop = state.tour?.stops[state.tour.currentStopIndex]
   const beat = shakedownSceneBeat(state)
+  const venueOk = canEnterVenue(state.crew)
+  const gateMsg = venueEntryBlockedMessage(state.crew)
 
   return (
     <Stack>
@@ -21,6 +24,9 @@ export function ShakedownScreen() {
       </Text>
 
       <SceneBeatSlot beat={beat} />
+      {!venueOk && gateMsg && (
+        <Text size="sm" c="red.4">{gateMsg}</Text>
+      )}
 
       {state.resources.hasVehicle ? (
         <Text size="sm">Vehicle stash available (stub).</Text>

@@ -1,4 +1,4 @@
-import { Button, Paper, SimpleGrid, Stack, Text } from '@mantine/core'
+import { Paper, SimpleGrid, Stack, Text } from '@mantine/core'
 import { TabPanelHeader } from '../components/TabPanelHeader'
 import { TourStoryPanel } from '../components/TourStoryPanel'
 import { SetlistRecap } from '../components/SetlistRecap'
@@ -7,7 +7,7 @@ import { useGame } from '../game/GameContext'
 import { STAT_LABELS } from '../game/types'
 
 export function RunRecapScreen() {
-  const { state, finishRunRecap } = useGame()
+  const { state } = useGame()
   const isOver =
     state.runRecapMessage.toLowerCase().includes('bailed') ||
     state.runRecapMessage.toLowerCase().includes('shuffled')
@@ -66,7 +66,6 @@ export function RunRecapScreen() {
         </Paper>
       )}
 
-      <Button onClick={finishRunRecap}>Back to title</Button>
     </Stack>
   )
 }

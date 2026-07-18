@@ -7,6 +7,9 @@ export const ROUGH_THRESHOLD = C.roughThreshold
 export const BAIL_ROUGH_THRESHOLD = C.bailRoughThreshold
 export const TICK_HUNGER = C.tickHunger
 export const TICK_THIRST = C.tickThirst
+export const TICK_STONED = C.tickStoned
+export const WASTED_EXTRA_THIRST = C.wastedExtraThirst
+export const STONED_EXTRA_HUNGER = C.stonedExtraHunger
 export const EAT_HUNGER = C.eatHunger
 export const EAT_STONED = C.eatStoned
 export const EAT_HEALTH = C.eatHealth
@@ -348,10 +351,13 @@ export function tickCrewMeters<
   const tickSeed = rngSeed ?? 0
   const next = working.map((m, i) => {
     if (m.bailed) return m
+    const isWasted = m.stoned >= STONED_WASTED_THRESHOLD
+    const isStoned = m.stoned > 0
     let member = {
       ...m,
-      hunger: adjustMeter(m.hunger, -TICK_HUNGER),
-      thirst: adjustMeter(m.thirst, -TICK_THIRST),
+      hunger: adjustMeter(m.hunger, -(TICK_HUNGER + (isStoned ? STONED_EXTRA_HUNGER : 0))),
+      thirst: adjustMeter(m.thirst, -(TICK_THIRST + (isWasted ? WASTED_EXTRA_THIRST : 0))),
+      stoned: adjustMeter(m.stoned, TICK_STONED),
     }
     const { health, hits } = applyNeglectHealthDrain(member)
     member = { ...member, health }

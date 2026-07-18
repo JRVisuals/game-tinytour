@@ -8,6 +8,7 @@ import { TourTabBar, type PlayTabId } from './components/TourTabBar'
 import { PhaseActionBar } from './components/PhaseActionBar'
 import { CrewActionBar } from './components/CrewActionBar'
 import { StatsActionBar } from './components/StatsActionBar'
+import { RecapActionBar } from './components/RecapActionBar'
 import { CrewTab } from './components/tabs/CrewTab'
 import { HustleTab } from './components/tabs/HustleTab'
 import { JournalTab } from './components/tabs/JournalTab'
@@ -15,13 +16,13 @@ import { SceneTab } from './components/tabs/SceneTab'
 import { PlayTabProvider } from './components/PlayTabContext'
 import { OutcomeToast } from './components/OutcomeToast'
 import { VersionBadge } from './components/VersionBadge'
-import { crewStatusChip } from './game/crew/meters'
+import { crewStatusChip, wastedActiveCrew } from './game/crew/meters'
 import { hustleTabActive, isHustleContext } from './game/hustle/tab'
 import { useGame } from './game/GameContext'
 import { PHASE_LABELS, type GameState } from './game/types'
 import { TitleScreen } from './screens/TitleScreen'
 
-const MENU_PHASES = new Set(['title', 'crew', 'stats', 'run_recap', 'day_job'])
+const MENU_PHASES = new Set(['title', 'crew', 'stats', 'run_recap', 'pre_day_job', 'day_job'])
 
 function phaseLabel(state: GameState): string {
   if (state.phase === 'location' && state.currentLocation === 'venue') return 'Gates'
@@ -43,15 +44,33 @@ function hasUrgentCrew(state: GameState): boolean {
 export default function App() {
   const { state } = useGame()
   const [playTab, setPlayTab] = useState<PlayTabId>('scene')
-  const [wiping, setWiping] = useState(false)
+  const [wipeType, setWipeType] = useState<'full' | 'light' | null>(null)
+  const [balloonFlash, setBalloonFlash] = useState(false)
+  const [showVibe, setShowVibe] = useState(false)
+  const prevBalloons = useRef<number | null>(null)
+  const wipeTypeRef = useRef<'full' | 'light' | null>(null)
   const showPlayShell = !MENU_PHASES.has(state.phase)
   const showCrewShell = state.phase === 'crew'
   const showStatsShell = state.phase === 'stats'
+  const showRecapShell = state.phase === 'run_recap' || state.phase === 'pre_day_job' || state.phase === 'day_job'
   const hustleActive = hustleTabActive(state)
   const hustleEnabled = isHustleContext(state)
   const crewAlert = hasUrgentCrew(state) || !!state.crewAlert
+  const anyWasted = wastedActiveCrew(state.crew).length > 0
+  const pulledOver = state.travel?.pendingEvent?.id === 'pulled_over'
   const wasAtRoadside = useRef(false)
   const prevLegIndex = useRef<number | null>(null)
+  const prevPhase = useRef<string | null>(null)
+  const prevLocation = useRef<string | null>(null)
+  const prevPhaseForVibe = useRef<string | null>(null)
+
+  function triggerWipe(type: 'full' | 'light') {
+    if (type === 'light' && wipeTypeRef.current === 'full') return
+    wipeTypeRef.current = type
+    setWipeType(type)
+    const ms = type === 'full' ? 500 : 250
+    setTimeout(() => { wipeTypeRef.current = null; setWipeType(null) }, ms)
+  }
 
   useEffect(() => {
     if (playTab === 'hustle' && !hustleEnabled) setPlayTab('scene')
@@ -59,22 +78,48 @@ export default function App() {
 
   useEffect(() => {
     const atRoadside = state.phase === 'travel' && !!state.travel?.atRoadside
-    if (atRoadside && !wasAtRoadside.current) {
-      setPlayTab('hustle')
-    }
+    if (atRoadside && !wasAtRoadside.current) setPlayTab('hustle')
     wasAtRoadside.current = atRoadside
   }, [state.phase, state.travel?.atRoadside])
 
-  // Trigger wipe animation on leg advance
+  // Full wipe on travel leg advance
   useEffect(() => {
     const idx = state.travel?.currentLegIndex ?? null
     if (idx !== null && prevLegIndex.current !== null && idx !== prevLegIndex.current) {
-      setWiping(true)
-      const t = setTimeout(() => setWiping(false), 500)
-      return () => clearTimeout(t)
+      triggerWipe('full')
     }
     prevLegIndex.current = idx
   }, [state.travel?.currentLegIndex])
+
+  // Balloon flash on huff
+  useEffect(() => {
+    const n = state.runStats.balloonsHuffed
+    if (prevBalloons.current !== null && n > prevBalloons.current) {
+      setBalloonFlash(true)
+      setTimeout(() => setBalloonFlash(false), 2250)
+    }
+    prevBalloons.current = n
+  }, [state.runStats.balloonsHuffed])
+
+  // Vibe flash on show → post_show_shakedown (own ref to avoid sharing with wipe effect)
+  useEffect(() => {
+    if (state.phase === 'post_show_shakedown' && prevPhaseForVibe.current === 'show') {
+      setShowVibe(true)
+      setTimeout(() => setShowVibe(false), 2200)
+    }
+    prevPhaseForVibe.current = state.phase
+  }, [state.phase])
+
+  // Light wipe on phase or location change
+  useEffect(() => {
+    const ph = state.phase
+    const loc = state.currentLocation
+    if (prevPhase.current !== null && (ph !== prevPhase.current || loc !== prevLocation.current)) {
+      triggerWipe('light')
+    }
+    prevPhase.current = ph
+    prevLocation.current = loc
+  }, [state.phase, state.currentLocation])
 
   useEffect(() => {
     if (state.phase === 'title') {
@@ -90,9 +135,9 @@ export default function App() {
       case 'hustle':
         return <HustleTab />
       case 'crew':
-        return <CrewTab onBackToScene={() => setPlayTab('scene')} />
+        return <CrewTab />
       case 'journal':
-        return <JournalTab onBackToScene={() => setPlayTab('scene')} />
+        return <JournalTab />
       default:
         return <SceneTab />
     }
@@ -112,7 +157,7 @@ export default function App() {
   }
 
   return (
-    <div className={`game-shell${showPlayShell || showCrewShell || showStatsShell ? ' game-shell--tabs' : ''}`}>
+    <div className={`game-shell${showPlayShell || showCrewShell || showStatsShell || showRecapShell ? ' game-shell--tabs' : ''}`}>
       <header className="game-shell-header">
         <div className="game-shell-header-row">
           <div className="game-shell-header-logo">
@@ -151,6 +196,7 @@ export default function App() {
             crewAlert={crewAlert}
             hustleActive={hustleActive}
             hustleEnabled={hustleEnabled}
+            sceneAlert={playTab === 'crew' || playTab === 'journal'}
           />
         </footer>
       )}
@@ -164,14 +210,23 @@ export default function App() {
           <StatsActionBar />
         </footer>
       )}
+      {showRecapShell && (
+        <footer className="game-shell-footer">
+          <RecapActionBar />
+        </footer>
+      )}
 
       {showPlayShell && <OutcomeToast />}
       <VersionBadge />
-      {wiping && (
-        <div className="travel-wipe" aria-hidden>
+      {anyWasted && <div className="fx-overlay fx-overlay--wasted" aria-hidden />}
+      {showVibe && !anyWasted && <div className="fx-overlay fx-overlay--vibe" aria-hidden />}
+      {pulledOver && <div className="fx-overlay fx-overlay--police" aria-hidden />}
+      {balloonFlash && <div className="fx-overlay fx-overlay--balloon" aria-hidden />}
+      {wipeType && (
+        <div className={`travel-wipe travel-wipe--${wipeType}`} aria-hidden>
           <div className="travel-wipe-bar travel-wipe-bar--1" />
-          <div className="travel-wipe-bar travel-wipe-bar--2" />
-          <div className="travel-wipe-bar travel-wipe-bar--3" />
+          {wipeType === 'full' && <div className="travel-wipe-bar travel-wipe-bar--2" />}
+          {wipeType === 'full' && <div className="travel-wipe-bar travel-wipe-bar--3" />}
         </div>
       )}
     </div>

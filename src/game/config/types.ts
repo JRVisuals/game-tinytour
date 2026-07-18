@@ -5,6 +5,9 @@ export interface CrewMetersBalance {
   roughWarningMinTurns: number
   tickHunger: number
   tickThirst: number
+  tickStoned: number
+  wastedExtraThirst: number
+  stonedExtraHunger: number
   eatHunger: number
   eatStoned: number
   eatHealth: number

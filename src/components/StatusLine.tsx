@@ -1,4 +1,4 @@
-import { Badge, Divider, Group, Paper, Progress, Stack, Text } from '@mantine/core'
+import { Badge, Group, Paper, Progress, Stack, Text } from '@mantine/core'
 import { TourMapStrip } from './TourMapStrip'
 import { RESOURCE_EMOJI } from '../game/resources'
 import { isLotTurnPhase, showtimeTurnsLabel } from '../game/showtime'
@@ -21,56 +21,73 @@ export function StatusLine() {
     ? (travel.currentLegIndex / travel.legs.length) * 100
     : null
 
+  const legText = isTravel
+    ? `Leg ${travel.currentLegIndex + 1}/${travel.legs.length}${(() => { const leg = travel.legs[travel.currentLegIndex]; return leg ? ` · ~${leg.miles}mi` : '' })()}`
+    : null
+
+  const showNum = tour ? tour.currentStopIndex + 1 : null
+  const totalShows = tour ? tour.stops.length : null
+  const isAtLot = ['shakedown', 'location', 'show', 'post_show', 'post_show_shakedown'].includes(state.phase)
+  const venueName = isAtLot && stop ? stop.venue : null
+
   return (
     <Paper withBorder p="sm" className="solid-panel play-chrome-status" mb={0}>
-      <Stack gap={6}>
-        {/* Band + location header */}
-        <Group justify="space-between" align="center" wrap="nowrap" gap="sm" className="status-line-top">
-          <Text size="md" fw={700} c="gray.0" lh={1.3} style={{ flex: '1 1 auto', minWidth: 0 }}>
-            {tour && stop ? <>{tour.band.name} · {stop.city}</> : 'On tour'}
-          </Text>
-          <div className="status-line-trail">
+      <div className="status-line-columns">
+        {/* Left: everything stacked compactly */}
+        <Stack gap={4} style={{ flex: '1 1 auto', minWidth: 0 }}>
+          {/* Band + city + turns badge */}
+          <Group align="center" gap="xs" wrap="nowrap">
+            <Text size="sm" fw={700} c="gray.0" lh={1.2} style={{ flex: '1 1 auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {tour && stop ? <>{tour.band.name} · {stop.city}</> : 'On tour'}
+            </Text>
             {showTurns && (
-              <Badge size="lg" variant="filled" color={state.turnsUntilShow <= 0 ? 'red' : 'orange'}>
+              <Badge size="xs" variant="filled" color={state.turnsUntilShow <= 0 ? 'red' : 'orange'} style={{ flexShrink: 0 }}>
                 {showtimeTurnsLabel(state.turnsUntilShow)}
               </Badge>
             )}
-            {tour && tour.stops.length > 0 && (
-              <TourMapStrip tour={tour} hint={foreshadow} />
-            )}
-          </div>
-        </Group>
+          </Group>
 
-        {/* Travel: route + progress bar */}
-        {isTravel && (
-          <Stack gap={4}>
-            <Text size="xs" c="dimmed">
-              {travel.origin} → {travel.destination} · Leg {travel.currentLegIndex + 1} of {travel.legs.length}
-              {(() => { const leg = travel.legs[travel.currentLegIndex]; return leg ? ` · ~${leg.miles} mi` : '' })()}
-            </Text>
-            {travelProgress !== null && (
-              <Progress value={travelProgress} size="xs" color="teal" />
-            )}
-          </Stack>
-        )}
-
-        <Divider opacity={0.3} />
-
-        {/* Resources */}
-        <Group gap="md" wrap="wrap">
-          <Text size="md" fw={700}>
-            {RESOURCE_EMOJI.cash} {resources.cash}
-          </Text>
-          {RESOURCE_KEYS.filter((k) => k !== 'cash').map((key) => (
-            <Text key={key} size="md" fw={500}>
-              {RESOURCE_EMOJI[key]} {String(resources[key])}
-            </Text>
-          ))}
-          {resources.hasVehicle && (
-            <Text size="md" fw={500}>{RESOURCE_EMOJI.hasVehicle}</Text>
+          {/* Travel route + progress while driving */}
+          {isTravel && (
+            <Stack gap={3}>
+              <Text size="xs" c="dimmed">
+                {travel.origin} → {travel.destination}
+              </Text>
+              {travelProgress !== null && (
+                <Progress value={travelProgress} size={6} color="teal" className="travel-progress" />
+              )}
+            </Stack>
           )}
-        </Group>
-      </Stack>
+
+          {/* Lot flavor */}
+          {isAtLot && (
+            <Text size="xs" c="dimmed" fs="italic">
+              So you thought you might come to the show…
+            </Text>
+          )}
+
+          {/* Resources */}
+          <Group gap="sm" wrap="wrap">
+            <Text size="md" fw={700}>{RESOURCE_EMOJI.cash} {resources.cash}</Text>
+            {RESOURCE_KEYS.filter((k) => k !== 'cash').map((key) => (
+              <Text key={key} size="md">{RESOURCE_EMOJI[key]} {String(resources[key])}</Text>
+            ))}
+            {resources.hasVehicle && <Text size="md">{RESOURCE_EMOJI.hasVehicle}</Text>}
+          </Group>
+        </Stack>
+
+        {/* Right: highway sign */}
+        {tour && tour.stops.length > 0 && (
+          <TourMapStrip
+            tour={tour}
+            hint={foreshadow}
+            showNum={showNum}
+            totalShows={totalShows}
+            legText={legText}
+            venueName={venueName}
+          />
+        )}
+      </div>
     </Paper>
   )
 }

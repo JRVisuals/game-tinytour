@@ -175,10 +175,10 @@
     "diner": [
       {
         "id": "order_meal",
-        "label": "Order a meal ($15)",
+        "label": "Order a meal ($10/head)",
         "flavorHint": "Short stack special is still on the board. Your stomach has been petitioning for ten minutes.",
-        "cost": { "cash": 15 },
-        "effect": { "food": 3 },
+        "cost": {},
+        "effect": {},
         "burnsTurn": true,
         "once": true
       }

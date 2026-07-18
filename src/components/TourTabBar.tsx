@@ -8,6 +8,7 @@ interface TourTabBarProps {
   crewAlert?: boolean
   hustleActive?: boolean
   hustleEnabled?: boolean
+  sceneAlert?: boolean
 }
 
 const TABS: { id: PlayTabId; label: string }[] = [
@@ -23,12 +24,15 @@ export function TourTabBar({
   crewAlert,
   hustleActive,
   hustleEnabled = true,
+  sceneAlert,
 }: TourTabBarProps) {
   return (
     <div className="game-shell-tab-bar">
       {TABS.map((tab) => {
         const attention =
-          (tab.id === 'crew' && crewAlert) || (tab.id === 'hustle' && hustleActive)
+          (tab.id === 'scene' && sceneAlert) ||
+          (tab.id === 'crew' && crewAlert) ||
+          (tab.id === 'hustle' && hustleActive)
         const disabled = tab.id === 'hustle' && !hustleEnabled
         const pulse = attention && active !== tab.id
 

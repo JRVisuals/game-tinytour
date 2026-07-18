@@ -121,6 +121,7 @@ interface GameContextValue {
   enterPostShowShakedown: () => void
   prepNextLeg: () => void
   finishRunRecap: () => void
+  confirmDayJob: () => void
   takeDayJobStipend: () => void
   adjustResources: (partial: Partial<Resources>) => void
   hotelCrash: () => void
@@ -186,6 +187,7 @@ function createInitialState(): GameState {
     starterTier: saved ? null : tier,
     startRunAfterCrewSave: false,
     runRecapMessage: '',
+    dayJobReason: null,
     dayJobStipend: null,
     activeSetlistBets: [],
     currentMarket: null,
@@ -367,6 +369,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     usedLocationActions: [],
       missShowHustleEvent: null,
       runRecapMessage: '',
+      dayJobReason: null,
       dayJobStipend: null,
       activeSetlistBets: [],
       stopMarkets: {},
@@ -391,8 +394,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const brokeDayJobState = (s: GameState, message: string): GameState => ({
     ...s,
-    phase: 'day_job',
+    phase: 'pre_day_job',
     runRecapMessage: message,
+    dayJobReason: message,
     dayJobStipend: dayJobStipend(s.savedCrew?.members.length ?? s.crew.length),
     tour: null,
     travel: null,
@@ -1167,6 +1171,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     usedLocationActions: [],
       missShowHustleEvent: null,
       runRecapMessage: '',
+      dayJobReason: null,
       dayJobStipend: null,
       activeSetlistBets: [],
       currentMarket: null,
@@ -1221,7 +1226,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const seed = Math.abs(s.rngSeed + s.resources.cash + s.runStats.milesTraveled)
         const ante = (1 + (seed % 10)) * 5  // 5, 10, 15 … 50
         if (s.resources.cash < ante) return s  // can't afford this roll
-        const win = (seed + 7) % 2 === 0
+        const win = Math.random() < 0.5
         resources = { ...resources, cash: resources.cash - ante }
         if (win) resources = { ...resources, cash: resources.cash + ante * 2 }
         const msg = win ? `Celó — winner! +$${ante}` : `Celó — snake eyes. Lost $${ante}.`
@@ -1234,10 +1239,26 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // order_meal: $10 per crew member, heals everyone's hunger to full
+      if (actionId === 'order_meal') {
+        const costPerHead = 10
+        const totalCost = costPerHead * s.crew.length
+        if (s.resources.cash < totalCost) return s
+        resources = { ...resources, cash: resources.cash - totalCost }
+        const healedCrew = s.crew.map((m) => ({ ...m, hunger: 100 }))
+        return {
+          ...s,
+          resources,
+          crew: healedCrew,
+          usedLocationActions: action.once ? [...s.usedLocationActions, actionId] : s.usedLocationActions,
+          turnsUntilShow: action.burnsTurn ? Math.max(0, s.turnsUntilShow - 1) : s.turnsUntilShow,
+          ...setOutcome(s, `Ordered a round of meals — everyone's full ($${totalCost})`),
+        }
+      }
+
       resources = applyLocationActionEffects(resources, action)
       const flavorMap: Partial<Record<string, string>> = {
         join_circle: 'Joined the circle — scored a beer',
-        order_meal: 'Ordered a meal — +3 food',
       }
       const flavor = flavorMap[actionId] ?? action.label
       return {
@@ -1248,6 +1269,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ...setOutcome(s, flavor),
       }
     })
+  }, [])
+
+  const confirmDayJob = useCallback(() => {
+    setState((s) => ({ ...s, phase: 'day_job' as PhaseId }))
   }, [])
 
   const takeDayJobStipend = useCallback(() => {
@@ -1264,6 +1289,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         runBetsWon: 0,
         tourStory: [],
         runRecapMessage: '',
+      dayJobReason: null,
       }
     })
   }, [])
@@ -1386,6 +1412,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       enterPostShowShakedown,
       prepNextLeg,
       finishRunRecap,
+      confirmDayJob,
       takeDayJobStipend,
       adjustResources,
       hotelCrash,
@@ -1432,6 +1459,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       enterPostShowShakedown,
       prepNextLeg,
       finishRunRecap,
+      confirmDayJob,
       takeDayJobStipend,
       adjustResources,
       hotelCrash,

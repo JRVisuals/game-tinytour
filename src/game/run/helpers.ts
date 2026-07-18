@@ -11,7 +11,7 @@ import {
   isWookFluDeath,
   tickCrewMeters,
 } from '../crew/meters'
-import { appendStory, storyGoHome, storyTourEnd } from '../crew/tourStory'
+import { appendStory, storyDayJob, storyGoHome, storyTourEnd } from '../crew/tourStory'
 import { setOutcome } from '../outcome/state'
 import { wookFluDeathMessage } from '../travel/eventOutcomes'
 import type { CrewMember, GameState, OutcomeTone, SavedCrew } from '../types'
@@ -53,7 +53,9 @@ export function endRun(s: GameState, outcome: RunOutcome, message: string): Game
   }
 
   let tourStory = s.tourStory
-  if (outcome === 'shuffle') {
+  if (outcome === 'day_job') {
+    tourStory = appendStory(tourStory, storyDayJob(message))
+  } else if (outcome === 'shuffle') {
     tourStory = appendStory(tourStory, storyGoHome(s.rngSeed))
   } else if (outcome === 'completed' && s.tour) {
     const stop = s.tour.stops[s.tour.stops.length - 1]
@@ -72,8 +74,9 @@ export function endRun(s: GameState, outcome: RunOutcome, message: string): Game
     ...s,
     savedCrew,
     tourStory,
-    phase: outcome === 'day_job' ? 'day_job' : 'run_recap',
+    phase: outcome === 'day_job' ? 'pre_day_job' : 'run_recap',
     runRecapMessage: message,
+    dayJobReason: outcome === 'day_job' ? message : null,
     dayJobStipend: dayJobStipendOffer,
     tour: null,
     travel: null,

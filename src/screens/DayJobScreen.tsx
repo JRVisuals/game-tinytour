@@ -1,11 +1,11 @@
-import { Button, Group, Paper, SimpleGrid, Stack, Text } from '@mantine/core'
+import { Paper, SimpleGrid, Stack, Text } from '@mantine/core'
 import { TabPanelHeader } from '../components/TabPanelHeader'
 import { BALANCE } from '../game/config'
 import { useGame } from '../game/GameContext'
 import { STAT_LABELS } from '../game/types'
 
 export function DayJobScreen() {
-  const { state, finishRunRecap, takeDayJobStipend, resetCrew } = useGame()
+  const { state } = useGame()
   const perMember = BALANCE.crewEconomy.dayJobStipendPerMember
   const stipend = state.dayJobStipend ?? 0
   const [recapTitle, recapSubtitle] = state.runRecapMessage.includes('\n')
@@ -51,17 +51,6 @@ export function DayJobScreen() {
         </Stack>
       </Paper>
 
-      <Group>
-        {stipend > 0 && (
-          <Button onClick={takeDayJobStipend}>Take stipend &amp; hit title</Button>
-        )}
-        <Button variant="default" color="orange" onClick={resetCrew}>
-          Reset crew
-        </Button>
-        <Button variant="light" onClick={finishRunRecap}>
-          Back to title (broke)
-        </Button>
-      </Group>
     </Stack>
   )
 }

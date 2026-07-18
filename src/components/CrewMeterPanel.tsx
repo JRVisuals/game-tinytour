@@ -212,7 +212,7 @@ function CrewMemberDetails({
           disabled={!canCare || food <= 0}
           onClick={() => onConsume('eat')}
         >
-          Eat
+          Eat 🌮
         </Button>
         <Button
           size="compact-sm"
@@ -220,7 +220,7 @@ function CrewMemberDetails({
           disabled={!canCare || beer <= 0}
           onClick={() => onConsume('drink')}
         >
-          Drink
+          Drink 🍺
         </Button>
         <Button
           size="compact-sm"
@@ -229,7 +229,7 @@ function CrewMemberDetails({
           disabled={!canCare || drugs <= 0}
           onClick={() => onConsume('substances')}
         >
-          Consume
+          Consume 🍄
         </Button>
       </Group>
     </Stack>
