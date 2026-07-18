@@ -46,7 +46,7 @@ export default function App() {
   const [playTab, setPlayTab] = useState<PlayTabId>('scene')
   const [wipeType, setWipeType] = useState<'full' | 'light' | null>(null)
   const [balloonFlash, setBalloonFlash] = useState(false)
-  const showVibe = state.phase === 'post_show_shakedown'
+  const showVibe = state.phase === 'post_show'
   const prevBalloons = useRef<number | null>(null)
   const wipeTypeRef = useRef<'full' | 'light' | null>(null)
   const showPlayShell = !MENU_PHASES.has(state.phase)
