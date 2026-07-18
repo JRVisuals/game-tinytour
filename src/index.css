@@ -495,7 +495,7 @@ html.game-chrome-lock #root {
 .fx-overlay--balloon {
   background-color: #000;
   mix-blend-mode: multiply;
-  animation: fx-balloon 2.25s ease-in-out forwards;
+  animation: fx-balloon 3.4s ease-in-out forwards;
 }
 
 @keyframes fx-balloon {

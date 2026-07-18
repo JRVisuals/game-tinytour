@@ -94,7 +94,7 @@ export default function App() {
     const n = state.runStats.balloonsHuffed
     if (prevBalloons.current !== null && n > prevBalloons.current) {
       setBalloonFlash(true)
-      setTimeout(() => setBalloonFlash(false), 2250)
+      setTimeout(() => setBalloonFlash(false), 3400)
     }
     prevBalloons.current = n
   }, [state.runStats.balloonsHuffed])
