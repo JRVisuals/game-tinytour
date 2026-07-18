@@ -187,7 +187,7 @@ export function rollMarket(seed: number, context: MarketContext): MarketSnapshot
 
   if (context === 'farmers_market') {
     const TIER = M.tiers
-    const foodBuy = jitter(TIER.foodBuy!.low, h + 1)
+    const foodBuy = Math.max(2, jitter(TIER.foodBuy!.low, h + 1) - 2)
     const S = M.stock
     const snapped = applyGas(
       context,
@@ -202,7 +202,7 @@ export function rollMarket(seed: number, context: MarketContext): MarketSnapshot
         ticketBuy: jitter(TIER.ticketBuy!.high, h + 7),
       },
       {
-        food: S.foodBase + (h % S.foodMod) + 3,
+        food: Math.max(5, S.foodBase + (h % S.foodMod) + 4),
         beer: S.beerBase + ((h >> S.beerShift) % S.beerMod),
         drugs: S.drugsBase + ((h >> S.drugsShift) % S.drugsMod),
         tickets: 0,
