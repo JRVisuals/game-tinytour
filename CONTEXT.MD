@@ -115,6 +115,8 @@ Substances give vibe+stoned. Balloons (via CJM) give vibe up, health down. Only 
 
 ### Next session priorities
 
+- **Balloons as market commodity** — currently removed from market UI (was in post-show shakedown market). Future: add as a proper buy/sell commodity with limited stock, higher prices at venue gate, scarce elsewhere. Ties into the gas-selling NPC arc below.
+- **Gas selling → CJM extortion arc** — if you sell gas at multiple stops across a run, by the end of the tour the Clown Juice Mafia finds out and demands a cut: 30% of your cash. The more stops you sold at, the more likely/certain the shakedown. Needs: `runStats.gasSold` counter (or per-stop tracking), end-of-run or post-show trigger checking threshold, CJM lot event variant for the shakedown. Fun slow-burn NPC consequence.
 - **Balloons at post_show_shakedown** — balloon buy is now a location action at `park`, `hotel`, `friends_house`. Still need to wire it for `post_show_shakedown` (that's a phase not a LocationId so the location action system doesn't reach it — needs a dedicated lot event or inline action). Also noted: balloons as a buy/sell market commodity for a future pass.
 - **Market gameplay review** — buying low / selling high across locations should feel fun and strategic. Location profiles now in place (truck stop cheap gas+drugs, diner cheap food+beer, supermarket food+beer, farmers market food, venue scarce+expensive drugs, cheap tickets). Review: are spreads wide enough to make arbitrage rewarding? Is there enough stock to make it worth planning routes around?
 - **Narratives** — want to talk through copy, story beats, and tone across phases

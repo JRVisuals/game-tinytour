@@ -21,7 +21,6 @@ export function HustleTab() {
   const hasAnything = hustleTabActive(state)
   const clownJuice = hasClownJuiceMafia(state)
   const bets = showSetlistBets(state)
-  const postShowBalloons = state.phase === 'post_show_shakedown'
   const showMarket = canShowHustleMarket(state)
   const locationLabel = hustleLocationLabel(state)
   const hustleTitle = locationLabel ? `Hustle: ${locationLabel}` : 'Hustle'
@@ -41,7 +40,6 @@ export function HustleTab() {
               flavor={null}
               contextLabel={state.marketContext ?? 'lot'}
               showTickets={marketShowTickets(state)}
-              showBalloons={postShowBalloons && !clownJuice}
               displayOnly
             />
           )}
