@@ -19,6 +19,7 @@ interface LocationActionDef {
   effect: Partial<Record<string, number>>
   burnsTurn: boolean
   once: boolean
+  chancePercent?: number
 }
 
 // Cast the JSON to a shape we can work with
@@ -44,6 +45,7 @@ export interface LocationAction {
   effect: Partial<Record<keyof Resources, number>>
   burnsTurn: boolean
   once: boolean
+  chancePercent?: number
 }
 
 // Keep backward-compat alias used by GameState field name
@@ -133,6 +135,7 @@ export function getLocationActions(location: LocationId): LocationAction[] {
     effect: d.effect as Partial<Record<keyof Resources, number>>,
     burnsTurn: d.burnsTurn ?? true,
     once: d.once ?? true,
+    chancePercent: d.chancePercent,
   }))
 }
 
@@ -152,7 +155,10 @@ export function pickLocationAction(
   const available = all.filter((a) => !(a.once && usedIds.includes(a.id)))
   if (available.length === 0) return null
 
-  return available[Math.abs(seed) % available.length]!
+  const picked = available[Math.abs(seed) % available.length]!
+  const chance = picked.chancePercent ?? 100
+  if (chance < 100 && (Math.abs(seed >> 4) % 100) >= chance) return null
+  return picked
 }
 
 export function applyLocationActionEffects(

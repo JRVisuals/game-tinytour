@@ -200,7 +200,8 @@
         "cost": { "cash": 5 },
         "effect": { "cash": 10 },
         "burnsTurn": true,
-        "once": true
+        "once": true,
+        "chancePercent": 70
       },
       {
         "id": "celo",
@@ -209,7 +210,8 @@
         "cost": { "cash": 10 },
         "effect": { "cash": 10 },
         "burnsTurn": false,
-        "once": false
+        "once": false,
+        "chancePercent": 60
       }
     ],
     "hotel": [

@@ -234,12 +234,13 @@ export function PhaseActionBar({
 
             {/* One location action surfaced per visit — balloon encounters render inline, not here */}
             {locationAction && locationAction.id !== 'buy_balloons' && (() => {
-              const disabled = !canAffordAction(locationAction, state.resources)
+              let disabled = !canAffordAction(locationAction, state.resources)
               let label = locationAction.label
               if (locationAction.id === 'celo') {
                 const seed = Math.abs(state.rngSeed + state.resources.cash + state.runStats.milesTraveled)
                 const ante = (1 + (seed % 10)) * 5
                 label = `Play celó ($${ante} ante)`
+                disabled = state.resources.cash < ante
               }
               return (
                 <Button
