@@ -115,6 +115,7 @@ Substances give vibe+stoned. Balloons (via CJM) give vibe up, health down. Only 
 
 ### Next session priorities
 
+- **Balloons at post_show_shakedown** — balloon buy is now a location action at `park`, `hotel`, `friends_house`. Still need to wire it for `post_show_shakedown` (that's a phase not a LocationId so the location action system doesn't reach it — needs a dedicated lot event or inline action). Also noted: balloons as a buy/sell market commodity for a future pass.
 - **Market gameplay review** — buying low / selling high across locations should feel fun and strategic. Location profiles now in place (truck stop cheap gas+drugs, diner cheap food+beer, supermarket food+beer, farmers market food, venue scarce+expensive drugs, cheap tickets). Review: are spreads wide enough to make arbitrage rewarding? Is there enough stock to make it worth planning routes around?
 - **Narratives** — want to talk through copy, story beats, and tone across phases
 - **Bug hunt + UI polish** — final alignment pass before phone testing; check all phases on small screens

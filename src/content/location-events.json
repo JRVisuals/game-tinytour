@@ -170,6 +170,15 @@
         "effect": { "beer": 1 },
         "burnsTurn": true,
         "once": true
+      },
+      {
+        "id": "buy_balloons",
+        "label": "Get balloons ($10)",
+        "flavorHint": "Someone's got a tank and a stack of balloons near the pavilion. Low-key, friendly vibe.",
+        "cost": { "cash": 10 },
+        "effect": {},
+        "burnsTurn": true,
+        "once": true
       }
     ],
     "diner": [
@@ -201,6 +210,28 @@
         "effect": { "cash": 10 },
         "burnsTurn": false,
         "once": false
+      }
+    ],
+    "hotel": [
+      {
+        "id": "buy_balloons",
+        "label": "Get balloons ($10)",
+        "flavorHint": "Someone in the hallway's holding — tank in a duffel, keeping it quiet. Room party vibes.",
+        "cost": { "cash": 10 },
+        "effect": {},
+        "burnsTurn": true,
+        "once": true
+      }
+    ],
+    "friends_house": [
+      {
+        "id": "buy_balloons",
+        "label": "Get balloons ($10)",
+        "flavorHint": "Your friend pulls out a small tank from the closet with a grin. 'Left over from the last run.'",
+        "cost": { "cash": 10 },
+        "effect": {},
+        "burnsTurn": true,
+        "once": true
       }
     ]
   }
