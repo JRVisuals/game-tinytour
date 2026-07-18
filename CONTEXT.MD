@@ -113,6 +113,12 @@ Substances give vibe+stoned. Balloons (via CJM) give vibe up, health down. Only 
 
 - **Phase-trimmed Scene UI** — OT-style one line + 2–4 verbs per phase; talk through per-phase before coding
 
+### Next session priorities
+
+- **Market gameplay review** — buying low / selling high across locations should feel fun and strategic. Location profiles now in place (truck stop cheap gas+drugs, diner cheap food+beer, supermarket food+beer, farmers market food, venue scarce+expensive drugs, cheap tickets). Review: are spreads wide enough to make arbitrage rewarding? Is there enough stock to make it worth planning routes around?
+- **Narratives** — want to talk through copy, story beats, and tone across phases
+- **Bug hunt + UI polish** — final alignment pass before phone testing; check all phases on small screens
+
 ### In-game button color system
 
 Rationalized across `PhaseActionBar`, `TourTabBar`, and all play-shell screens:
