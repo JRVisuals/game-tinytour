@@ -8,7 +8,7 @@ Living snapshot of how the game works right now. Prefer short bullets. Update wh
 
 ## Current product shape
 
-**v0.1.2+** on `feature/crew-compact-ui` — mobile-first play shell, Oregon Trail travel, crew economy (bank/rep/kits), JSON events & copy, setlist bets, markets, wook flu / bail, lot events (Clown Juice Mafia, spot find, cop chase).
+**v0.2.0+** on `feature/crew-compact-ui` — mobile-first play shell, Oregon Trail travel, crew economy (bank/rep/kits), JSON events & copy, setlist bets, markets, wook flu / bail, lot events (Clown Juice Mafia, spot find, cop chase).
 
 ## Play shell (during a run)
 
@@ -45,7 +45,8 @@ Bottom tabs — **Scene · Hustle · Crew · Journal**
 | `post_show` | Recap + setlist |
 | `post_show_shakedown` | After-show lot hustle |
 | `run_recap` | Tour complete → title |
-| `day_job` | Run ended (soft fail) |
+| `pre_day_job` | Narrative beat before day job — explains what happened |
+| `day_job` | Run ended (soft fail) — stipend offer, reset or title |
 
 ## Resources & crew
 
@@ -57,7 +58,8 @@ Bottom tabs — **Scene · Hustle · Crew · Journal**
 ## Bail & run-end conditions
 
 ### Per-member bail
-- Meters decay **−8 hunger / −8 thirst per turn** passively
+- Meters decay **−6 hunger / −9 thirst per turn** passively (thirst is faster; hunger +5 when stoned, thirst +6 when wasted)
+- Stoned meter decays **−12 per turn** (sobers up in ~5–6 turns from wasted)
 - A member is **rough** when any meter (hunger, thirst, health, vibe) < **25**
 - Rough for **5 consecutive turns** → member **bails** (leaves the tour)
 - Warning status "BAILING · Xt" shows after **2 turns** rough
@@ -114,6 +116,15 @@ Substances give vibe+stoned. Balloons (via CJM) give vibe up, health down. Only 
 - **Phase-trimmed Scene UI** — OT-style one line + 2–4 verbs per phase; talk through per-phase before coding
 
 ### Next session priorities
+
+- **Content pass (top priority before wide alpha sharing)**
+  - Travel events: more variety in road events — funny/strange flavor, mild effects, regional color
+  - Billboard pool: more one-liners (currently thin)
+  - Phase narrative beats: each phase should have 2–3 sharp flavor moments a new player will hit in their first run (travel leg arrival, shakedown arrival, post-show, day job screen)
+  - Location copy: diner, record store, park, hotel flavor text and action hints feel alive
+  - Pulled-over + cop interaction: outcome messages need variety and personality
+  - After-show shakedown: flavor beats for different lot event outcomes
+  - Goal: a new player's first run should feel handcrafted even if it's procedural
 
 - **Run recap / career stats enhancements**
   - End-of-tour recap: songs played tallied by frequency across all shows (not just last setlist) — e.g. "Shakedown Street ×3"
